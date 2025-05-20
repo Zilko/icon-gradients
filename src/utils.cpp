@@ -98,14 +98,14 @@ GradientConfig Utils::getSavedConfig(IconType type, bool secondary) {
     return ret;
 }
 
-void Utils::setIconColors(SimplePlayer* icon, bool white) {
+void Utils::setIconColors(SimplePlayer* icon, bool secondary, bool white) {
     GameManager* gm = GameManager::get();
 
     cocos2d::ccColor3B color1 = white ? ccc3(255, 255, 255)
-    : gm->colorForIdx(gm->getPlayerColor());
+        : gm->colorForIdx(gm->getPlayerColor());
 
     cocos2d::ccColor3B color2 = white ? ccc3(255, 255, 255)
-    : gm->colorForIdx(gm->getPlayerColor2());
+        : gm->colorForIdx(gm->getPlayerColor2());
 
     icon->setColor(color1);
     icon->setSecondColor(color2);
@@ -135,75 +135,141 @@ std::string Utils::getTypeID(IconType type) {
     }
 }
 
-void Utils::applyGradient(SimplePlayer* icon, GradientConfig config) {
-    applyGradient(icon->m_firstLayer, config);
+void Utils::applyGradient(SimplePlayer* icon, GradientConfig config, bool secondary, bool force, bool blend) {
+    GJRobotSprite* otherSprite = nullptr;
+
+    if (icon->m_robotSprite) if (icon->m_robotSprite->isVisible()) otherSprite = icon->m_robotSprite;
+    if (icon->m_spiderSprite) if (icon->m_spiderSprite->isVisible()) otherSprite = icon->m_spiderSprite;
+
+    if (otherSprite) {
+        if (secondary)
+            for (CCSprite* spr : CCArrayExt<CCSprite*>(otherSprite->m_secondArray)) {
+                if (!typeinfo_cast<CCSprite*>(spr) || spr == otherSprite->m_headSprite) continue;
+                applyGradient(spr, config, force, blend);
+            }
+        else
+            for (CCSpritePart* spr : CCArrayExt<CCSpritePart*>(otherSprite->m_headSprite->getParent()->getChildren())) {
+                if (!typeinfo_cast<CCSpritePart*>(spr)) continue;
+                applyGradient(spr, config, force, blend);
+            }
+    } else
+        applyGradient(secondary ? icon->m_secondLayer : icon->m_firstLayer, config, force);
 }
 
-void Utils::applyGradient(CCSprite* sprite, GradientConfig config) {
-    if (config.points.size() <= 1)
-        return sprite->setShaderProgram(
-            CCShaderCache::sharedShaderCache()->programForKey(kCCShader_PositionTextureColor)
-        );
+void Utils::applyGradient(CCSprite* sprite, GradientConfig config, bool force, bool blend) {
+    CCGLProgram* defaultProgram = CCShaderCache::sharedShaderCache()->programForKey(kCCShader_PositionTextureColor);
 
-    std::string vertPath = (Mod::get()->getResourcesDir() / "position.vert").string();
-    std::string shaderPath = (Mod::get()->getResourcesDir() / fmt::format("{}_gradient.fsh", config.isLinear ? "linear" : "radial")).string();
+    if (config.points.empty())
+        return sprite->setShaderProgram(defaultProgram);
 
-    if (!std::filesystem::exists(vertPath) || !std::filesystem::exists(shaderPath))
-        return;
+    CCGLProgram* program = sprite->getShaderProgram();
+     
+    if (program == defaultProgram || force) {
+        std::string vertPath = (Mod::get()->getResourcesDir() / "position.vert").string();
+        std::string shaderPath = (Mod::get()->getResourcesDir() / fmt::format("{}_gradient{}.fsh", config.isLinear ? "linear" : "radial", blend ? "_blend" : "")).string();
 
-    CCGLProgram* program = new CCGLProgram();
-    program->autorelease();
-    program->initWithVertexShaderFilename(vertPath.c_str(), shaderPath.c_str());
-    program->addAttribute(kCCAttributeNamePosition, kCCVertexAttrib_Position);
-    program->addAttribute(kCCAttributeNameColor, kCCVertexAttrib_Color);
-    program->addAttribute(kCCAttributeNameTexCoord, kCCVertexAttrib_TexCoords);
-    program->link();
-    program->updateUniforms();
+        if (!std::filesystem::exists(vertPath) || !std::filesystem::exists(shaderPath))
+            return;
 
-    sprite->setShaderProgram(program);
+        program = new CCGLProgram();
+        program->autorelease();
+
+        program->initWithVertexShaderFilename(vertPath.c_str(), shaderPath.c_str());
+
+        program->addAttribute(kCCAttributeNamePosition, kCCVertexAttrib_Position);
+        program->addAttribute(kCCAttributeNameColor, kCCVertexAttrib_Color);
+        program->addAttribute(kCCAttributeNameTexCoord, kCCVertexAttrib_TexCoords);
+
+        program->link();
+        program->updateUniforms();
+
+        sprite->setShaderProgram(program);
+    }
 
     program->use();
     program->setUniformsForBuiltins();
+
+    // CC_NODE_DRAW_SETUP();
 
     CCSpriteFrame* frame = sprite->displayFrame();
     CCRect rectInPixels = frame->getRectInPixels();
     CCSize texSize = frame->getTexture()->getContentSizeInPixels();
 
-    float u_min = rectInPixels.origin.x / texSize.width;
-    float v_min = rectInPixels.origin.y / texSize.height;
-    float u_max = (rectInPixels.origin.x + rectInPixels.size.width) / texSize.width;
-    float v_max = (rectInPixels.origin.y + rectInPixels.size.height) / texSize.height;
+    bool rot = frame->m_bRotated;
+
+    float uMin = rectInPixels.origin.x / texSize.width;
+    float vMin = rectInPixels.origin.y / texSize.height;
+    float uMax = (rectInPixels.origin.x + rectInPixels.size.width) / texSize.width;
+    float vMax = (rectInPixels.origin.y + rectInPixels.size.height) / texSize.height;
 
     GLint locMin = glGetUniformLocation(program->getProgram(), "uvMin");
     GLint locMax = glGetUniformLocation(program->getProgram(), "uvMax");
-    glUniform2f(locMin, u_min, v_min);
-    glUniform2f(locMax, u_max, v_max);
+    glUniform2f(locMin, uMin, vMin);
+    glUniform2f(locMax, uMax, vMax);
 
     int stopAt = config.points.size();
 
-    // log::debug("{} {}", stopAt, config.points.front().pos);
+    std::vector<cocos2d::ccColor4F> colors;
+
+    for (const SimplePoint& point : config.points)
+        colors.push_back(ccc4FFromccc3B(point.color));
 
     if (config.isLinear) {
-        std::vector<float> stops = { 0.0f, 0.25f, 0.5f, 0.75f, 1.0f };
-        
+        cocos2d::CCPoint startPoint = ccp(0, 0);
+        cocos2d::CCPoint endPoint = ccp(0, 0);
+
+        float distance = 0.f;
+
+        for (const SimplePoint& point : config.points) {
+            float currentDistance = ccpDistance(point.pos, {0.5f, 0.5f});
+            if (currentDistance > distance) {
+                startPoint = point.pos;
+                distance = currentDistance;
+            }
+        }
+
+        distance = 0.f;
+
+        for (const SimplePoint& point : config.points) {
+            float currentDistance = ccpDistance(point.pos, startPoint);
+            if (currentDistance > distance) {
+                endPoint = point.pos;
+                distance = currentDistance;
+            }
+        }
+
+        std::vector<float> stops;
+        distance = ccpDistance(startPoint, endPoint);
+
+        for (const SimplePoint& point : config.points)
+            stops.push_back(ccpDistance(point.pos, startPoint) / distance);
+
+        for (size_t i = 0; i < stops.size(); ++i)
+            for (size_t j = i + 1; j < stops.size(); ++j)
+                if (stops[i] > stops[j]) {
+                    std::swap(stops[i], stops[j]);
+                    std::swap(colors[i], colors[j]);
+                }
+
         GLint startPointLoc = glGetUniformLocation(program->getProgram(), "startPoint");
         GLint endPointLoc   = glGetUniformLocation(program->getProgram(), "endPoint");
 
-        glUniform2f(startPointLoc, 0.0f, 0.5f);
-        glUniform2f(endPointLoc, 1.0, 0.5f);
-
+        glUniform2f(startPointLoc, rot ? startPoint.y : startPoint.x, rot ? startPoint.x : (1 - startPoint.y));
+        glUniform2f(endPointLoc, rot ? endPoint.y : endPoint.x, rot ? endPoint.x : (1 - endPoint.y));
 
         GLint stopsLoc = glGetUniformLocation(program->getProgram(), "stops");
         glUniform1fv(stopsLoc, stopAt, stops.data());
     } else {
         std::vector<float> positions;
-        positions.reserve(stopAt * 2);
-
-        log::debug("{} {}", frame->m_bRotated, rectInPixels);
 
         for (const SimplePoint& point : config.points) {
-            positions.push_back(point.pos.x);
-            positions.push_back(point.pos.y);
+            if (rot) {
+                positions.push_back(point.pos.y);
+                positions.push_back(point.pos.x);
+            } else {
+                positions.push_back(point.pos.x);
+                positions.push_back(1 - point.pos.y);
+            }
         }
 
         GLint loc = glGetUniformLocation(program->getProgram(), "positions");
@@ -213,16 +279,14 @@ void Utils::applyGradient(CCSprite* sprite, GradientConfig config) {
     GLint stopAtLoc = glGetUniformLocation(program->getProgram(), "stopAt");
     glUniform1i(stopAtLoc, stopAt);
 
-    std::vector<GLfloat> colors;
-    for (const SimplePoint& point : config.points) {
-        cocos2d::ccColor4F color4f = ccc4FFromccc3B(point.color);
-
-        colors.push_back(color4f.r);
-        colors.push_back(color4f.g);
-        colors.push_back(color4f.b);
-        colors.push_back(color4f.a);
+    std::vector<GLfloat> colorsData;
+    for (const cocos2d::ccColor4F& color : colors) {
+        colorsData.push_back(color.r);
+        colorsData.push_back(color.g);
+        colorsData.push_back(color.b);
+        colorsData.push_back(color.a);
     }
 
     GLint colorsLoc = glGetUniformLocation(program->getProgram(), "colors");
-    glUniform4fv(colorsLoc, stopAt, colors.data());
+    glUniform4fv(colorsLoc, stopAt, colorsData.data());
 }

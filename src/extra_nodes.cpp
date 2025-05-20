@@ -1,10 +1,11 @@
 #include "extra_nodes.hpp"
 #include "utils.hpp"
+#include <functional>
 
-ColorNode* ColorNode::create() {
+ColorNode* ColorNode::create(bool invis) {
     ColorNode* ret = new ColorNode();
 
-    if (ret->init()) {
+    if (ret->init(invis)) {
         ret->autorelease();
         return ret;
     }
@@ -13,32 +14,42 @@ ColorNode* ColorNode::create() {
     return nullptr;
 }
 
-bool ColorNode::init() {
-    if (!CCNode::init()) return false;
-
+bool ColorNode::init(bool invis) {
     setAnchorPoint({0.5f, 0.5f});
     setScale(0.8f);
 
     m_dot = CCSprite::create("dot.png"_spr);
     m_dot->setPosition(m_dot->getContentSize() / 2.f);
 
+    m_circle = CCSprite::create("circle.png"_spr);
+    m_circle->setPosition(m_dot->getContentSize() / 2.f);
+    m_circle->setOpacity(0);
+
     setContentSize(m_dot->getContentSize());
 
-    m_circle = CCSprite::create("circle.png"_spr);
-    m_circle->setScale(0.275f);
-    m_circle->setPosition(getContentSize() / 2.f);
-    m_circle->runAction(CCRepeatForever::create(CCRotateBy::create(8, 360)));
+    m_select = CCSprite::create("select.png"_spr);
+    m_select->setScale(0.275f);
+    m_select->setPosition(getContentSize() / 2.f);
+    m_select->runAction(CCRepeatForever::create(CCRotateBy::create(8, 360)));
 
-    m_circle->setVisible(false);
+    m_select->setVisible(false);
+
+    if (invis) {
+        m_dot->setOpacity(0);   
+        // m_select->setOpacity(0);
+    }
 
     addChild(m_dot);
+    addChild(m_select);
     addChild(m_circle);
     
     return true;
 }
 
 void ColorNode::setSelected(bool selected) {
-    m_circle->setVisible(selected);
+    m_isSelected = selected;
+
+    m_select->setVisible(selected);
 
     setZOrder(selected ? 1 : 0);
 }
@@ -53,26 +64,59 @@ void ColorNode::setHovered(bool hovered) {
     m_isHovered = hovered;
 }
 
-void ColorNode::setColor(const cocos2d::ccColor3B& color) {
-    m_dot->setColor(color);
+void ColorNode::setHidden(bool hidden, float time, bool useAction) {
+    // m_dot->stopAllActions();
+    // m_select->stopAllActions();
+
+    m_isHidden = hidden;
+
+    if (time <= 0.f && !useAction) {
+        m_dot->setOpacity(hidden ? 0 : 255);
+        m_select->setOpacity((m_isSelected && !hidden) ? 255 : 0);
+    } else {
+        m_dot->runAction(CCFadeTo::create(time, hidden ? 0 : 255));
+        m_select->runAction(CCFadeTo::create(time, (m_isSelected && !hidden) ? 255 : 0));
+    }
+}
+
+void ColorNode::setColor(const cocos2d::ccColor3B& color, float time) {
+    if (time <= 0.f)
+        m_dot->setColor(color);
+    else
+        m_dot->runAction(CCTintTo::create(time, color.r, color.g, color.b));
 
     m_color = color;
 
     setHovered(m_isHovered);
 }
 
-const cocos2d::ccColor3B& ColorNode::getColor() {
+cocos2d::ccColor3B ColorNode::getColor() {
     return m_color;
 }
 
-void ColorNode::setGradient(GradientConfig config) {
+CCSprite* ColorNode::getSprite() {
+    return m_dot;
+}
 
+bool ColorNode::isHidden() {
+    return m_isHidden;
+}
+
+bool ColorNode::isSelected() {
+    return m_isSelected;
+}
+
+void ColorNode::flash(float time) {
+    m_circle->setOpacity(240);   
+    m_circle->runAction(CCFadeTo::create(time, 0));
 }
 
 ColorToggle* ColorToggle::create(CCObject* target, cocos2d::SEL_MenuHandler callback, bool secondary) {
     ColorToggle* ret = new ColorToggle();
+    
+    ret->m_isSecondary = secondary;
 
-    if (ret->init(target, callback, secondary)) {
+    if (ret->init(target, callback)) {
         ret->autorelease();
         return ret;
     }
@@ -81,28 +125,37 @@ ColorToggle* ColorToggle::create(CCObject* target, cocos2d::SEL_MenuHandler call
     return nullptr;
 }
 
-bool ColorToggle::init(CCObject* target, cocos2d::SEL_MenuHandler callback, bool secondary) {
-    m_sprite = ColorChannelSprite::create();
+bool ColorToggle::init(CCObject* target, cocos2d::SEL_MenuHandler callback) {
+    m_sprite = CCSprite::createWithSpriteFrameName("GJ_colorBtn_001.png");
     m_sprite->setScale(0.6f);
 
-    CCLabelBMFont* lbl = CCLabelBMFont::create(secondary ? "2" : "1", "bigFont.fnt");
+    CCLabelBMFont* lbl = CCLabelBMFont::create(m_isSecondary ? "2" : "1", "bigFont.fnt");
     lbl->setScale(0.525f);
     lbl->setPosition({24, 14});
 
     m_sprite->addChild(lbl);
+
+    m_secondSprite = CCSprite::createWithSpriteFrameName("GJ_colorBtn_001.png");
+    m_secondSprite->setScale(0.6f);
+    m_secondSprite->setOpacity(0);
 
     m_select = CCSprite::createWithSpriteFrameName("GJ_select_001.png");
     m_select->setScale(0.7f);
     m_select->setPosition(m_sprite->getContentSize() * 0.6f / 2.f);
     m_select->setVisible(false);
 
+    addChild(m_secondSprite);
     addChild(m_sprite);
     addChild(m_select);
 
     setContentSize(m_sprite->getContentSize());
     setAnchorPoint({0, 0});
 
-    return CCMenuItemSpriteExtra::init(m_sprite, nullptr, target, callback);
+    if (!CCMenuItemSpriteExtra::init(m_sprite, nullptr, target, callback)) return false;
+
+    m_secondSprite->setPosition(m_sprite->getPosition());
+
+    return true;
 }
 
 void ColorToggle::setSelected(bool selected) {
@@ -113,10 +166,42 @@ void ColorToggle::setColor(const cocos2d::ccColor3B& color) {
     m_sprite->setColor(color);
 }
 
+void ColorToggle::applyGradient(GradientConfig config, bool force, bool transition) {
+    GameManager* gm = GameManager::get();
+
+    m_currentConfig = config;
+    m_didForce = force;
+
+    m_sprite->setColor(m_currentConfig.points.empty()
+        ? gm->colorForIdx(m_isSecondary ? gm->getPlayerColor2() : gm->getPlayerColor())
+        : ccc3(255, 255, 255));
+
+    Utils::applyGradient(m_secondSprite, m_currentConfig, force, true);
+
+    if (!transition)
+        return Utils::applyGradient(m_sprite, m_currentConfig, force, true);
+
+    m_sprite->runAction(CCFadeTo::create(0.2f, 0));
+    m_secondSprite->runAction(CCFadeTo::create(0.2f, 255));
+   
+    runAction(CCSequence::create(
+        CCDelayTime::create(0.2f),
+        CCCallFunc::create(this, callfunc_selector(ColorToggle::onAnimationEnded)),
+        nullptr 
+    ));
+}
+
+void ColorToggle::onAnimationEnded() {
+    Utils::applyGradient(m_sprite, m_currentConfig, m_didForce, true);
+
+    m_sprite->setOpacity(255);
+    m_secondSprite->setOpacity(0);
+}
+
 IconButton* IconButton::create(CCObject* target, cocos2d::SEL_MenuHandler callback, IconType type) {
     IconButton* ret = new IconButton();
 
-    ret->m_iconType = type;
+    ret->m_type = type;
 
     if (ret->init(target, callback)) {
         ret->autorelease();
@@ -128,12 +213,11 @@ IconButton* IconButton::create(CCObject* target, cocos2d::SEL_MenuHandler callba
 };
 
 bool IconButton::init(CCObject* target, cocos2d::SEL_MenuHandler callback) {
-    m_icon = Utils::createIcon(m_iconType);
-    Utils::setIconColors(m_icon, false);
+    m_icon = Utils::createIcon(m_type);
 
     cocos2d::CCSize buttonSize = m_icon->getChildByType<CCSprite>(0)->getContentSize() * 0.63f;
 
-    if (m_iconType == IconType::Robot || m_iconType == IconType::Spider)
+    if (m_type == IconType::Robot || m_type == IconType::Spider)
         m_icon->setScale(0.474f);
     else {
         cocos2d::CCSize size = m_icon->m_firstLayer->getContentSize();
@@ -142,7 +226,7 @@ bool IconButton::init(CCObject* target, cocos2d::SEL_MenuHandler callback) {
         m_icon->setScale(max > 19.21f ? 19.21f / max : 0.63f);
     }
 
-    if (m_iconType == IconType::Wave)
+    if (m_type == IconType::Wave)
         m_icon->setScale(m_icon->getScale() - 0.1f);
 
     m_icon->setPosition(buttonSize / 2.f);
@@ -151,13 +235,18 @@ bool IconButton::init(CCObject* target, cocos2d::SEL_MenuHandler callback) {
     container->setContentSize(buttonSize);
     container->addChild(m_icon);
 
-    m_lock = CCSprite::createWithSpriteFrameName("GJ_lock_001.png");
-    m_lock->setScale(0.3f);
-    m_lock->setOpacity(200);
-    m_lock->setPosition(buttonSize / 2.f + ccp(7.818f, -7));
-    m_lock->setVisible(false);
+    m_dot = ColorNode::create(false);
+    m_dot->setScale(0.3f);
+    m_dot->setPosition(buttonSize / 2.f + ccp(8.818f, -8));
+    
+    container->addChild(m_dot);
 
-    container->addChild(m_lock);
+    m_secondDot = ColorNode::create(false);
+    m_secondDot->setScale(0.3f);
+    m_secondDot->setPosition(buttonSize / 2.f + ccp(8.818f, -8));
+    m_secondDot->setHidden(true, 0.f);
+
+    container->addChild(m_secondDot);
 
     m_select = CCSprite::createWithSpriteFrameName("GJ_select_001.png");
     m_select->setScale(0.7f);
@@ -170,7 +259,7 @@ bool IconButton::init(CCObject* target, cocos2d::SEL_MenuHandler callback) {
 }
 
 IconType IconButton::getType() {
-    return m_iconType;
+    return m_type;
 }
 
 bool IconButton::isLocked() {
@@ -181,28 +270,56 @@ void IconButton::setSelected(bool selected) {
     m_select->setVisible(selected);
 }
 
+void IconButton::setColor(bool secondary, bool white) {
+    Utils::setIconColors(m_icon, secondary, white);
+}
+
 void IconButton::setLocked(bool locked) {
     m_isLocked = locked;
-    m_lock->setVisible(locked);
-}
 
-void IconButton::applyGradient(GradientConfig config) {
-    Utils::applyGradient(m_icon, config);
-}
+    m_dot->flash(0.3f);
 
-PointsLayer* PointsLayer::create(const cocos2d::CCSize& size, PointsLayerDelegate* delegate) {
-    PointsLayer* ret = new PointsLayer();
-
-    ret->m_delegate = delegate;
-
-    if (ret->init(size)) {
-        ret->autorelease();
-        return ret;
+    if (locked) {
+        m_dot->setHidden(false, 0.f, true);
+    } else {
+        m_dot->setHidden(true, 0.1f);
     }
 
-    delete ret;
-    return nullptr;
-};
+}
+
+void IconButton::applyGradient(bool force, bool secondary, bool transition) {
+    GameManager* gm = GameManager::get();
+
+    m_currentConfig = Utils::getSavedConfig(m_type, secondary);
+    m_didForce = force;
+
+    Utils::applyGradient(m_icon, m_currentConfig, secondary, force);
+
+    m_dot->setColor(m_currentConfig.points.empty()
+        ? gm->colorForIdx(secondary ? gm->getPlayerColor2() : gm->getPlayerColor())
+        : ccc3(255, 255, 255));
+
+    Utils::applyGradient(m_secondDot->getSprite(), m_currentConfig, force, true);
+
+    if (!transition || !isLocked())
+       return  Utils::applyGradient(m_dot->getSprite(), m_currentConfig, m_didForce, true);
+
+    m_dot->setHidden(true, 0.1f);
+    m_secondDot->setHidden(false, 0.1f);
+    
+    runAction(CCSequence::create(
+        CCDelayTime::create(0.1f),
+        CCCallFunc::create(this, callfunc_selector(IconButton::onAnimationEnded)),
+        nullptr 
+    ));
+}
+
+void IconButton::onAnimationEnded() {
+    Utils::applyGradient(m_dot->getSprite(), m_currentConfig, m_didForce, true);
+
+    m_dot->setHidden(false, 0.f, true);
+    m_secondDot->setHidden(true, 0.f, true);
+}
 
 ColorPicker* ColorPicker::create() {
     ColorPicker* ret = new ColorPicker();
@@ -217,8 +334,6 @@ ColorPicker* ColorPicker::create() {
 };
 
 bool ColorPicker::init() {
-    if (!CCNode::init()) return false;
-
     m_picker = CCControlColourPicker::colourPicker();
 
     addChild(m_picker);
@@ -245,254 +360,4 @@ void ColorPicker::setEnabled(bool enabled) {
     
     for (CCSprite* spr : CCArrayExt<CCSprite*>(m_picker->getChildByType<CCSpriteBatchNode>(0)->getChildren()))
         spr->setOpacity(enabled ? 255 : 100);
-}
-
-bool PointsLayer::init(cocos2d::CCSize size) {
-    if (!CCLayer::init()) return false;
-
-    m_shadow = CCSprite::create("shadow.png"_spr);
-    m_shadow->setOpacity(49);
-    m_shadow->setPosition({178.5f, 170});
-    m_shadow->setScaleY(0.8f);
-
-    m_centerIcon = Utils::createIcon(IconType::Cube);
-    m_centerIcon->setScale(1.7f);
-    m_centerIcon->setPosition({178.5f, 200});
-
-    addChild(m_shadow);
-    addChild(m_centerIcon);
-
-    updateCenter();
-
-    setContentSize(size);
-    setAnchorPoint({0, 0});
-    setTouchEnabled(true);
-    registerWithTouchDispatcher();
-    setTouchMode(kCCTouchesOneByOne);
-
-    return true;
-}
-
-int PointsLayer::getPointCount() {
-    return m_points.size(); 
-}
-
-void PointsLayer::removeSelected() {
-    std::vector<ColorNode*> newPoints;
-
-    for (ColorNode* point : m_points)
-        if (point != m_selectedPoint)
-            newPoints.push_back(point);
-
-    m_points = newPoints;
-
-    m_selectedPoint->removeFromParentAndCleanup(true);
-
-    m_selectedPoint = nullptr;
-}
-
-void PointsLayer::addPoint() {
-    cocos2d::CCSize size = m_centerIcon->getContentSize() * m_centerIcon->getScale();
-    cocos2d::CCPoint position = m_centerIcon->getPosition();
-
-    std::vector<cocos2d::CCPoint> corners = {
-        {position.x - size.width / 2, position.y + size.height / 2},
-        {position.x + size.width / 2, position.y + size.height / 2},
-        {position.x - size.width / 2, position.y - size.height / 2},
-        {position.x + size.width / 2, position.y - size.height / 2}
-    };
-
-    cocos2d::CCPoint pos = {0, 0};
-    
-    for (const cocos2d::CCPoint& corner : corners) {
-        bool taken = false;
-
-        for (ColorNode* point : m_points) {
-            if (
-                static_cast<int>(point->getPosition().x) == static_cast<int>(corner.x) &&
-                static_cast<int>(point->getPosition().y) == static_cast<int>(corner.y)
-            ) {
-                taken = true;
-                break;
-            }
-        }
-
-        if (!taken) {
-            pos = corner;
-            break;
-        }
-    }
-
-    if (pos == ccp(0, 0))
-        pos = corners[std::rand() % corners.size()];
-
-    addPoint(pos);
-}
-
-void PointsLayer::addPoint(const cocos2d::CCPoint& pos) {
-    ColorNode* node = ColorNode::create();
-
-    node->setPosition(pos);
-
-    addChild(node);
-
-    m_points.push_back(node);
-}
-
-ColorNode* PointsLayer::getNodeForPos(cocos2d::CCPoint pos) {
-    pos = convertToNodeSpace(pos);
-
-    ColorNode* ret = nullptr;
-    float closest = getContentSize().width * 2;
-
-    for (ColorNode* point : m_points) {
-        float distance = ccpDistance(pos, point->getPosition());
-        if (distance < closest && distance < point->getContentSize().width / 2.f) {
-            closest = distance;
-            ret = point;
-        }
-    }
-
-    return ret;
-}
-
-void PointsLayer::selectFirst() {
-    if (m_points.empty()) return;
-
-    selectPoint(m_points.front());
-}
-
-void PointsLayer::selectLast() {
-    if (m_points.empty()) return;
-    
-    selectPoint(m_points.back());
-}
-
-void PointsLayer::selectPoint(ColorNode* point) {
-    point->setSelected(true);
-
-    if (m_selectedPoint && m_selectedPoint != point)
-        m_selectedPoint->setSelected(false);
-
-    m_selectedPoint = point;
-
-    m_delegate->pointSelected(point);
-}
-
-bool PointsLayer::ccTouchBegan(CCTouch* touch, CCEvent* event) { 
-    cocos2d::CCPoint pos = touch->getLocation();
-
-    if (ColorNode* point = getNodeForPos(pos)) {
-        selectPoint(point);
-
-        m_isMoving = true;
-        m_moveOffset = point->getContentSize() / 2.f - point->convertToNodeSpace(pos);
-
-        return CCLayer::ccTouchBegan(touch, event);
-    }
-
-    return false;
-}
-
-void PointsLayer::ccTouchMoved(CCTouch* touch, CCEvent* event) {
-    CCLayer::ccTouchMoved(touch, event);
-
-    if (m_isMoving && m_selectedPoint) {
-        cocos2d::CCPoint pos = convertToNodeSpace(touch->getLocation()) + m_moveOffset;
-
-        pos.x = std::max(0.f, std::min(pos.x, getContentSize().width));
-        pos.y = std::max(0.f, std::min(pos.y, getContentSize().height));
-
-        m_selectedPoint->setPosition(pos);
-
-        m_delegate->pointMoved();
-    }
-}
-
-std::vector<SimplePoint> PointsLayer::getPoints() {
-    std::vector<SimplePoint> ret;
-
-    for (ColorNode* point : m_points)
-        ret.push_back({
-            getRelativePos(point),
-            point->getColor()
-        });
-
-    return ret;
-}
-
-void PointsLayer::ccTouchEnded(CCTouch* touch, CCEvent* event) {
-    m_isMoving = false;
-}
-
-void PointsLayer::updateHover(const cocos2d::CCPoint& pos) {
-    if (ColorNode* point = getNodeForPos(pos)) {
-        point->setHovered(true);
-
-        if (m_hoveredPoint && m_hoveredPoint != point)
-            m_hoveredPoint->setHovered(false);
-
-        m_hoveredPoint = point;
-    } else if (m_hoveredPoint) {
-        m_hoveredPoint->setHovered(false);
-        m_hoveredPoint = nullptr;
-    }
-}
-
-void PointsLayer::updateGradient(GradientConfig config) {
-    Utils::applyGradient(m_centerIcon, config);
-}
-
-void PointsLayer::updateCenter() {
-    m_centerIcon->setContentSize(m_centerIcon->m_firstLayer->getContentSize());
-    m_centerIcon->m_firstLayer->setPosition(m_centerIcon->getContentSize() / 2.f);
-
-    if (m_centerIcon->m_robotSprite)
-        m_centerIcon->m_robotSprite->setPosition(m_centerIcon->getContentSize() / 2.f);
-
-    if (m_centerIcon->m_spiderSprite)
-        m_centerIcon->m_spiderSprite->setPosition(m_centerIcon->getContentSize() / 2.f);
-
-    Utils::setIconColors(m_centerIcon, false);
-}
-
-ColorNode* PointsLayer::getSelectedPoint() {
-    return m_selectedPoint;
-}
-
-void PointsLayer::setPlayerFrame(IconType type) {
-    m_centerIcon->updatePlayerFrame(
-        Utils::getIconID(type),
-        type
-    );
-
-    updateCenter();
-}
-
-cocos2d::CCPoint PointsLayer::getRelativePos(ColorNode* point) {
-    cocos2d::CCSize iconSize = ccp(30.5f, 30) * m_centerIcon->getScale();
-    cocos2d::CCPoint realPos = point->getPosition() - (m_centerIcon->getPosition() - iconSize / 2.f);
-
-    return {
-        realPos.x / iconSize.width,
-        realPos.y / iconSize.height
-    };
-}
-
-void PointsLayer::loadPoints(const std::vector<SimplePoint>& points) {
-    for (ColorNode* point : m_points)
-        point->removeFromParentAndCleanup(true);
-
-    m_points.clear();
-
-    m_selectedPoint = nullptr;
-    m_hoveredPoint = nullptr;
-
-    cocos2d::CCSize iconSize = ccp(30.5f, 30) * m_centerIcon->getScale();
-    cocos2d::CCPoint bottomLeft = m_centerIcon->getPosition() - iconSize / 2.f;
-
-    for (const SimplePoint& point : points) {
-        addPoint(bottomLeft + point.pos * iconSize);
-        m_points.back()->setColor(point.color);
-    }
 }

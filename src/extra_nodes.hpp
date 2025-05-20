@@ -8,28 +8,34 @@ private:
 
     CCSprite* m_dot = nullptr;
     CCSprite* m_circle = nullptr;
+    CCSprite* m_select = nullptr;
 
     cocos2d::CCPoint m_relativePos = {0, 0};
 
     cocos2d::ccColor3B m_color = ccc3(255, 255, 255);
 
     bool m_isHovered = false;
+    bool m_isSelected = false;
+    bool m_isHidden = false;
+
+    bool init(bool);
 
 public:
 
-    static ColorNode* create();
+    static ColorNode* create(bool);
 
-    bool init() override;
-
-    void setColor(const cocos2d::ccColor3B&);
-
-    const cocos2d::ccColor3B& getColor();
-
+    void setColor(const cocos2d::ccColor3B&, float = 0.f);
     void setSelected(bool);
-
     void setHovered(bool);
+    void setHidden(bool, float, bool = false);
 
-    void setGradient(GradientConfig);
+    cocos2d::ccColor3B getColor();
+    CCSprite* getSprite();
+
+    bool isSelected();
+    bool isHidden();
+
+    void flash(float = 0.3f);
 
 };
 
@@ -37,19 +43,27 @@ class ColorToggle : public CCMenuItemSpriteExtra {
 
 private:
 
-    ColorChannelSprite* m_sprite = nullptr;
-
+    CCSprite* m_sprite = nullptr;
+    CCSprite* m_secondSprite = nullptr;
     CCSprite* m_select = nullptr;
 
-    bool init(CCObject*, cocos2d::SEL_MenuHandler, bool);
+    GradientConfig m_currentConfig;
+
+    bool m_isSecondary = false;
+    bool m_didForce = false;
+
+    bool init(CCObject*, cocos2d::SEL_MenuHandler);
+
+    void onAnimationEnded();
 
 public:
 
     static ColorToggle* create(CCObject*, cocos2d::SEL_MenuHandler, bool);
 
     void setSelected(bool);
-
     void setColor(const cocos2d::ccColor3B&);
+
+    void applyGradient(GradientConfig, bool, bool);
 
 };
 
@@ -57,30 +71,36 @@ class IconButton : public CCMenuItemSpriteExtra {
 
 private:
 
-    CCSprite* m_lock = nullptr;
+    ColorNode* m_dot = nullptr;
+    ColorNode* m_secondDot = nullptr;
     CCSprite* m_select = nullptr;
 
     SimplePlayer* m_icon = nullptr;
 
-    IconType m_iconType = IconType::Cube;
+    IconType m_type = IconType::Cube;
+
+    GradientConfig m_currentConfig;
 
     bool m_isLocked = false;
+    bool m_didForce = false;
 
     bool init(CCObject*, cocos2d::SEL_MenuHandler);
+
+    void onAnimationEnded();
 
 public:
 
     static IconButton* create(CCObject*, cocos2d::SEL_MenuHandler, IconType);
 
+    void setLocked(bool);
+    void setSelected(bool);
+    void setColor(bool, bool);
+
+    void applyGradient(bool, bool, bool = false);
+
     IconType getType();
 
     bool isLocked();
-
-    void setLocked(bool);
-
-    void setSelected(bool);
-
-    void applyGradient(GradientConfig);
 
 };
 
@@ -97,71 +117,10 @@ public:
     static ColorPicker* create();
 
     void setDelegate(ColorPickerDelegate*);
+    void setColor(const cocos2d::ccColor3B&);
+    void setEnabled(bool);
 
     const cocos2d::ccColor3B getColor();
 
-    void setColor(const cocos2d::ccColor3B&);
-
-    void setEnabled(bool);
-
 };
 
-class PointsLayer : public CCLayer {
-
-private:
-
-    SimplePlayer* m_centerIcon = nullptr;
-
-    CCSprite* m_shadow = nullptr;
-
-    PointsLayerDelegate* m_delegate = nullptr;
-
-    ColorNode* m_selectedPoint = nullptr;
-    ColorNode* m_hoveredPoint = nullptr;
-
-    std::vector<ColorNode*> m_points;
-    std::unordered_map<IconType, std::vector<cocos2d::CCPoint>> m_lockedIcons;
-
-    cocos2d::CCPoint m_moveOffset = ccp(0, 0);
-
-    bool m_isLinear = true;
-    bool m_ignoreColorChange = false;
-    bool m_isMoving = false;
-
-    bool init(cocos2d::CCSize);
-
-    cocos2d::CCPoint getRelativePos(ColorNode*);
-
-    bool ccTouchBegan(CCTouch*, CCEvent*) override;
-    void ccTouchMoved(CCTouch*, CCEvent*) override;
-    void ccTouchEnded(CCTouch*, CCEvent*) override;
-    
-    void addPoint(const cocos2d::CCPoint&);
-    void selectPoint(ColorNode*);
-
-    void updateCenter();
-
-public:
-
-    static PointsLayer* create(const cocos2d::CCSize&, PointsLayerDelegate*);
-
-    ColorNode* getNodeForPos(cocos2d::CCPoint);
-
-    void updateHover(const cocos2d::CCPoint&);
-    void updateGradient(GradientConfig);
-
-    void setPlayerFrame(IconType);
-
-    void selectFirst();
-    void selectLast();
-    void removeSelected();  
-    
-    ColorNode* getSelectedPoint();
-
-    void addPoint();
-    void loadPoints(const std::vector<SimplePoint>&);
-
-    int getPointCount();
-    std::vector<SimplePoint> getPoints();
-
-};

@@ -1,5 +1,6 @@
 #include "includes.hpp"
 #include "extra_nodes.hpp"
+#include "points_layer.hpp"
 
 class GradientLayer : public geode::Popup<>, public ColorPickerDelegate, public TextInputDelegate, public PointsLayerDelegate {
 
@@ -16,7 +17,7 @@ private:
 
     CCMenuItemToggler* m_linearToggle = nullptr;
     CCMenuItemToggler* m_radialToggle = nullptr;
-    CCMenuItemToggler* m_lockToggle = nullptr;
+    CCMenuItemToggler* m_dotToggle = nullptr;
 
     ColorToggle* m_mainColorToggle = nullptr;
     ColorToggle* m_secondaryColorToggle = nullptr;
@@ -36,22 +37,27 @@ private:
     bool m_isLinear = true;
     bool m_isSecondaryColor = false;
     bool m_ignoreColorChange = false;
+    bool m_pointsHidden = false;
 
     ~GradientLayer();
 
     bool setup() override;
 
-    void onIconButton(CCObject*);
     void onTypeToggle(CCObject*);
     void onLockToggle(CCObject*);
     void onColorToggle(CCObject*);
+    void onHideToggle(CCObject*);
+
+    void onIconButton(CCObject*);
     void onAddPoint(CCObject*);
     void onRemovePoint(CCObject*);
+    void onSettings(CCObject*);
 
-    void load(IconType, bool);
+    void load(IconType, bool, bool = false, bool = false, bool = false);
+    void save(GradientConfig, bool);
     void save();
 
-    void updateGradient();
+    void updateGradient(bool = false, bool = false, bool = false);
     void updateUI();
     void updatePositions();
 

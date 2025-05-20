@@ -10,7 +10,7 @@ public:
 
     static int getIconID(IconType);
 
-    static void setIconColors(SimplePlayer*, bool);
+    static void setIconColors(SimplePlayer*, bool, bool);
     
     static GradientConfig getSavedConfig(IconType, bool);
 
@@ -18,8 +18,8 @@ public:
 
     static std::string getTypeID(IconType);
 
-    static void applyGradient(SimplePlayer*, GradientConfig);
+    static void applyGradient(SimplePlayer*, GradientConfig, bool, bool, bool = false);
 
-    static void applyGradient(CCSprite*, GradientConfig);
+    static void applyGradient(CCSprite*, GradientConfig, bool, bool = false);
 
 };
