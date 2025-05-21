@@ -404,7 +404,7 @@ void ColorPicker::setColor(const cocos2d::ccColor3B& color) {
 }
 
 const cocos2d::ccColor3B ColorPicker::getColor() {
-    return m_picker->getColorValue();
+    return m_picker->m_rgb;
 }
 
 void ColorPicker::setEnabled(bool enabled) {
