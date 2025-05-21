@@ -17,6 +17,7 @@ private:
     bool m_isHovered = false;
     bool m_isSelected = false;
     bool m_isHidden = false;
+    bool m_isAnimating = false;
 
     bool init(bool);
 
@@ -34,8 +35,11 @@ public:
 
     bool isSelected();
     bool isHidden();
+    bool isAnimating();
 
     void flash(float = 0.3f);
+
+    void onAnimationEnded();
 
 };
 

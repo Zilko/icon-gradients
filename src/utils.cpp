@@ -164,7 +164,7 @@ void Utils::applyGradient(CCSprite* sprite, GradientConfig config, bool force, b
 
     CCGLProgram* program = sprite->getShaderProgram();
      
-    if (program == defaultProgram || force) {
+    if (program == defaultProgram || force || blend) {
         std::string vertPath = (Mod::get()->getResourcesDir() / "position.vert").string();
         std::string shaderPath = (Mod::get()->getResourcesDir() / fmt::format("{}_gradient{}.fsh", config.isLinear ? "linear" : "radial", blend ? "_blend" : "")).string();
 
@@ -188,8 +188,6 @@ void Utils::applyGradient(CCSprite* sprite, GradientConfig config, bool force, b
 
     program->use();
     program->setUniformsForBuiltins();
-
-    // CC_NODE_DRAW_SETUP();
 
     CCSpriteFrame* frame = sprite->displayFrame();
     CCRect rectInPixels = frame->getRectInPixels();

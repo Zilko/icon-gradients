@@ -13,6 +13,7 @@ private:
     ColorNode* m_selectedPoint = nullptr;
     ColorNode* m_hoveredPoint = nullptr;
 
+    std::vector<ColorNode*> m_removingPoints;
     std::vector<ColorNode*> m_points;
     std::unordered_map<IconType, std::vector<cocos2d::CCPoint>> m_dotedIcons;
 

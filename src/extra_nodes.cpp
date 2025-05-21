@@ -76,6 +76,14 @@ void ColorNode::setHidden(bool hidden, float time, bool useAction) {
     } else {
         m_dot->runAction(CCFadeTo::create(time, hidden ? 0 : 255));
         m_select->runAction(CCFadeTo::create(time, (m_isSelected && !hidden) ? 255 : 0));
+
+        m_isAnimating = true;
+
+        runAction(CCSequence::create(
+            CCDelayTime::create(time),
+            CCCallFunc::create(this, callfunc_selector(ColorNode::onAnimationEnded)),
+            nullptr 
+        ));
     }
 }
 
@@ -102,13 +110,29 @@ bool ColorNode::isHidden() {
     return m_isHidden;
 }
 
+bool ColorNode::isAnimating() {
+    return m_isAnimating;
+}
+
 bool ColorNode::isSelected() {
     return m_isSelected;
 }
 
 void ColorNode::flash(float time) {
+    m_isAnimating = true;
+
     m_circle->setOpacity(240);   
     m_circle->runAction(CCFadeTo::create(time, 0));
+
+    runAction(CCSequence::create(
+        CCDelayTime::create(time),
+        CCCallFunc::create(this, callfunc_selector(ColorNode::onAnimationEnded)),
+        nullptr 
+    ));
+}
+
+void ColorNode::onAnimationEnded() {
+    m_isAnimating = false;
 }
 
 ColorToggle* ColorToggle::create(CCObject* target, cocos2d::SEL_MenuHandler callback, bool secondary) {
@@ -139,6 +163,12 @@ bool ColorToggle::init(CCObject* target, cocos2d::SEL_MenuHandler callback) {
     m_secondSprite->setScale(0.6f);
     m_secondSprite->setOpacity(0);
 
+    lbl = CCLabelBMFont::create(m_isSecondary ? "2" : "1", "bigFont.fnt");
+    lbl->setScale(0.525f);
+    lbl->setPosition({24, 14});
+
+    m_secondSprite->addChild(lbl);
+
     m_select = CCSprite::createWithSpriteFrameName("GJ_select_001.png");
     m_select->setScale(0.7f);
     m_select->setPosition(m_sprite->getContentSize() * 0.6f / 2.f);
@@ -154,6 +184,7 @@ bool ColorToggle::init(CCObject* target, cocos2d::SEL_MenuHandler callback) {
     if (!CCMenuItemSpriteExtra::init(m_sprite, nullptr, target, callback)) return false;
 
     m_secondSprite->setPosition(m_sprite->getPosition());
+    m_secondSprite->setZOrder(m_sprite->getZOrder() + 1);
 
     return true;
 }
@@ -175,14 +206,20 @@ void ColorToggle::applyGradient(GradientConfig config, bool force, bool transiti
     m_sprite->setColor(m_currentConfig.points.empty()
         ? gm->colorForIdx(m_isSecondary ? gm->getPlayerColor2() : gm->getPlayerColor())
         : ccc3(255, 255, 255));
+    
+    m_sprite->setOpacity(255);
+    m_secondSprite->setOpacity(0);
 
-    Utils::applyGradient(m_secondSprite, m_currentConfig, force, true);
+    m_sprite->stopAllActions();
+    m_secondSprite->stopAllActions();
+
+    Utils::applyGradient(m_sprite, m_currentConfig, m_didForce, true);
 
     if (!transition)
-        return Utils::applyGradient(m_sprite, m_currentConfig, force, true);
+        return Utils::applyGradient(m_secondSprite, m_currentConfig, force, true);
 
-    m_sprite->runAction(CCFadeTo::create(0.2f, 0));
-    m_secondSprite->runAction(CCFadeTo::create(0.2f, 255));
+    m_secondSprite->setOpacity(255);
+    m_secondSprite->runAction(CCFadeTo::create(0.2f, 0));
    
     runAction(CCSequence::create(
         CCDelayTime::create(0.2f),
@@ -192,7 +229,7 @@ void ColorToggle::applyGradient(GradientConfig config, bool force, bool transiti
 }
 
 void ColorToggle::onAnimationEnded() {
-    Utils::applyGradient(m_sprite, m_currentConfig, m_didForce, true);
+    Utils::applyGradient(m_secondSprite, m_currentConfig, m_didForce, true);
 
     m_sprite->setOpacity(255);
     m_secondSprite->setOpacity(0);
@@ -276,19 +313,30 @@ void IconButton::setColor(bool secondary, bool white) {
 
 void IconButton::setLocked(bool locked) {
     m_isLocked = locked;
-
+    
     m_dot->flash(0.3f);
 
-    if (locked) {
+    if (locked)
         m_dot->setHidden(false, 0.f, true);
-    } else {
-        m_dot->setHidden(true, 0.1f);
-    }
+    else {
+        m_didForce = true;
 
+        Utils::applyGradient(m_dot->getSprite(), m_currentConfig, true, true);
+
+        m_dot->setHidden(true, 0.1f);
+
+        runAction(CCSequence::create(
+            CCDelayTime::create(0.1f),
+            CCCallFunc::create(this, callfunc_selector(IconButton::onAnimationEnded)),
+            nullptr 
+        ));
+    }
 }
 
 void IconButton::applyGradient(bool force, bool secondary, bool transition) {
     GameManager* gm = GameManager::get();
+
+    GradientConfig oldConfig = m_currentConfig;
 
     m_currentConfig = Utils::getSavedConfig(m_type, secondary);
     m_didForce = force;
@@ -299,25 +347,30 @@ void IconButton::applyGradient(bool force, bool secondary, bool transition) {
         ? gm->colorForIdx(secondary ? gm->getPlayerColor2() : gm->getPlayerColor())
         : ccc3(255, 255, 255));
 
-    Utils::applyGradient(m_secondDot->getSprite(), m_currentConfig, force, true);
+    m_secondDot->setColor(m_currentConfig.points.empty()
+        ? gm->colorForIdx(secondary ? gm->getPlayerColor2() : gm->getPlayerColor())
+        : ccc3(255, 255, 255));
 
     if (!transition || !isLocked())
-       return  Utils::applyGradient(m_dot->getSprite(), m_currentConfig, m_didForce, true);
+       return Utils::applyGradient(m_dot->getSprite(), m_currentConfig, m_didForce);
 
-    m_dot->setHidden(true, 0.1f);
-    m_secondDot->setHidden(false, 0.1f);
+    Utils::applyGradient(m_dot->getSprite(), m_currentConfig, force, true);
+    Utils::applyGradient(m_secondDot->getSprite(), oldConfig, force, true);
+
+    m_secondDot->setHidden(false, 0.f);
+    m_secondDot->setHidden(true, 0.1f);
     
     runAction(CCSequence::create(
         CCDelayTime::create(0.1f),
         CCCallFunc::create(this, callfunc_selector(IconButton::onAnimationEnded)),
-        nullptr 
+        nullptr
     ));
 }
 
 void IconButton::onAnimationEnded() {
-    Utils::applyGradient(m_dot->getSprite(), m_currentConfig, m_didForce, true);
+    Utils::applyGradient(m_dot->getSprite(), m_currentConfig, m_didForce);
 
-    m_dot->setHidden(false, 0.f, true);
+    m_dot->setHidden(!m_isLocked, 0.f, true);
     m_secondDot->setHidden(true, 0.f, true);
 }
 

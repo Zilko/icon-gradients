@@ -73,7 +73,7 @@ void GradientLayer::updateGradient(bool force, bool both, bool transition) {
         } else
             button->applyGradient(force, m_isSecondaryColor, transition);
 
-        // button->setColor(m_isSecondaryColor, !Utils::getSavedConfig(button->getType(), m_isSecondaryColor).points.empty());
+        button->setColor(m_isSecondaryColor, false);
     }
 
     m_mainColorToggle->applyGradient(Utils::getSavedConfig(m_selectedButton->getType(), false), force, transition);
@@ -105,6 +105,7 @@ void GradientLayer::onAddPoint(CCObject*) {
 
     m_pointsLayer->addPoint();
     m_pointsLayer->selectLast();
+    m_pointsLayer->getSelectedPoint()->flash();
     m_pointsLayer->getSelectedPoint()->setColor(
         gm->colorForIdx(m_isSecondaryColor ? gm->getPlayerColor2() : gm->getPlayerColor())
     );
@@ -226,11 +227,10 @@ void GradientLayer::onLockToggle(CCObject* sender) {
         save(Utils::getSavedConfig(static_cast<IconType>(-1), true), true);
     } else {
         Mod::get()->getSaveContainer().erase(Utils::getTypeID(m_selectedButton->getType()));
-        load(static_cast<IconType>(-1), m_isSecondaryColor, true, true);
+        // load(static_cast<IconType>(-1), m_isSecondaryColor, true, true, true);
         
         m_selectedButton->setLocked(!m_selectedButton->isLocked());
     }
-
 }
 
 void GradientLayer::onColorToggle(CCObject* sender) {

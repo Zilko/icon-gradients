@@ -49,6 +49,14 @@ void PointsLayer::removeSelected() {
     if (!m_selectedPoint) selectLast();
     if (!m_selectedPoint) return;
 
+    addPoint(m_selectedPoint->getPosition());
+
+    m_removingPoints.push_back(m_points.back());
+    m_removingPoints.back()->setColor(m_selectedPoint->getColor());
+    m_removingPoints.back()->setHidden(true, 0.3f);
+
+    m_points.pop_back();
+
     std::vector<ColorNode*> newPoints;
 
     for (ColorNode* point : m_points)
@@ -157,6 +165,12 @@ bool PointsLayer::ccTouchBegan(CCTouch* touch, CCEvent* event) {
 
     cocos2d::CCPoint pos = touch->getLocation();
 
+    for (int i = 0; i < m_removingPoints.size(); i++)
+        if (!m_removingPoints[i]->isAnimating()) {
+            m_removingPoints[i]->removeFromParentAndCleanup(true);
+            m_removingPoints.erase(m_removingPoints.begin() + i);
+        }
+
     if (ColorNode* point = getNodeForPos(pos)) {
         selectPoint(point);
 
@@ -248,7 +262,7 @@ void PointsLayer::updateCenter() {
     if (m_icon->m_spiderSprite)
         m_icon->m_spiderSprite->setPosition(m_icon->getContentSize() / 2.f);
 
-    // Utils::setIconColors(m_icon, m_isSecondaryColor, getPointCount() > 0);
+    Utils::setIconColors(m_icon, m_isSecondaryColor, false);
 }
 
 ColorNode* PointsLayer::getSelectedPoint() {
