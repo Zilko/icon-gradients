@@ -1,10 +1,12 @@
-#include "utils.hpp"
-#include "points_layer.hpp"
+#include "../Utils/Utils.hpp"
 
-PointsLayer* PointsLayer::create(const cocos2d::CCSize& size, PointsLayerDelegate* delegate) {
+#include "PointsLayer.hpp"
+#include "GradientLayer.hpp"
+
+PointsLayer* PointsLayer::create(const cocos2d::CCSize& size, GradientLayer* layer) {
     PointsLayer* ret = new PointsLayer();
 
-    ret->m_delegate = delegate;
+    ret->m_layer = layer;
 
     if (ret->init(size)) {
         ret->autorelease();
@@ -37,7 +39,7 @@ bool PointsLayer::init(cocos2d::CCSize size) {
     setTouchEnabled(true);
     registerWithTouchDispatcher();
     setTouchMode(kCCTouchesOneByOne);
-
+    
     return true;
 }
 
@@ -49,13 +51,15 @@ void PointsLayer::removeSelected() {
     if (!m_selectedPoint) selectLast();
     if (!m_selectedPoint) return;
 
-    addPoint(m_selectedPoint->getPosition());
+    if (!m_pointsHidden) {
+        addPoint(m_selectedPoint->getPosition());
 
-    m_removingPoints.push_back(m_points.back());
-    m_removingPoints.back()->setColor(m_selectedPoint->getColor());
-    m_removingPoints.back()->setHidden(true, 0.3f);
+        m_removingPoints.push_back(m_points.back());
+        m_removingPoints.back()->setColor(m_selectedPoint->getColor());
+        m_removingPoints.back()->setHidden(true, 0.3f);
 
-    m_points.pop_back();
+        m_points.pop_back();
+    }
 
     std::vector<ColorNode*> newPoints;
 
@@ -68,6 +72,11 @@ void PointsLayer::removeSelected() {
     m_selectedPoint->removeFromParentAndCleanup(true);
 
     m_selectedPoint = nullptr;
+}
+
+void PointsLayer::moveSelected(const cocos2d::CCPoint& move) {
+    m_selectedPoint->setPosition(m_selectedPoint->getPosition() + move);
+    m_layer->pointMoved();
 }
 
 void PointsLayer::addPoint() {
@@ -109,9 +118,10 @@ void PointsLayer::addPoint() {
 }
 
 void PointsLayer::addPoint(const cocos2d::CCPoint& pos, bool invis) {
-    ColorNode* node = ColorNode::create(invis);
+    ColorNode* node = ColorNode::create(invis, Mod::get()->getSettingValue<int64_t>("point-opacity"));
 
     node->setPosition(pos);
+    node->setScale(Mod::get()->getSettingValue<double>("point-scale"));
 
     addChild(node);
 
@@ -126,7 +136,7 @@ ColorNode* PointsLayer::getNodeForPos(cocos2d::CCPoint pos) {
 
     for (ColorNode* point : m_points) {
         float distance = ccpDistance(pos, point->getPosition());
-        if (distance < closest && distance < point->getContentSize().width / 2.f) {
+        if (distance < closest && distance < point->getContentSize().width * 0.5f * point->getScale()) {
             closest = distance;
             ret = point;
         }
@@ -157,7 +167,7 @@ void PointsLayer::selectPoint(ColorNode* point) {
 
     m_selectedPoint = point;
 
-    m_delegate->pointSelected(point);
+    m_layer->pointSelected(point);
 }
 
 bool PointsLayer::ccTouchBegan(CCTouch* touch, CCEvent* event) { 
@@ -175,13 +185,15 @@ bool PointsLayer::ccTouchBegan(CCTouch* touch, CCEvent* event) {
         selectPoint(point);
 
         m_isMoving = true;
-        m_moveOffset = point->getContentSize() / 2.f - point->convertToNodeSpace(pos);
+        m_moveOffset = point->getContentSize() * 0.5f * point->getScale() - point->convertToNodeSpace(pos)* point->getScale();
 
-        bool pointsHidden = m_pointsHidden;
+        if (Mod::get()->getSettingValue<bool>("hide-on-move")) {
+            bool pointsHidden = m_pointsHidden;
 
-        setPointsHidden(true, 0.3f);
+            setPointsHidden(true, 0.3f);
 
-        m_pointsHidden = pointsHidden;
+            m_pointsHidden = pointsHidden;
+        }
 
         return CCLayer::ccTouchBegan(touch, event);
     }
@@ -200,13 +212,14 @@ void PointsLayer::ccTouchMoved(CCTouch* touch, CCEvent* event) {
 
         m_selectedPoint->setPosition(pos);
 
-        m_delegate->pointMoved();
+        m_layer->pointMoved();
     }
 }
 
 void PointsLayer::ccTouchEnded(CCTouch* touch, CCEvent* event) {
     m_isMoving = false;
     setPointsHidden(m_pointsHidden, 0.3f);
+    m_layer->pointReleased();
 }
 
 std::vector<SimplePoint> PointsLayer::getPoints() {
@@ -221,8 +234,8 @@ std::vector<SimplePoint> PointsLayer::getPoints() {
     return ret;
 }
 
-cocos2d::CCPoint PointsLayer::getPointOffset() {
-    return m_pointOffset;
+IconType PointsLayer::getType() {
+    return m_type;
 }
 
 void PointsLayer::updateHover(const cocos2d::CCPoint& pos) {
@@ -239,6 +252,16 @@ void PointsLayer::updateHover(const cocos2d::CCPoint& pos) {
     }
 }
 
+void PointsLayer::updatePointOpacity(int value) {
+    for (ColorNode* point : m_points)
+        point->setOpacity(value);
+}
+
+void PointsLayer::updatePointScale(float value) {
+    for (ColorNode* point : m_points)
+        point->setScale(value);
+}
+
 void PointsLayer::updateGradient(GradientConfig config, bool secondary, bool force) {
     Utils::applyGradient(m_icon, config, secondary, force);
 
@@ -251,7 +274,7 @@ void PointsLayer::updateCenter() {
     m_icon->setContentSize(m_icon->m_firstLayer->getContentSize());
     m_icon->m_firstLayer->setPosition(
         m_icon->getContentSize() / 2.f
-        // - ccp(0, m_type == IconType::Ufo ? 10.f : 0.f)
+        - ccp(0, m_type == IconType::Ufo ? 8.f : 0.f)
     );
 
     // m_pointOffset = ccp(0.f, m_type == IconType::Ufo ? 10.f : 0.f);
@@ -270,12 +293,12 @@ ColorNode* PointsLayer::getSelectedPoint() {
 }
 
 void PointsLayer::setPlayerFrame(IconType type) {
+    m_type = type;
+    
     m_icon->updatePlayerFrame(
         Utils::getIconID(type),
         type
     );
-
-    m_type = type;
 
     updateCenter();
 }
@@ -335,7 +358,7 @@ void PointsLayer::loadPoints(GradientConfig config, bool animate) {
         cocos2d::CCPoint pos = bottomLeft + m_currentConfig.points[i].pos * iconSize;
         cocos2d::ccColor3B color = m_currentConfig.points[i].color;
 
-        points[i]->setColor(color, 0.1f);
+        points[i]->setColor(color, 0.2f);
         points[i]->runAction(CCEaseSineOut::create(CCMoveTo::create(0.1f, pos)));
 
         movedPoints.insert(points[i]);

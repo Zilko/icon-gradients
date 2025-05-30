@@ -1,4 +1,7 @@
-#include "utils.hpp"
+#include "Utils.hpp"
+#include "Cache.hpp"
+
+#include "../Hooks/SimplePlayer.hpp"
 
 SimplePlayer* Utils::createIcon(IconType type) {
     SimplePlayer* icon = SimplePlayer::create(1);
@@ -49,6 +52,25 @@ int Utils::getIconID(IconType type) {
     }
 }
 
+bool Utils::isGradientSaved(GradientConfig config) {
+    for (const matjson::Value& obj : Mod::get()->getSavedValue<matjson::Value>("saved-gradients"))
+        if (configFromObject(obj) == config)
+            return true;
+
+    return false;
+}
+
+bool Utils::isSettingEnabled(int setting) {
+    switch (setting) {
+        case MOD_DISABLED: return Cache::isModDisabled();
+        case P2_DISABLED: return Cache::is2PDisabled();
+        case P2_FLIP: return Cache::is2PFlip();
+        case MENU_GRADIENTS: return Cache::isMenuGradientsEnabled();
+    }
+
+    return false;
+}
+
 GradientConfig Utils::getDefaultConfig(bool secondary) {
     GameManager* gm = GameManager::get();
     int color = secondary ? gm->getPlayerColor2() : gm->getPlayerColor();
@@ -62,11 +84,79 @@ GradientConfig Utils::getDefaultConfig(bool secondary) {
     };
 }
 
+matjson::Value Utils::getSaveObject(GradientConfig config) {
+    matjson::Value ret = matjson::Value{};
+    matjson::Value pointsObject = matjson::Value::array();
+
+    for (SimplePoint point : config.points) {
+        matjson::Value object = matjson::Value{};
+
+        object["pos"]["x"] = point.pos.x;
+        object["pos"]["y"] = point.pos.y;
+
+        object["color"]["r"] = point.color.r;
+        object["color"]["g"] = point.color.g;
+        object["color"]["b"] = point.color.b;
+
+        pointsObject.push(object);
+    }
+
+    ret["points"] = pointsObject;
+    ret["linear"] = config.isLinear;
+
+    return ret;
+}
+
+void Utils::removeSavedGradient(GradientConfig config) {
+    matjson::Value newArray = matjson::Value::array();
+
+    for (const matjson::Value& obj : Mod::get()->getSavedValue<matjson::Value>("saved-gradients"))
+        if (configFromObject(obj) != config)
+            newArray.push(obj);
+    
+    Mod::get()->setSavedValue("saved-gradients", newArray);
+}
+
+void Utils::saveConfig(GradientConfig config, const std::string& id, const std::string& secondId) {
+    matjson::Value container = Mod::get()->getSavedValue<matjson::Value>(id);
+
+    if (secondId.empty()) {
+        if (!container.isArray()) 
+            container = matjson::Value::array();
+
+        container.push(getSaveObject(config));
+    } else
+        container[secondId] = getSaveObject(config);
+
+    Mod::get()->setSavedValue(id, container);
+}
+
+GradientConfig Utils::configFromObject(const matjson::Value& object) {
+    GradientConfig config;
+
+    config.isLinear = object["linear"].asBool().unwrapOr(true);
+
+    for (const matjson::Value& point : object["points"])
+        config.points.push_back({
+            ccp(
+                point["pos"]["x"].asDouble().unwrapOr(0.0), 
+                point["pos"]["y"].asDouble().unwrapOr(0.0)
+            ),
+            ccc3(
+                point["color"]["r"].asInt().unwrapOr(0),
+                point["color"]["g"].asInt().unwrapOr(0),
+                point["color"]["b"].asInt().unwrapOr(0)
+            )
+        });
+
+    return config;
+}
+
 GradientConfig Utils::getSavedConfig(IconType type, bool secondary) {
     std::string id = getTypeID(type);
     std::string color = secondary ? "color2" : "color1";
 
-    GradientConfig ret;
+    GradientConfig config;
 
     if (!Mod::get()->hasSavedValue(id)) {
         if (!Mod::get()->hasSavedValue("global"))
@@ -80,22 +170,24 @@ GradientConfig Utils::getSavedConfig(IconType type, bool secondary) {
     if (!jsonConfig.contains(color))
         return getDefaultConfig(secondary);
 
-    ret.isLinear = jsonConfig[color]["linear"].asBool().unwrapOr(true);
+    config = configFromObject(jsonConfig[color]);
 
-    for (const matjson::Value& point : jsonConfig[color]["points"])
-        ret.points.push_back({
-            ccp(
-                point["pos"]["x"].asDouble().unwrapOr(0.0), 
-                point["pos"]["y"].asDouble().unwrapOr(0.0)
-            ),
-            ccc3(
-                point["color"]["r"].asInt().unwrapOr(0),
-                point["color"]["g"].asInt().unwrapOr(0),
-                point["color"]["b"].asInt().unwrapOr(0)
-            )
-        });
+    return config;
+}
 
-    return ret;
+Gradient Utils::getGradient(IconType type, bool flip) {
+    Gradient gradient = {
+        getSavedConfig(type, false),
+        getSavedConfig(type, true)
+    };
+
+    if (flip) {
+        GradientConfig tempConfig = gradient.main;
+        gradient.main = gradient.secondary;
+        gradient.secondary = tempConfig;
+    }
+
+    return gradient;
 }
 
 void Utils::setIconColors(SimplePlayer* icon, bool secondary, bool white) {
@@ -135,6 +227,28 @@ std::string Utils::getTypeID(IconType type) {
     }
 }
 
+std::string Utils::getTypeID(SpriteType type) {
+    switch (type) {
+        case SpriteType::Icon: return "icon";
+        case SpriteType::Vehicle: return "vehicle";
+        case SpriteType::Animation: return "animation";
+        default: return "icon";
+    }
+}
+
+IconType Utils::getIconType(SimplePlayer* icon) {
+    return static_cast<ProSimplePlayer*>(icon)->m_fields->m_type; 
+}
+
+std::vector<GradientConfig> Utils::getSavedGradients() {
+    std::vector<GradientConfig> ret;
+
+    for (const matjson::Value obj : Mod::get()->getSavedValue<matjson::Value>("saved-gradients"))
+        ret.push_back(configFromObject(obj));
+
+    return ret;
+}
+
 void Utils::applyGradient(SimplePlayer* icon, GradientConfig config, bool secondary, bool force, bool blend) {
     GJRobotSprite* otherSprite = nullptr;
 
@@ -145,6 +259,7 @@ void Utils::applyGradient(SimplePlayer* icon, GradientConfig config, bool second
         if (secondary)
             for (CCSprite* spr : CCArrayExt<CCSprite*>(otherSprite->m_secondArray)) {
                 if (!typeinfo_cast<CCSprite*>(spr) || spr == otherSprite->m_headSprite) continue;
+
                 applyGradient(spr, config, force, blend);
             }
         else
@@ -287,4 +402,13 @@ void Utils::applyGradient(CCSprite* sprite, GradientConfig config, bool force, b
 
     GLint colorsLoc = glGetUniformLocation(program->getProgram(), "colors");
     glUniform4fv(colorsLoc, stopAt, colorsData.data());
+}
+
+void Utils::patchBatchNode(CCSpriteBatchNode* node) {
+    static void* vtable = []() -> void* {
+        FakeSpriteBatchNode temp;
+        return *(void**)&temp;
+    }();
+
+    *(void**)node = vtable;
 }

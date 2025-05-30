@@ -1,4 +1,10 @@
-#include "extra_nodes.hpp"
+#pragma once
+
+#include "../Includes.hpp"
+
+#include "ColorNode.hpp"
+
+class GradientLayer;
 
 class PointsLayer : public CCLayer {
 
@@ -8,7 +14,7 @@ private:
 
     CCSprite* m_shadow = nullptr;
 
-    PointsLayerDelegate* m_delegate = nullptr;
+    GradientLayer* m_layer = nullptr;
 
     ColorNode* m_selectedPoint = nullptr;
     ColorNode* m_hoveredPoint = nullptr;
@@ -26,9 +32,9 @@ private:
     bool m_isLinear = true;
     bool m_isMoving = false;
     bool m_isAnimating = false;
+    bool m_isSecondaryColor = false;
     bool m_ignoreColorChange = false;
     bool m_pointsHidden = false;
-    bool m_isSecondaryColor = false;
 
     bool init(cocos2d::CCSize);
 
@@ -48,16 +54,18 @@ private:
 
 public:
 
-    static PointsLayer* create(const cocos2d::CCSize&, PointsLayerDelegate*);
+    static PointsLayer* create(const cocos2d::CCSize&, GradientLayer*);
 
     ColorNode* getNodeForPos(cocos2d::CCPoint);
     ColorNode* getSelectedPoint();
 
     std::vector<SimplePoint> getPoints();
 
-    cocos2d::CCPoint getPointOffset();
+    IconType getType();
 
     void updateHover(const cocos2d::CCPoint&);
+    void updatePointOpacity(int);
+    void updatePointScale(float);
     void updateGradient(GradientConfig, bool, bool = false);
     void updateGradient(float);
 
@@ -66,7 +74,8 @@ public:
 
     void selectFirst();
     void selectLast();
-    void removeSelected();  
+    void removeSelected();
+    void moveSelected(const cocos2d::CCPoint&);
     
     void addPoint();
     void loadPoints(GradientConfig, bool = true);

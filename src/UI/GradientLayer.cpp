@@ -1,12 +1,32 @@
-#include "gradient_layer.hpp"
-#include "utils.hpp"
+#include "GradientLayer.hpp"
+#include "LoadLayer.hpp"
+
+#include "../Utils/Utils.hpp"
+#include "../Utils/Cache.hpp"
 
 #include <Geode/ui/GeodeUI.hpp>
+#include <Geode/loader/Event.hpp>
+#include <Geode/loader/Dispatch.hpp>
 
 GradientLayer* layer = nullptr;
 
-GradientLayer::~GradientLayer() {
-    layer = nullptr;
+$execute {
+
+    geode::listenForSettingChanges("disabled", +[](bool value) {
+        if (layer)
+            layer->updateGarage(false);
+    });
+
+    geode::listenForSettingChanges("point-opacity", +[](int64_t value) {
+        if (layer)
+            layer->updatePointOpacity(value);
+    });
+
+    geode::listenForSettingChanges("point-scale", +[](double value) {
+        if (layer)
+            layer->updatePointScale(value);
+    });
+
 }
 
 #ifdef GEODE_IS_WINDOWS
@@ -14,6 +34,7 @@ GradientLayer::~GradientLayer() {
 #include <Geode/modify/CCEGLView.hpp>
 
 class $modify(CCEGLView) {
+
     void onGLFWMouseMoveCallBack(GLFWwindow* v1, double v2, double v3) {
         CCEGLView::onGLFWMouseMoveCallBack(v1, v2, v3);
 
@@ -25,14 +46,42 @@ class $modify(CCEGLView) {
         }
 
         layer->updateHover();
-
     }
+
 };
 
 #endif
 
+GradientLayer::~GradientLayer() {
+    updateGarage(false);
+
+    layer = nullptr;
+}
+
 void GradientLayer::updateHover() {
     m_pointsLayer->updateHover(getMousePos());
+}
+
+void GradientLayer::updatePointOpacity(int value) {
+    m_pointsLayer->updatePointOpacity(value);
+}
+
+void GradientLayer::updatePointScale(float value) {
+    m_pointsLayer->updatePointScale(value);
+}
+
+void GradientLayer::updateGarage(bool quick, bool real) {
+    if (!m_garage) return;
+
+    IconType type = m_garage->getType();
+
+    // if (m_pointsLayer->getType() != type && quick)
+    //     return;
+
+    if ((type == IconType::Robot || type == IconType::Spider) && quick)
+        return; // this desnt work bup
+    
+    quick ? m_garage->updateQuickGradient() : m_garage->updateGradient();
 }
 
 void GradientLayer::pointMoved() {
@@ -42,6 +91,10 @@ void GradientLayer::pointMoved() {
 
 void GradientLayer::pointSelected(CCNode* point) {
     m_picker->setColor(static_cast<ColorNode*>(point)->getColor());
+}
+
+void GradientLayer::pointReleased() {
+    updateGarage(true, true);
 }
  
 GradientLayer* GradientLayer::create() {
@@ -60,24 +113,30 @@ GradientLayer* GradientLayer::create() {
 void GradientLayer::updateGradient(bool force, bool both, bool transition) {
     m_currentConfig = Utils::getSavedConfig(m_selectedButton->getType(), m_isSecondaryColor);
 
-    if (both) {
+    updateGarage(true);
+
+    if (both)
         m_pointsLayer->updateGradient(Utils::getSavedConfig(m_selectedButton->getType(), !m_isSecondaryColor), !m_isSecondaryColor, force);
-        m_pointsLayer->updateGradient(Utils::getSavedConfig(m_selectedButton->getType(), m_isSecondaryColor), m_isSecondaryColor, force);
-    } else
-        m_pointsLayer->updateGradient(m_currentConfig, m_isSecondaryColor, force);
+    
+    m_pointsLayer->updateGradient(m_currentConfig, m_isSecondaryColor, force);
 
-    for (IconButton* button : m_buttons) {    
-        if (both) {
-            button->applyGradient(force, !m_isSecondaryColor, transition);
-            button->applyGradient(force, m_isSecondaryColor, transition);
-        } else
-            button->applyGradient(force, m_isSecondaryColor, transition);
-
+    for (IconButton* button : m_buttons) {
+        button->applyGradient(force, m_isSecondaryColor, transition, both);
         button->setColor(m_isSecondaryColor, false);
     }
 
     m_mainColorToggle->applyGradient(Utils::getSavedConfig(m_selectedButton->getType(), false), force, transition);
     m_secondaryColorToggle->applyGradient(Utils::getSavedConfig(m_selectedButton->getType(), true), force, transition);
+}
+
+void GradientLayer::updateCountLabel() {
+    m_countLabel->setString(fmt::format("{}/24", m_pointsLayer->getPointCount()).c_str());
+
+    m_countLabel->runAction(CCSequence::create(
+        CCFadeTo::create(0.05f, 95),
+        CCFadeTo::create(2.f, 0),
+        nullptr
+    ));
 }
 
 void GradientLayer::updateUI() {
@@ -92,6 +151,18 @@ void GradientLayer::updateUI() {
     m_removeButton->setEnabled(hasPoints);
     m_removeButton->setOpacity(hasPoints ? 255 : 140);
 
+    m_copyButton->setEnabled(hasPoints);
+    m_copyButton->setOpacity(hasPoints ? 255 : 140);
+
+    m_saveButton->setEnabled(hasPoints);
+    m_saveButton->setOpacity(hasPoints ? 255 : 140);
+
+    m_hideToggle->setEnabled(hasPoints);
+    m_hideToggle->setOpacity(hasPoints ? 140 : 70);
+
+    m_pasteButton->setEnabled(!Cache::getCopiedConfig().points.empty());
+    m_pasteButton->setOpacity(!Cache::getCopiedConfig().points.empty() ? 255 : 140);
+
     m_picker->setEnabled(hasPoints);
     m_rInput->setEnabled(hasPoints);
     m_gInput->setEnabled(hasPoints);
@@ -105,7 +176,14 @@ void GradientLayer::onAddPoint(CCObject*) {
 
     m_pointsLayer->addPoint();
     m_pointsLayer->selectLast();
+
     m_pointsLayer->getSelectedPoint()->flash();
+
+    if (m_pointsHidden) {
+        onHideToggle(nullptr);
+        m_hideToggle->toggle(false);
+    }
+    
     m_pointsLayer->getSelectedPoint()->setColor(
         gm->colorForIdx(m_isSecondaryColor ? gm->getPlayerColor2() : gm->getPlayerColor())
     );
@@ -113,25 +191,69 @@ void GradientLayer::onAddPoint(CCObject*) {
     save();
     updateUI();
     updateGradient();
+    updateCountLabel();
 }
 
 void GradientLayer::onRemovePoint(CCObject*) {
     m_pointsLayer->removeSelected();
     m_pointsLayer->selectLast();
 
+    if (m_pointsLayer->getPointCount() <= 0 && m_pointsHidden) {
+        onHideToggle(nullptr);
+        m_hideToggle->toggle(false);
+    }
+
     save();
     updateUI();
     updateGradient();
+    updateCountLabel();
 }
 
 void GradientLayer::onSettings(CCObject*) {
     geode::openSettingsPopup(Mod::get(), true);
 }
 
+void GradientLayer::onCopy(CCObject*) {
+    Cache::setCopiedConfig({
+        m_pointsLayer->getPoints(),
+        m_currentConfig.isLinear
+    });
+
+    updateUI();
+}
+
+void GradientLayer::onPaste(CCObject*) {
+    load(Cache::getCopiedConfig());
+}
+
+void GradientLayer::load(GradientConfig config) {
+    if (config.points.empty()) return;
+
+    save(config, m_isSecondaryColor);
+    load(m_selectedButton->getType(), m_isSecondaryColor, true, true, true);
+} 
+
+void GradientLayer::onSave(CCObject*) {
+    m_currentConfig.points = m_pointsLayer->getPoints();
+
+    if (Utils::isGradientSaved(m_currentConfig))
+        return Notification::create("Gradient is already saved", NotificationIcon::Error, 0.1f)->show();
+
+    Utils::saveConfig(m_currentConfig, "saved-gradients", "");
+
+    Notification::create("Gradient saved", NotificationIcon::Success, 0.1f)->show();
+}
+
+void GradientLayer::onLoad(CCObject*) {
+    LoadLayer::create(this)->show();
+}
+
 void GradientLayer::load(IconType type, bool secondary, bool force, bool both, bool transition) {
+    GradientConfig previousConfig = m_currentConfig;
+
     m_currentConfig = Utils::getSavedConfig(type, secondary);
 
-    m_pointsLayer->loadPoints(m_currentConfig);
+    m_pointsLayer->loadPoints(m_currentConfig, previousConfig != m_currentConfig && transition);
 
     for (IconButton* button : m_buttons)
         if (type == button->getType()) {
@@ -153,29 +275,12 @@ void GradientLayer::save() {
 }
 
 void GradientLayer::save(GradientConfig config, bool secondary) {
+    if (!m_selectedButton) return;
+    
     std::string id = !m_selectedButton->isLocked() ? "global" : Utils::getTypeID(m_selectedButton->getType());
     std::string color = secondary ? "color2" : "color1";
 
-    matjson::Value container = Mod::get()->getSavedValue<matjson::Value>(id);
-    matjson::Value pointsObject = matjson::Value::array();
-
-    for (SimplePoint point : config.points) {
-        matjson::Value object = matjson::Value{};
-
-        object["pos"]["x"] = point.pos.x;
-        object["pos"]["y"] = point.pos.y;
-
-        object["color"]["r"] = point.color.r;
-        object["color"]["g"] = point.color.g;
-        object["color"]["b"] = point.color.b;
-
-        pointsObject.push(object);
-    }
-
-    container[color]["points"] = pointsObject;
-    container[color]["linear"] = config.isLinear;
-
-    Mod::get()->setSavedValue(id, container);
+    Utils::saveConfig(config, id, color);
 }
 
 void GradientLayer::onIconButton(CCObject* sender) {
@@ -192,7 +297,9 @@ void GradientLayer::onIconButton(CCObject* sender) {
 
     m_selectedButton = button;
 
-    load(button->getType(), m_isSecondaryColor, true, true);
+    load(button->getType(), m_isSecondaryColor, true, true, true);
+
+    Cache::setLastSelected(button->getType());
 }
 
 void GradientLayer::onTypeToggle(CCObject* sender) {
@@ -223,13 +330,23 @@ void GradientLayer::onLockToggle(CCObject* sender) {
     if (!m_selectedButton->isLocked()) {
         m_selectedButton->setLocked(!m_selectedButton->isLocked());
 
-        save(Utils::getSavedConfig(static_cast<IconType>(-1), false), false);
-        save(Utils::getSavedConfig(static_cast<IconType>(-1), true), true);
+        save(Utils::getSavedConfig(static_cast<IconType>(-1), !m_isSecondaryColor), !m_isSecondaryColor);
+        save(Utils::getSavedConfig(static_cast<IconType>(-1), m_isSecondaryColor), m_isSecondaryColor);
     } else {
-        Mod::get()->getSaveContainer().erase(Utils::getTypeID(m_selectedButton->getType()));
-        // load(static_cast<IconType>(-1), m_isSecondaryColor, true, true, true);
+        std::string id = Utils::getTypeID(m_selectedButton->getType());
+
+        if (Mod::get()->hasSavedValue(id) && id != "global")
+            Mod::get()->getSaveContainer().erase(id);
+
+        bool locked = !m_selectedButton->isLocked();
         
-        m_selectedButton->setLocked(!m_selectedButton->isLocked());
+        m_selectedButton->setLocked(locked);
+
+        load(static_cast<IconType>(-1), m_isSecondaryColor, true, true, true);
+
+        Loader::get()->queueInMainThread([this, locked] {
+            m_dotToggle->toggle(locked);
+        });
     }
 }
 
@@ -247,7 +364,7 @@ void GradientLayer::onColorToggle(CCObject* sender) {
 }
 
 void GradientLayer::onHideToggle(CCObject* sender) {
-    m_pointsHidden = !static_cast<CCMenuItemToggler*>(sender)->isToggled();
+    m_pointsHidden = !m_hideToggle->isToggled();
     m_pointsLayer->setPointsHidden(m_pointsHidden, 0.15f);
 }
 
@@ -281,7 +398,95 @@ void GradientLayer::colorValueChanged(cocos2d::ccColor3B color) {
     updateGradient();
 }
 
+void GradientLayer::keyDown(cocos2d::enumKeyCodes key) {
+	if (key == cocos2d::enumKeyCodes::KEY_Escape)
+		return onClose(nullptr);
+
+    if (Mod::get()->getSettingValue<bool>("disable-keys")) return;
+
+    if (key == cocos2d::enumKeyCodes::KEY_Backspace)
+        return onRemovePoint(nullptr);
+
+    if (key == cocos2d::enumKeyCodes::KEY_Enter)
+        return onAddPoint(nullptr);
+
+    if (key == cocos2d::enumKeyCodes::KEY_One)
+        return onColorToggle(m_mainColorToggle);
+
+    if (key == cocos2d::enumKeyCodes::KEY_Two)
+        return onColorToggle(m_secondaryColorToggle);
+
+    if (key == cocos2d::enumKeyCodes::KEY_C)
+        return onCopy(nullptr);
+
+    if (key == cocos2d::enumKeyCodes::KEY_V)
+        return onPaste(nullptr);
+
+    if (key == cocos2d::enumKeyCodes::KEY_S)
+        return onSave(nullptr);
+
+    if (key == cocos2d::enumKeyCodes::KEY_O)
+        return onLoad(nullptr);
+
+    if (key == cocos2d::enumKeyCodes::KEY_L) {
+        Loader::get()->queueInMainThread([this] {
+            m_dotToggle->toggle(!m_dotToggle->isToggled());
+        });
+        
+        return onLockToggle(nullptr);
+    }
+
+    cocos2d::CCPoint move = {0, 0};
+    int amount = 1;
+
+    switch (key) {
+        case cocos2d::enumKeyCodes::KEY_Up: move = ccp(0, amount); break;
+        case cocos2d::enumKeyCodes::KEY_Down: move = ccp(0, -amount); break;
+        case cocos2d::enumKeyCodes::KEY_Right: move = ccp(amount, 0); break;
+        case cocos2d::enumKeyCodes::KEY_Left: move = ccp(-amount, 0); break;
+        default: return;
+    }
+
+    // log::debug("x {} {}", (int)cocos2d::enumKeyCodes::KEY_Up, (int)key);
+
+    m_pointsLayer->moveSelected(move);
+
+	return FLAlertLayer::keyDown(key);
+}
+
+void GradientLayer::scrollWheel(float x, float) {
+    if (Mod::get()->getSettingValue<bool>("disable-keys")) return;
+
+    if (m_buttons.empty()) return;
+
+    bool up = x > 0;
+    int index = 0;
+
+    for (IconButton* button : m_buttons) {
+        if (button == m_selectedButton)
+            break;
+     
+        index++;
+    }
+
+    index += up ? 1 : -1;
+
+    if (index >= static_cast<int>(m_buttons.size())) index = 0;
+    if (index < 0) index = static_cast<int>(m_buttons.size()) - 1;
+
+    onIconButton(m_buttons[index]);
+} 
+
 bool GradientLayer::setup() {
+    geode::DispatchEvent<CCNode*, CCRect>("timestepyt.gdneko/create-neko-rect", m_mainLayer, {178.5f, 75, 259, 126}).post();
+
+    setMouseEnabled(true);
+
+    CCScene* scene = CCDirector::get()->getRunningScene();
+        
+    if (GJGarageLayer* garage = scene->getChildByType<GJGarageLayer>(0))
+        m_garage = static_cast<ProGJGarageLayer*>(garage);
+
     m_closeBtn->setPosition(m_closeBtn->getPosition() + ccp(-3, 3));
     m_closeBtn->getChildByType<CCSprite>(0)->setScale(0.6f);
 
@@ -330,7 +535,7 @@ bool GradientLayer::setup() {
 
     m_selectedButton = m_buttons.front();
 
-    m_pointsLayer = PointsLayer::create(m_size, static_cast<PointsLayerDelegate*>(this));
+    m_pointsLayer = PointsLayer::create(m_size, this);
     m_mainLayer->addChild(m_pointsLayer, 100);
 
     Loader::get()->queueInMainThread([this] {
@@ -411,18 +616,58 @@ bool GradientLayer::setup() {
 
     m_buttonMenu->addChild(m_removeButton);
 
-    CCMenuItemToggler* toggle = CCMenuItemToggler::create(
+    m_hideToggle = CCMenuItemToggler::create(
         CCSprite::createWithSpriteFrameName("hideBtn_001.png"),
         CCSprite::create("show.png"_spr),
         this,
         menu_selector(GradientLayer::onHideToggle)
     );
-    toggle->setPosition({304, 147});
-    toggle->setScale(0.6f);
-    toggle->setCascadeOpacityEnabled(true);
-    toggle->setOpacity(140);
+    m_hideToggle->setPosition({304, 147});
+    m_hideToggle->setScale(0.55f);
+    m_hideToggle->setCascadeOpacityEnabled(true);
+    m_hideToggle->setOpacity(140);
 
-    m_buttonMenu->addChild(toggle);
+    m_buttonMenu->addChild(m_hideToggle);
+
+    spr = CCSprite::create("copy.png"_spr);
+    spr->setScale(0.44f);
+    spr->setOpacity(140);
+
+    m_copyButton = CCMenuItemSpriteExtra::create(spr, this, menu_selector(GradientLayer::onCopy));
+    m_copyButton->setPosition({229, 147});
+    m_copyButton->setCascadeOpacityEnabled(true);
+
+    m_buttonMenu->addChild(m_copyButton);
+    
+    spr = CCSprite::create("paste.png"_spr);
+    spr->setScale(0.43f);
+    spr->setOpacity(140);
+
+    m_pasteButton = CCMenuItemSpriteExtra::create(spr, this, menu_selector(GradientLayer::onPaste));
+    m_pasteButton->setPosition({247, 147});
+    m_copyButton->setCascadeOpacityEnabled(true);
+
+    m_buttonMenu->addChild(m_pasteButton);
+
+    spr = CCSprite::create("save(1).png"_spr);
+    spr->setScale(0.4f);
+    spr->setOpacity(140);
+
+    m_saveButton = CCMenuItemSpriteExtra::create(spr, this, menu_selector(GradientLayer::onSave));
+    m_saveButton->setPosition({265, 147});
+    m_copyButton->setCascadeOpacityEnabled(true);
+
+    m_buttonMenu->addChild(m_saveButton);
+
+    spr = CCSprite::create("load(2)(1).png"_spr);
+    spr->setScale(0.45f);
+    spr->setOpacity(140);
+
+    m_loadButton = CCMenuItemSpriteExtra::create(spr, this, menu_selector(GradientLayer::onLoad));
+    m_loadButton->setPosition({284, 147});
+    m_loadButton->setCascadeOpacityEnabled(true);
+
+    m_buttonMenu->addChild(m_loadButton);
 
     m_linearToggle = Utils::createTypeToggle(false, {264.3f, 116}, this, menu_selector(GradientLayer::onTypeToggle));
     m_buttonMenu->addChild(m_linearToggle);
@@ -441,6 +686,13 @@ bool GradientLayer::setup() {
     lbl->setPosition({264.3f, 58});
 
     m_mainLayer->addChild(lbl);
+
+    m_countLabel = CCLabelBMFont::create("3/24", "chatFont.fnt");
+    m_countLabel->setOpacity(0);
+    m_countLabel->setScale(0.35f);
+    m_countLabel->setPosition({77, 144});
+
+    m_mainLayer->addChild(m_countLabel);
 
     m_dotToggle = CCMenuItemToggler::create(
         CCSprite::createWithSpriteFrameName("GJ_lock_open_001.png"),
@@ -464,14 +716,26 @@ bool GradientLayer::setup() {
 
     m_buttonMenu->addChild(m_secondaryColorToggle);
 
+    m_mainColorToggle->applyGradient(Utils::getDefaultConfig(false), true, true);
+    m_secondaryColorToggle->applyGradient(Utils::getDefaultConfig(true), true, true);
+
     for (IconButton* button : m_buttons)
-        button->setLocked(Mod::get()->hasSavedValue(Utils::getTypeID(button->getType())));
+        button->setLocked(Mod::get()->hasSavedValue(Utils::getTypeID(button->getType())), true);
 
     m_mainColorToggle->setSelected(true);
 
     load(IconType::Cube, false, true, true);
 
-    m_pointsLayer->selectLast();
+    if (Cache::getLastSelected() != IconType::Cube)
+        Loader::get()->queueInMainThread([this] {
+            for (IconButton* button : m_buttons)
+                if (button->getType() == Cache::getLastSelected())
+                    onIconButton(button);
+        });
+    
+    Loader::get()->queueInMainThread([this] {
+        m_pointsLayer->selectLast();
+    });
 
     return true;
-} 
+}

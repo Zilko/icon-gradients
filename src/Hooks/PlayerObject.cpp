@@ -1,0 +1,234 @@
+#include "../Utils/Utils.hpp"
+#include "../Utils/Cache.hpp"
+
+#include "PlayerObject.hpp"
+
+IconType ProPlayerObject::getIconType() {
+    if (m_isShip) return m_isPlatformer ? IconType::Jetpack : IconType::Ship;
+    if (m_isBird) return IconType::Ufo;
+    if (m_isBall) return IconType::Ball;
+    if (m_isDart) return IconType::Wave;
+    if (m_isRobot) return IconType::Robot;
+    if (m_isSpider) return IconType::Spider;
+    if (m_isSwing) return IconType::Swing;
+    return IconType::Cube;
+}
+
+void ProPlayerObject::ProPlayerObject::updateSprite(CCSprite* realSprite, CCSprite*& sprite, SpriteType type, bool secondary) {
+    if (!sprite) {
+        sprite = CCSprite::createWithSpriteFrame(realSprite->displayFrame());
+        sprite->setID(fmt::format("{}-gradient-{}"_spr, Utils::getTypeID(type), secondary ? "2" : "1").c_str());
+
+        realSprite->addChild(sprite);
+    } else
+        sprite->setDisplayFrame(realSprite->displayFrame());
+
+    sprite->setAnchorPoint({0, 0});
+
+    bool wasCascadeOpacity = realSprite->isCascadeOpacityEnabled();
+    bool wasCascadeColor = realSprite->isCascadeColorEnabled();
+    
+    realSprite->setCascadeOpacityEnabled(false);
+    realSprite->setCascadeColorEnabled(false);
+
+    realSprite->setOpacity(0);
+    realSprite->setColor({255, 255, 255});
+
+    realSprite->setCascadeOpacityEnabled(wasCascadeOpacity);
+    realSprite->setCascadeColorEnabled(wasCascadeColor);
+}
+
+void ProPlayerObject::updateIconSprite(Gradient gradient, auto f) {
+    updateSprite(m_iconSprite, f->m_iconSprite, SpriteType::Icon, false);
+    updateSprite(m_iconSpriteSecondary, f->m_iconSpriteSecondary, SpriteType::Icon, true);
+
+    if (!f->m_iconSprite || !f->m_iconSpriteSecondary) return;
+
+    Utils::applyGradient(f->m_iconSprite, gradient.main, true);
+    Utils::applyGradient(f->m_iconSpriteSecondary, gradient.secondary, true);
+}
+
+void ProPlayerObject::updateVehicleSprite(Gradient gradient, auto f) {
+    updateSprite(m_vehicleSprite, f->m_vehicleSprite, SpriteType::Vehicle, false);
+    updateSprite(m_vehicleSpriteSecondary, f->m_vehicleSpriteSecondary, SpriteType::Vehicle, true);
+
+    if (!f->m_vehicleSprite || !f->m_vehicleSpriteSecondary) return;
+
+    Utils::applyGradient(f->m_vehicleSprite, gradient.main, true);
+    Utils::applyGradient(f->m_vehicleSpriteSecondary, gradient.secondary, true);
+}
+
+void ProPlayerObject::updateAnimSprite(IconType type, Gradient gradient, auto f) {
+    if (m_gameLayer != GJBaseGameLayer::get() || !GJBaseGameLayer::get()) return;
+    if (Utils::isSettingEnabled(MOD_DISABLED)) return;
+    if (m_isSecondPlayer && Utils::isSettingEnabled(P2_DISABLED)) return;
+
+    GJRobotSprite* sprite = type == IconType::Robot ? m_robotSprite : m_spiderSprite;
+
+    if (!sprite) return;
+    if (!sprite->m_paSprite) return;
+
+    Utils::patchBatchNode(type == IconType::Robot ? m_robotBatchNode : m_spiderBatchNode);
+
+    int count = 1;
+
+    for (CCSpritePart* spr : CCArrayExt<CCSpritePart*>(sprite->m_paSprite->m_spriteParts)) {
+        CCSprite* sprite = CCSprite::createWithSpriteFrame(spr->displayFrame());
+        sprite->setID(fmt::format("{}-gradient-{}"_spr, Utils::getTypeID(SpriteType::Animation), count).c_str());
+        sprite->setAnchorPoint({0, 0});
+
+        spr->addChild(sprite);
+
+        count++;
+
+        Utils::applyGradient(sprite, gradient.main, true);
+    }
+
+    count = 1;
+
+    for (CCSprite* spr : CCArrayExt<CCSprite*>(sprite->m_secondArray)) {
+        CCSprite* sprite = CCSprite::createWithSpriteFrame(spr->displayFrame());
+        sprite->setID(fmt::format("{}-gradient-{}"_spr, Utils::getTypeID(SpriteType::Animation), count).c_str());
+        sprite->setAnchorPoint({0, 0});
+
+        spr->addChild(sprite);
+
+        count++;
+
+        Utils::applyGradient(sprite, gradient.secondary, true);
+    }
+}
+
+void ProPlayerObject::updateGradient() {
+    GJBaseGameLayer* pl = GJBaseGameLayer::get();
+
+    if (!pl) return;
+    if (this != pl->m_player1 && this != pl->m_player2) return;
+    if (Utils::isSettingEnabled(MOD_DISABLED)) return;
+    if (m_isSecondPlayer && Utils::isSettingEnabled(P2_DISABLED)) return;
+
+    auto f = m_fields.self();
+
+    IconType type = getIconType();
+    bool shouldFlip = m_isSecondPlayer && Utils::isSettingEnabled(P2_FLIP);
+    
+    if (type == f->m_previousType) return;
+
+    f->m_previousType = type;
+
+    Gradient gradient = Utils::getGradient(type, shouldFlip);
+
+    if (f->m_thatOneUfoShipAndCubeModIsLoaded) {
+        if (f->m_iconSprite) f->m_iconSprite->setVisible(true);
+        if (f->m_iconSpriteSecondary) f->m_iconSpriteSecondary->setVisible(true);
+    }
+
+    if (type != IconType::Ship && type != IconType::Jetpack && type != IconType::Ufo)
+        return updateIconSprite(gradient, f);
+
+    updateVehicleSprite(gradient, f);
+
+    updateIconSprite(
+        Utils::getGradient(IconType::Cube, shouldFlip),
+        f
+    );
+
+    if (f->m_thatOneUfoShipAndCubeModIsLoaded && !m_isSecondPlayer) {
+        if (f->m_iconSprite) f->m_iconSprite->setVisible(false);
+        if (f->m_iconSpriteSecondary) f->m_iconSpriteSecondary->setVisible(false);
+
+        m_iconSprite->setVisible(true);
+        m_iconSpriteSecondary->setVisible(true);
+        
+        m_iconSprite->setOpacity(255);
+        m_iconSpriteSecondary->setOpacity(255);
+    }
+}
+
+void ProPlayerObject::togglePlayerScale(bool p0, bool p1) {
+    PlayerObject::togglePlayerScale(p0, p1);
+
+    if (GameManager::get()->getGameVariable("0060")) {
+        m_fields->m_previousType = static_cast<IconType>(-9038);
+        updateGradient();
+    }
+}
+
+void ProPlayerObject::updatePlayerFrame(int p0) {
+    PlayerObject::updatePlayerFrame(p0);
+    updateGradient();
+}
+
+void ProPlayerObject::updatePlayerShipFrame(int p0) {
+    PlayerObject::updatePlayerShipFrame(p0);
+    updateGradient();
+}
+
+void ProPlayerObject::updatePlayerRollFrame(int p0) {
+    PlayerObject::updatePlayerRollFrame(p0);
+    updateGradient();
+}
+
+void ProPlayerObject::updatePlayerBirdFrame(int p0) {
+    PlayerObject::updatePlayerBirdFrame(p0);
+    updateGradient();
+}
+
+void ProPlayerObject::updatePlayerDartFrame(int p0) {
+    PlayerObject::updatePlayerDartFrame(p0);
+    updateGradient();
+}
+
+void ProPlayerObject::updatePlayerSwingFrame(int p0) {
+    PlayerObject::updatePlayerSwingFrame(p0);
+    updateGradient();
+}
+
+void ProPlayerObject::updatePlayerJetpackFrame(int p0) {
+    PlayerObject::updatePlayerJetpackFrame(p0);
+    updateGradient();
+}
+
+void ProPlayerObject::createRobot(int p0) {
+    PlayerObject::createRobot(p0);
+
+    if (!m_gameLayer) return;
+
+    Loader::get()->queueInMainThread([this] {
+        bool shouldFlip = this == m_gameLayer->m_player2 && Utils::isSettingEnabled(P2_FLIP);
+
+        updateAnimSprite(
+            IconType::Robot,
+            Utils::getGradient(IconType::Robot, shouldFlip),
+            m_fields.self()
+        );			
+    });
+}
+
+void ProPlayerObject::createSpider(int p0) {
+    PlayerObject::createSpider(p0);
+
+    if (!m_gameLayer) return;
+
+    Loader::get()->queueInMainThread([this] {
+        bool shouldFlip = this == m_gameLayer->m_player2 && Utils::isSettingEnabled(P2_FLIP);
+
+        updateAnimSprite(
+            IconType::Spider,
+            Utils::getGradient(IconType::Spider, shouldFlip),
+            m_fields.self()
+        );			
+    });
+}
+
+bool ProPlayerObject::init(int p0, int p1, GJBaseGameLayer* p2, cocos2d::CCLayer* p3, bool p4) {
+    if (!PlayerObject::init(p0, p1, p2, p3, p4)) return false;
+
+    m_fields->m_thatOneUfoShipAndCubeModIsLoaded = Loader::get()->isModLoaded("yellowcat98.custom_ufo_n_ship_cube"); 
+
+    Loader::get()->queueInMainThread([this] {
+        updateGradient();
+    });
+
+    return true;
+}

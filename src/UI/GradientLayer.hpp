@@ -1,8 +1,14 @@
-#include "includes.hpp"
-#include "extra_nodes.hpp"
-#include "points_layer.hpp"
+#include "../Includes.hpp"
 
-class GradientLayer : public geode::Popup<>, public ColorPickerDelegate, public TextInputDelegate, public PointsLayerDelegate {
+#include "../Hooks/GJGarageLayer.hpp"
+
+#include "PointsLayer.hpp"
+#include "ColorPicker.hpp"
+#include "ColorToggle.hpp"
+#include "IconButton.hpp"
+#include "ColorNode.hpp"
+
+class GradientLayer : public geode::Popup<>, public ColorPickerDelegate, public TextInputDelegate {
 
 private:
 
@@ -14,10 +20,19 @@ private:
 
     CCMenuItemSpriteExtra* m_addButton = nullptr;
     CCMenuItemSpriteExtra* m_removeButton = nullptr;
+    CCMenuItemSpriteExtra* m_copyButton = nullptr;
+    CCMenuItemSpriteExtra* m_pasteButton = nullptr;
+    CCMenuItemSpriteExtra* m_saveButton = nullptr;
+    CCMenuItemSpriteExtra* m_loadButton = nullptr;
 
     CCMenuItemToggler* m_linearToggle = nullptr;
     CCMenuItemToggler* m_radialToggle = nullptr;
     CCMenuItemToggler* m_dotToggle = nullptr;
+    CCMenuItemToggler* m_hideToggle = nullptr;
+
+    CCLabelBMFont* m_countLabel = nullptr;
+
+    ProGJGarageLayer* m_garage = nullptr;
 
     ColorToggle* m_mainColorToggle = nullptr;
     ColorToggle* m_secondaryColorToggle = nullptr;
@@ -34,7 +49,6 @@ private:
 
     GradientConfig m_currentConfig;
 
-    bool m_isLinear = true;
     bool m_isSecondaryColor = false;
     bool m_ignoreColorChange = false;
     bool m_pointsHidden = false;
@@ -52,6 +66,10 @@ private:
     void onAddPoint(CCObject*);
     void onRemovePoint(CCObject*);
     void onSettings(CCObject*);
+    void onCopy(CCObject*);
+    void onPaste(CCObject*);
+    void onSave(CCObject*);
+    void onLoad(CCObject*);
 
     void load(IconType, bool, bool = false, bool = false, bool = false);
     void save(GradientConfig, bool);
@@ -59,18 +77,28 @@ private:
 
     void updateGradient(bool = false, bool = false, bool = false);
     void updateUI();
-    void updatePositions();
+    void updateCountLabel();
 
     void colorValueChanged(cocos2d::ccColor3B) override;
     void textChanged(CCTextInputNode*) override;
+    void keyDown(cocos2d::enumKeyCodes) override;
+    void scrollWheel(float, float) override;
 
 public:
 
     static GradientLayer* create();
 
-    void updateHover();
+    ProGJGarageLayer* getGarage();
 
-    void pointMoved() override;
-    void pointSelected(CCNode*) override;
+    void updateHover();
+    void updatePointOpacity(int);
+    void updatePointScale(float);
+    void updateGarage(bool, bool = false);
+
+    void pointMoved();
+    void pointSelected(CCNode*);
+    void pointReleased();
+    
+    void load(GradientConfig);
 
 };

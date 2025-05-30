@@ -2,15 +2,30 @@
 	"geode": "4.4.0",
 	"gd": {
 		"win": "2.2074",
-		"android": "2.2074",
-		"mac": "2.2074",
-		"ios": "2.2074"
+		"android": "2.2074"
 	},
 	"id": "zilko.icon_gradients",
 	"name": "Icon Gradients",
 	"version": "v1.0.0",
 	"developer": "Zilko",
-	"description": "",
+	"description": "Allows u to gradient ur icons.",
+	"links": {
+		"source": "https://github.com/ZiLko/icon-gradients"
+	},
+	"tags": [
+		"customization",
+		"enhancement",
+		"gameplay",
+		"interface",
+		"offline",
+		"utility"
+	],
+	"dependencies": {
+		"geode.node-ids": {
+			"version": ">=1.20.1",
+			"importance": "required"
+		}
+	},
 	"resources": {
         "files": [
 			"resources/shaders/*.fsh",
@@ -19,5 +34,71 @@
 		"sprites": [
 			"resources/sprites/*.png"
 		]
-    }
+    },
+	"settings": {
+		"mod-title": {
+			"name": "Mod",
+			"type": "title"
+		},
+		"disabled": {
+			"name": "Disable",
+			"description": "Disables gradients everywhere.",
+			"type": "bool",
+			"default": false
+		},
+		"gameplay-title": {
+			"name": "Gameplay",
+			"type": "title"
+		},
+		"flip-2p":{
+			"name": "Flip Second Player Colors",
+			"description": "Flip colors for second player like vanilla gd does.",
+			"type": "bool",
+			"default": true
+		},
+		"disable-2p":{
+			"name": "Disable Second Player Gradient",
+			"description": "Makes second player not have gradient.",
+			"type": "bool",
+			"default": false
+		},
+		"menu-gradients":{
+			"name": "Gradients in Menu",
+			"description": "Makes players in the main menu have your gradients.",
+			"type": "bool",
+			"default": false
+		},
+		"interface-title": {
+			"name": "Interface",
+			"type": "title"
+		},
+		"hide-on-move": {
+			"name": "Hide Points on Move",
+			"description": "Hides all points when moving one",
+			"type": "bool",
+			"default": true
+		},
+		"point-opacity": {
+			"name": "Point Opacity",
+			"description": "The opacity the points will be when not hidden (0 - 255).",
+			"type": "int",
+			"default": 255,
+			"min": 0,
+			"max": 255
+		},
+		"point-scale": {
+			"name": "Point Scale",
+			"description": "The scale the points will have.",
+			"type": "float",
+			"default": 1.0,
+			"min": 0.01,
+			"max": 3
+		},
+		"disable-keys": {
+			"name": "Disable Keyboard Shortcuts",
+			"description": "Disables Keyboard Shortcuts exploding head",
+			"type": "bool",
+			"default": false
+		}
+	}
 }

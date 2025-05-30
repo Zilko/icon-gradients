@@ -1,6 +1,20 @@
 #pragma once
 
+#include <Geode/modify/GJGarageLayer.hpp>
+#include <Geode/modify/SimplePlayer.hpp>
+
 using namespace geode::prelude;
+
+const int MOD_DISABLED = 1;
+const int P2_DISABLED = 2;
+const int P2_FLIP = 3;
+const int MENU_GRADIENTS = 4;
+
+enum SpriteType {
+    Icon = 1,
+    Vehicle = 2,
+    Animation = 3
+};
 
 struct SimplePoint {
     cocos2d::CCPoint pos;
@@ -26,23 +40,32 @@ namespace std {
 struct GradientConfig {
 
     std::vector<SimplePoint> points;
-    bool isLinear;
+    bool isLinear = true;
+    // bool isSecondary = false;
+
+    bool operator==(const GradientConfig& other) const {
+        return isLinear == other.isLinear && points == other.points/* && isSecondary == other.isSecondary*/;
+    }
 
 };
 
 struct Gradient {
 
-    GradientConfig mainColor;
-    GradientConfig secondaryColor;
+    GradientConfig main;
+    GradientConfig secondary;
 
 };
 
-class PointsLayerDelegate {
+class FakeSpriteBatchNode : public CCSpriteBatchNode {
 
 public:
 
-    virtual void pointMoved() {}
+    void draw() override {
+        CCNode::draw();
+    }
 
-    virtual void pointSelected(CCNode*) {}
-
+    void visit() override {
+        CCNode::visit();
+    }
+    
 };
