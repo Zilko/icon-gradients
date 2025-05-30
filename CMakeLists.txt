@@ -10,9 +10,27 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
 project(IconGradients VERSION 1.0.0)
 
-file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS src/*.cpp)
-
-add_library(${PROJECT_NAME} SHARED ${SOURCES})
+add_library(${PROJECT_NAME} SHARED 
+    src/Utils/Utils.cpp
+    src/Utils/Cache.cpp
+    src/UI/ColorNode.cpp    
+    src/UI/ColorPicker.cpp    
+    src/UI/ColorToggle.cpp    
+    src/UI/GradientLayer.cpp    
+    src/UI/IconButton.cpp    
+    src/UI/LoadLayer.cpp    
+    src/UI/PointsLayer.cpp
+    src/Hooks/CharacterColorPage.cpp
+    src/Hooks/CommentCell.cpp
+    src/Hooks/GJGarageLayer.cpp
+    src/Hooks/GJLevelScoreCell.cpp
+    src/Hooks/ItemInfoPopup.cpp
+    src/Hooks/MenuGameLayer.cpp
+    src/Hooks/MenuLayer.cpp
+    src/Hooks/PlayerObject.cpp
+    src/Hooks/ProfilePage.cpp
+    src/Hooks/SimplePlayer.cpp
+)
 
 if (NOT DEFINED ENV{GEODE_SDK})
     message(FATAL_ERROR "Unable to find Geode SDK! Please define GEODE_SDK environment variable to point to Geode")
