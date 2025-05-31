@@ -14,7 +14,38 @@ IconType ProPlayerObject::getIconType() {
     return IconType::Cube;
 }
 
-void ProPlayerObject::ProPlayerObject::updateSprite(CCSprite* realSprite, CCSprite*& sprite, SpriteType type, bool secondary) {
+void ProPlayerObject::updateVisibility(bool invis) {
+    auto f = m_fields.self();
+
+    if (f->m_iconSprite) {
+        f->m_iconSprite->setOpacity(m_iconSprite->getOpacity());
+        f->m_iconSprite->setVisible(invis ? false : m_iconSprite->isVisible());
+    }
+
+    if (f->m_iconSpriteSecondary) {
+        f->m_iconSpriteSecondary->setOpacity(m_iconSpriteSecondary->getOpacity());
+        f->m_iconSpriteSecondary->setVisible(invis ? false : m_iconSpriteSecondary->isVisible());
+    }
+
+    if (f->m_vehicleSprite) {
+        f->m_vehicleSprite->setOpacity(m_vehicleSprite->getOpacity());
+        f->m_vehicleSprite->setVisible(invis ? false : m_vehicleSprite->isVisible());
+    }
+    
+    if (f->m_vehicleSpriteSecondary) {
+        f->m_vehicleSpriteSecondary->setOpacity(m_vehicleSpriteSecondary->getOpacity());
+        f->m_vehicleSpriteSecondary->setVisible(invis ? false : m_vehicleSpriteSecondary->isVisible());
+    }
+
+    for (CCSprite* sprite : f->m_animSprites) {
+        CCSprite* parent = static_cast<CCSprite*>(sprite->getParent());
+
+        sprite->setOpacity(parent->getOpacity());
+        sprite->setVisible(invis ? false : parent->isVisible());
+    }
+}
+
+void ProPlayerObject::updateSprite(CCSprite* realSprite, CCSprite*& sprite, SpriteType type, bool secondary) {
     if (!sprite) {
         sprite = CCSprite::createWithSpriteFrame(realSprite->displayFrame());
         sprite->setID(fmt::format("{}-gradient-{}"_spr, Utils::getTypeID(type), secondary ? "2" : "1").c_str());
@@ -24,38 +55,34 @@ void ProPlayerObject::ProPlayerObject::updateSprite(CCSprite* realSprite, CCSpri
         sprite->setDisplayFrame(realSprite->displayFrame());
 
     sprite->setAnchorPoint({0, 0});
-
-    bool wasCascadeOpacity = realSprite->isCascadeOpacityEnabled();
-    bool wasCascadeColor = realSprite->isCascadeColorEnabled();
-    
-    realSprite->setCascadeOpacityEnabled(false);
-    realSprite->setCascadeColorEnabled(false);
-
-    realSprite->setOpacity(0);
-    realSprite->setColor({255, 255, 255});
-
-    realSprite->setCascadeOpacityEnabled(wasCascadeOpacity);
-    realSprite->setCascadeColorEnabled(wasCascadeColor);
 }
 
 void ProPlayerObject::updateIconSprite(Gradient gradient, auto f) {
-    updateSprite(m_iconSprite, f->m_iconSprite, SpriteType::Icon, false);
-    updateSprite(m_iconSpriteSecondary, f->m_iconSpriteSecondary, SpriteType::Icon, true);
+    if (!gradient.main.points.empty())
+        updateSprite(m_iconSprite, f->m_iconSprite, SpriteType::Icon, false);
 
-    if (!f->m_iconSprite || !f->m_iconSpriteSecondary) return;
+    if (!gradient.secondary.points.empty())
+        updateSprite(m_iconSpriteSecondary, f->m_iconSpriteSecondary, SpriteType::Icon, true);
 
-    Utils::applyGradient(f->m_iconSprite, gradient.main, true);
-    Utils::applyGradient(f->m_iconSpriteSecondary, gradient.secondary, true);
+    if (f->m_iconSprite)
+        Utils::applyGradient(f->m_iconSprite, gradient.main, true);
+
+    if (f->m_iconSpriteSecondary)
+        Utils::applyGradient(f->m_iconSpriteSecondary, gradient.secondary, true);
 }
 
 void ProPlayerObject::updateVehicleSprite(Gradient gradient, auto f) {
-    updateSprite(m_vehicleSprite, f->m_vehicleSprite, SpriteType::Vehicle, false);
-    updateSprite(m_vehicleSpriteSecondary, f->m_vehicleSpriteSecondary, SpriteType::Vehicle, true);
+    if (!gradient.main.points.empty())
+        updateSprite(m_vehicleSprite, f->m_vehicleSprite, SpriteType::Vehicle, false);
+    
+    if (!gradient.secondary.points.empty())
+        updateSprite(m_vehicleSpriteSecondary, f->m_vehicleSpriteSecondary, SpriteType::Vehicle, true);
 
-    if (!f->m_vehicleSprite || !f->m_vehicleSpriteSecondary) return;
-
-    Utils::applyGradient(f->m_vehicleSprite, gradient.main, true);
-    Utils::applyGradient(f->m_vehicleSpriteSecondary, gradient.secondary, true);
+    if (f->m_vehicleSprite)
+        Utils::applyGradient(f->m_vehicleSprite, gradient.main, true);
+    
+    if (f->m_vehicleSpriteSecondary)
+        Utils::applyGradient(f->m_vehicleSpriteSecondary, gradient.secondary, true);
 }
 
 void ProPlayerObject::updateAnimSprite(IconType type, Gradient gradient, auto f) {
@@ -73,29 +100,37 @@ void ProPlayerObject::updateAnimSprite(IconType type, Gradient gradient, auto f)
     int count = 1;
 
     for (CCSpritePart* spr : CCArrayExt<CCSpritePart*>(sprite->m_paSprite->m_spriteParts)) {
+        if (gradient.main.points.empty()) break;
+
         CCSprite* sprite = CCSprite::createWithSpriteFrame(spr->displayFrame());
         sprite->setID(fmt::format("{}-gradient-{}"_spr, Utils::getTypeID(SpriteType::Animation), count).c_str());
         sprite->setAnchorPoint({0, 0});
 
         spr->addChild(sprite);
 
-        count++;
+        f->m_animSprites.push_back(sprite);
 
         Utils::applyGradient(sprite, gradient.main, true);
+
+        count++;
     }
 
     count = 1;
 
     for (CCSprite* spr : CCArrayExt<CCSprite*>(sprite->m_secondArray)) {
+        if (gradient.secondary.points.empty()) break;
+
         CCSprite* sprite = CCSprite::createWithSpriteFrame(spr->displayFrame());
         sprite->setID(fmt::format("{}-gradient-{}"_spr, Utils::getTypeID(SpriteType::Animation), count).c_str());
         sprite->setAnchorPoint({0, 0});
 
         spr->addChild(sprite);
 
-        count++;
+        f->m_animSprites.push_back(sprite);
 
         Utils::applyGradient(sprite, gradient.secondary, true);
+
+        count++;
     }
 }
 
@@ -143,6 +178,8 @@ void ProPlayerObject::updateGradient() {
         m_iconSprite->setOpacity(255);
         m_iconSpriteSecondary->setOpacity(255);
     }
+
+    updateVisibility();
 }
 
 void ProPlayerObject::togglePlayerScale(bool p0, bool p1) {
@@ -231,4 +268,19 @@ bool ProPlayerObject::init(int p0, int p1, GJBaseGameLayer* p2, cocos2d::CCLayer
     });
 
     return true;
+}
+
+void ProPlayerObject::playCompleteEffect(bool p0, bool p1) {
+    PlayerObject::playCompleteEffect(p0, p1);
+    updateVisibility(true);
+}
+
+void ProPlayerObject::playDeathEffect() {
+    PlayerObject::playDeathEffect();
+    updateVisibility(true);
+}
+
+void ProPlayerObject::playSpawnEffect() {
+    PlayerObject::playSpawnEffect();
+    updateVisibility();
 }

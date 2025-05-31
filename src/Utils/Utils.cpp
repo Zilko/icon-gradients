@@ -272,6 +272,8 @@ void Utils::applyGradient(SimplePlayer* icon, GradientConfig config, bool second
 }
 
 void Utils::applyGradient(CCSprite* sprite, GradientConfig config, bool force, bool blend) {
+    if (!sprite) return;
+    
     CCGLProgram* defaultProgram = CCShaderCache::sharedShaderCache()->programForKey(kCCShader_PositionTextureColor);
 
     if (config.points.empty())
