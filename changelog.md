@@ -1,3 +1,7 @@
+# 1.0.2
+
+* Fix spelling mistakes in logo and about.md.
+
 # 1.0.1
 
 * Fixed icon being white when gradient was empty.
