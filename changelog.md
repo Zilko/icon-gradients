@@ -1,6 +1,7 @@
 # 1.0.2
 
 * Fix spelling mistakes in logo and about.md.
+* Add Ios and Mac.
 
 # 1.0.1
 
