@@ -28,8 +28,10 @@ void ProPlayerObject::updateVisibility(bool invis) {
     }
 
     if (f->m_vehicleSprite) {
-        f->m_vehicleSprite->setOpacity(m_vehicleSprite->getOpacity());
-        f->m_vehicleSprite->setVisible(invis ? false : m_vehicleSprite->isVisible());
+        Loader::get()->queueInMainThread([this, f, invis] {
+            f->m_vehicleSprite->setOpacity(m_vehicleSprite->getOpacity());
+            f->m_vehicleSprite->setVisible(invis ? false : m_vehicleSprite->isVisible());
+        });
     }
     
     if (f->m_vehicleSpriteSecondary) {
@@ -83,6 +85,7 @@ void ProPlayerObject::updateVehicleSprite(Gradient gradient, auto f) {
     
     if (f->m_vehicleSpriteSecondary)
         Utils::applyGradient(f->m_vehicleSpriteSecondary, gradient.secondary, true);
+
 }
 
 void ProPlayerObject::updateAnimSprite(IconType type, Gradient gradient, auto f) {

@@ -1,3 +1,7 @@
+# 1.0.3
+
+* Fix gradient not showing on main color vehicle..
+
 # 1.0.2
 
 * Fix spelling mistakes in logo and about.md.
