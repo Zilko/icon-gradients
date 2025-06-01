@@ -1,3 +1,7 @@
+# 1.0.4
+
+* Fix crash with globed and colorful icons installed.
+
 # 1.0.3
 
 * Fix gradient not showing on main color vehicle..

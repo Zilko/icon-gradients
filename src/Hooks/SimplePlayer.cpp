@@ -7,7 +7,7 @@ void ProSimplePlayer::updatePlayerFrame(int p0, IconType type) {
 
 	m_fields->m_type = type;
 
-	if (!Loader::get()->isModLoaded("ninkaz.colorful-icons")) return;
+	if (!Loader::get()->isModLoaded("ninkaz.colorful-icons") || GJBaseGameLayer::get()) return;
 
 	Loader::get()->queueInMainThread([this, type] {
 		if (!getParent()) return;
