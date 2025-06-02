@@ -4,6 +4,6 @@
 
 class $modify(ProPlayLayer, PlayLayer) {
 
-    void resetLevel();
+    void postUpdate(float);
 
 };

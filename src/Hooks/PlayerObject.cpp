@@ -14,38 +14,31 @@ IconType ProPlayerObject::getIconType() {
     return IconType::Cube;
 }
 
-void ProPlayerObject::updateVisibility(bool invis) {
+void ProPlayerObject::updateVisibility() {
     auto f = m_fields.self();
-
-    if (f->m_iconSprite) {
-        f->m_iconSprite->setOpacity(m_iconSprite->getOpacity());
-        f->m_iconSprite->setVisible(invis ? false : m_iconSprite->isVisible());
-    }
-
-    if (f->m_iconSpriteSecondary) {
-        f->m_iconSpriteSecondary->setOpacity(m_iconSpriteSecondary->getOpacity());
-        f->m_iconSpriteSecondary->setVisible(invis ? false : m_iconSpriteSecondary->isVisible());
-    }
-
-    if (f->m_vehicleSprite) {
-        Loader::get()->queueInMainThread([this, f, invis] {
-            f->m_vehicleSprite->setOpacity(m_vehicleSprite->getOpacity());
-            f->m_vehicleSprite->setVisible(invis ? false : m_vehicleSprite->isVisible());
-        });
-    }
     
-    if (f->m_vehicleSpriteSecondary) {
+    if (f->m_iconSprite && f->m_iconSprite->getOpacity() != m_iconSprite->getOpacity())
+        f->m_iconSprite->setOpacity(m_iconSprite->getOpacity());
+
+    if (f->m_iconSpriteSecondary && f->m_iconSpriteSecondary->getOpacity() != m_iconSpriteSecondary->getOpacity())
+        f->m_iconSpriteSecondary->setOpacity(m_iconSpriteSecondary->getOpacity());
+
+    if (f->m_vehicleSprite && f->m_vehicleSprite->getOpacity() != m_vehicleSprite->getOpacity())
+        f->m_vehicleSprite->setOpacity(m_vehicleSprite->getOpacity());
+
+    if (f->m_vehicleSpriteSecondary && f->m_vehicleSpriteSecondary->getOpacity() != m_vehicleSpriteSecondary->getOpacity())
         f->m_vehicleSpriteSecondary->setOpacity(m_vehicleSpriteSecondary->getOpacity());
-        f->m_vehicleSpriteSecondary->setVisible(invis ? false : m_vehicleSpriteSecondary->isVisible());
-    }
 
     for (CCSprite* sprite : f->m_animSprites) {
         CCSprite* parent = static_cast<CCSprite*>(sprite->getParent());
+        GLubyte parentOpacity = parent->getOpacity();
 
-        sprite->setOpacity(parent->getOpacity());
-        sprite->setVisible(invis ? false : parent->isVisible());
+        if (sprite->getOpacity() != parentOpacity) {
+            sprite->setOpacity(parentOpacity);
+        }
     }
 }
+
 
 void ProPlayerObject::updateSprite(CCSprite* realSprite, CCSprite*& sprite, SpriteType type, bool secondary) {
     if (!sprite) {
@@ -57,6 +50,8 @@ void ProPlayerObject::updateSprite(CCSprite* realSprite, CCSprite*& sprite, Spri
         sprite->setDisplayFrame(realSprite->displayFrame());
 
     sprite->setAnchorPoint({0, 0});
+
+    realSprite->setCascadeOpacityEnabled(true);
 }
 
 void ProPlayerObject::updateIconSprite(Gradient gradient, auto f) {
@@ -95,7 +90,7 @@ void ProPlayerObject::updateAnimSprite(IconType type, Gradient gradient, auto f)
 
     GJRobotSprite* sprite = type == IconType::Robot ? m_robotSprite : m_spiderSprite;
 
-    if (!sprite) return;
+    if (!sprite) return; 
     if (!sprite->m_paSprite) return;
 
     Utils::patchBatchNode(type == IconType::Robot ? m_robotBatchNode : m_spiderBatchNode);
@@ -181,8 +176,6 @@ void ProPlayerObject::updateGradient() {
         m_iconSprite->setOpacity(255);
         m_iconSpriteSecondary->setOpacity(255);
     }
-
-    updateVisibility();
 }
 
 void ProPlayerObject::togglePlayerScale(bool p0, bool p1) {
@@ -271,19 +264,4 @@ bool ProPlayerObject::init(int p0, int p1, GJBaseGameLayer* p2, cocos2d::CCLayer
     });
 
     return true;
-}
-
-void ProPlayerObject::playCompleteEffect(bool p0, bool p1) {
-    PlayerObject::playCompleteEffect(p0, p1);
-    updateVisibility(true);
-}
-
-void ProPlayerObject::playDeathEffect() {
-    PlayerObject::playDeathEffect();
-    updateVisibility(true);
-}
-
-void ProPlayerObject::playSpawnEffect() {
-    PlayerObject::playSpawnEffect();
-    updateVisibility();
 }

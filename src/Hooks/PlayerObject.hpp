@@ -27,7 +27,7 @@ class $modify(ProPlayerObject, PlayerObject) {
 
 	IconType getIconType();
 
-	void updateVisibility(bool = false);
+	void updateVisibility();
 
 	void updateSprite(CCSprite*, CCSprite*&, SpriteType, bool);
 
@@ -60,11 +60,5 @@ class $modify(ProPlayerObject, PlayerObject) {
 	void createSpider(int);
 
 	bool init(int, int, GJBaseGameLayer*, cocos2d::CCLayer*, bool);
-
-	void playCompleteEffect(bool, bool);
-
-	void playDeathEffect();
-
-	void playSpawnEffect();
 
 };

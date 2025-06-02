@@ -407,6 +407,8 @@ void Utils::applyGradient(CCSprite* sprite, GradientConfig config, bool force, b
 }
 
 void Utils::patchBatchNode(CCSpriteBatchNode* node) {
+    if (!node) return;
+    
     static void* vtable = []() -> void* {
         FakeSpriteBatchNode temp;
         return *(void**)&temp;

@@ -1,3 +1,7 @@
+# 1.0.5
+
+* Fix gradient sometimes not showing
+
 # 1.0.4
 
 * Fix crash with globed and colorful icons installed.
