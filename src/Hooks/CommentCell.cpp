@@ -4,8 +4,7 @@
 void ProCommentCell::loadFromComment(GJComment* comment) {
     CommentCell::loadFromComment(comment);
 
-    if (m_accountComment || !comment) return;
-
+    if (Utils::isSettingEnabled(MOD_DISABLED) || m_accountComment || !comment) return;
     if (comment->m_accountID != GJAccountManager::get()->m_accountID) return;
 
     if (CCNode* menu = m_mainLayer->getChildByID("main-menu"))

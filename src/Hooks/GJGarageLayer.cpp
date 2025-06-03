@@ -80,25 +80,27 @@ void ProGJGarageLayer::updateGradient() {
 }
 
 void ProGJGarageLayer::updateQuickGradient() {
-	if (!Loader::get()->isModLoaded("ninkaz.colorful-icons")) return;
+	// still lags randomly idk
 
-	auto f = m_fields.self();
-	bool loadedGradient = false;
-	Gradient gradient;
+	// if (!Loader::get()->isModLoaded("ninkaz.colorful-icons")) return;
 
-	// log::debug("{}", f->m_visibleIcons.size());
+	// auto f = m_fields.self();
+	// bool loadedGradient = false;
+	// Gradient gradient;
 
-	for (SimplePlayer* icon : f->m_visibleIcons) {
-		IconType type = Utils::getIconType(icon);
+	// // log::debug("{}", f->m_visibleIcons.size());
 
-		if (!loadedGradient) {
-			gradient = Utils::getGradient(type, false);
-			loadedGradient = true;
-		}
+	// for (SimplePlayer* icon : f->m_visibleIcons) {
+	// 	IconType type = Utils::getIconType(icon);
 
-		Utils::applyGradient(icon, gradient.main, false, true);
-		Utils::applyGradient(icon, gradient.secondary, true, true);
-	}
+	// 	if (!loadedGradient) {
+	// 		gradient = Utils::getGradient(type, false);
+	// 		loadedGradient = true;
+	// 	}
+
+	// 	Utils::applyGradient(icon, gradient.main, false, true);
+	// 	Utils::applyGradient(icon, gradient.secondary, true, true);
+	// }
 }
 
 bool ProGJGarageLayer::init() {

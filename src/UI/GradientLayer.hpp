@@ -12,8 +12,6 @@ class GradientLayer : public geode::Popup<>, public ColorPickerDelegate, public 
 
 private:
 
-    ColorPicker* m_picker = nullptr;
-
     TextInput* m_rInput = nullptr;
     TextInput* m_gInput = nullptr;
     TextInput* m_bInput = nullptr;
@@ -34,8 +32,11 @@ private:
 
     ProGJGarageLayer* m_garage = nullptr;
 
+    ColorPicker* m_picker = nullptr;
+
     ColorToggle* m_mainColorToggle = nullptr;
     ColorToggle* m_secondaryColorToggle = nullptr;
+    ColorToggle* m_colorSelector = nullptr;
 
     PointsLayer* m_pointsLayer = nullptr;
 
@@ -61,6 +62,7 @@ private:
     void onLockToggle(CCObject*);
     void onColorToggle(CCObject*);
     void onHideToggle(CCObject*);
+    void onColorSelector(CCObject*);
 
     void onIconButton(CCObject*);
     void onAddPoint(CCObject*);
@@ -76,8 +78,8 @@ private:
     void save();
 
     void updateGradient(bool = false, bool = false, bool = false);
-    void updateUI();
     void updateCountLabel();
+    void updateUI();
 
     void colorValueChanged(cocos2d::ccColor3B) override;
     void textChanged(CCTextInputNode*) override;
@@ -98,6 +100,7 @@ public:
     void pointMoved();
     void pointSelected(CCNode*);
     void pointReleased();
+    void colorSelected(const cocos2d::ccColor3B&);
     
     void load(GradientConfig);
 

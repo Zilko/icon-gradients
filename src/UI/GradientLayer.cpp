@@ -1,5 +1,6 @@
 #include "GradientLayer.hpp"
 #include "LoadLayer.hpp"
+#include "ColorSelectLayer.hpp"
 
 #include "../Utils/Utils.hpp"
 #include "../Utils/Cache.hpp"
@@ -95,6 +96,14 @@ void GradientLayer::pointSelected(CCNode* point) {
 
 void GradientLayer::pointReleased() {
     updateGarage(true, true);
+}
+
+void GradientLayer::colorSelected(const cocos2d::ccColor3B& color) {
+    m_rInput->setString(std::to_string(color.r).c_str());
+    m_gInput->setString(std::to_string(color.g).c_str());
+    m_bInput->setString(std::to_string(color.b).c_str());
+
+    textChanged(nullptr);
 }
  
 GradientLayer* GradientLayer::create() {
@@ -363,6 +372,10 @@ void GradientLayer::onColorToggle(CCObject* sender) {
     load(m_selectedButton->getType(), m_isSecondaryColor, true, true, true);
 }
 
+void GradientLayer::onColorSelector(CCObject*) {
+    ColorSelectLayer::create(this)->show();
+}
+
 void GradientLayer::onHideToggle(CCObject* sender) {
     m_pointsHidden = !m_hideToggle->isToggled();
     m_pointsLayer->setPointsHidden(m_pointsHidden, 0.15f);
@@ -390,6 +403,8 @@ void GradientLayer::colorValueChanged(cocos2d::ccColor3B color) {
         m_gInput->setString(std::to_string(color.g).c_str());
         m_bInput->setString(std::to_string(color.b).c_str());
     }
+
+    m_colorSelector->setColor(color);
 
     if (ColorNode* point = m_pointsLayer->getSelectedPoint())
         point->setColor(color);
@@ -718,6 +733,11 @@ bool GradientLayer::setup() {
 
     m_mainColorToggle->applyGradient(Utils::getDefaultConfig(false), true, true);
     m_secondaryColorToggle->applyGradient(Utils::getDefaultConfig(true), true, true);
+
+    m_colorSelector = ColorToggle::create(this, menu_selector(GradientLayer::onColorSelector), false, false);
+    m_colorSelector->setPosition({65, 28});
+
+    m_buttonMenu->addChild(m_colorSelector);
 
     for (IconButton* button : m_buttons)
         button->setLocked(Mod::get()->hasSavedValue(Utils::getTypeID(button->getType())), true);
