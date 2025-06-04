@@ -1,3 +1,7 @@
+# 1.0.8
+
+* Due to popular demand from iOS users i've removed support for their platform (it wasnt supported in the first place).
+
 # 1.0.7
 
 * Probably made colorful icons lagspike when opening garage less bad
