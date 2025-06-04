@@ -1,3 +1,9 @@
+# 1.0.7
+
+* Probably made colorful icons lagspike when opening garage less bad
+* Hopefully fix some globed crash
+* Hopefully fix some more icons compatiblity
+
 # 1.0.6
 
 * Added color select button to select vanilla colors.

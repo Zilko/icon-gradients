@@ -7,9 +7,15 @@
 class $modify(ProPlayerObject, PlayerObject) {
 
 	static void onModify(auto& self) {
-        (void)self.setHookPriorityPre("PlayerObject::playDeathEffect", Priority::Last + 0x500000); // eclipses big ass priority didnt test other mod menus
-        (void)self.setHookPriorityPost("PlayerObject::playSpawnEffect", Priority::Last);
-        (void)self.setHookPriorityPost("PlayerObject::playCompleteEffect", Priority::Last);
+		(void)self.setHookPriorityAfterPost("PlayerObject::updatePlayerFrame", "hiimjustin000.more_icons");
+		(void)self.setHookPriorityAfterPost("PlayerObject::updatePlayerShipFrame", "hiimjustin000.more_icons");
+		(void)self.setHookPriorityAfterPost("PlayerObject::updatePlayerRollFrame", "hiimjustin000.more_icons");
+		(void)self.setHookPriorityAfterPost("PlayerObject::updatePlayerBirdFrame", "hiimjustin000.more_icons");
+		(void)self.setHookPriorityAfterPost("PlayerObject::updatePlayerDartFrame", "hiimjustin000.more_icons");
+		(void)self.setHookPriorityAfterPost("PlayerObject::createRobot", "hiimjustin000.more_icons");
+		(void)self.setHookPriorityAfterPost("PlayerObject::createSpider", "hiimjustin000.more_icons");
+		(void)self.setHookPriorityAfterPost("PlayerObject::updatePlayerSwingFrame", "hiimjustin000.more_icons");
+		(void)self.setHookPriorityAfterPost("PlayerObject::updatePlayerJetpackFrame", "hiimjustin000.more_icons");
 	}
 
 	struct Fields {

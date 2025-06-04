@@ -21,7 +21,7 @@ class $modify(ProGJGarageLayer, GJGarageLayer) {
 
 	void onSwap(CCObject*);
 
-	void updateGradient();
+	void updateGradient(bool = true);
 
 	void updateQuickGradient();
 

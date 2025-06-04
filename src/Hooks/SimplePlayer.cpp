@@ -9,11 +9,15 @@ void ProSimplePlayer::updatePlayerFrame(int p0, IconType type) {
 
 	if (!Loader::get()->isModLoaded("ninkaz.colorful-icons") || GJBaseGameLayer::get()) return;
 
+	retain();
+
 	Loader::get()->queueInMainThread([this, type] {
 		if (!getParent()) return;
 		if (!typeinfo_cast<GJItemIcon*>(getParent())) return;
 
 		Utils::applyGradient(this, Utils::getSavedConfig(type, false), false, true);
 		Utils::applyGradient(this, Utils::getSavedConfig(type, true), true, true);
+
+		autorelease();
 	});
 }

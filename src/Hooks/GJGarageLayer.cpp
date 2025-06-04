@@ -24,7 +24,7 @@ IconType ProGJGarageLayer::getType() {
 	return Utils::getIconType(f->m_allIcons.front());
 }
 
-void ProGJGarageLayer::updateGradient() {	
+void ProGJGarageLayer::updateGradient(bool colorful) {	
 	if (Utils::isSettingEnabled(MOD_DISABLED)) {
 		if (!m_playerObject) return;
 
@@ -60,7 +60,7 @@ void ProGJGarageLayer::updateGradient() {
 			}
 	});
 
-	if (!Loader::get()->isModLoaded("ninkaz.colorful-icons")) return;
+	if (!Loader::get()->isModLoaded("ninkaz.colorful-icons") || !colorful) return;
 
 	auto f = m_fields.self();
 	bool loadedGradient = false;
@@ -106,7 +106,7 @@ void ProGJGarageLayer::updateQuickGradient() {
 bool ProGJGarageLayer::init() {
 	if (!GJGarageLayer::init()) return false;
 
-	updateGradient();
+	updateGradient(false);
 
 	Loader::get()->queueInMainThread([this] {
 		if (CCNode* menu = getChildByID("shards-menu")) {
