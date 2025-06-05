@@ -1,6 +1,8 @@
 # 1.0.8
 
 * Due to popular demand from iOS users i've removed support for their platform (it wasnt supported in the first place).
+* Fixed known players mod incompat.
+* Fixed more menu icons incompat.
 
 # 1.0.7
 

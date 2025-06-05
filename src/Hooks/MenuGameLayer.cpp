@@ -3,12 +3,29 @@
 
 #include "../Utils/Utils.hpp"
 
+bool ProMenuGameLayer::init() {
+    if (!MenuGameLayer::init()) return false;
+
+    m_fields->m_realPlayerObject = m_playerObject;
+
+    return true;
+}
+
 void ProMenuGameLayer::resetPlayer() {
     MenuGameLayer::resetPlayer();
 
-    if (Utils::isSettingEnabled(MOD_DISABLED) || !Utils::isSettingEnabled(MENU_GRADIENTS) || !m_playerObject) return;
+    if (
+        Utils::isSettingEnabled(MOD_DISABLED)
+        || !Utils::isSettingEnabled(MENU_GRADIENTS)
+        || !m_playerObject
+        || Loader::get()->isModLoaded("iandyhd3.known_players")
+    ) {
+        return;
+    }
 
-    ProPlayerObject* player = static_cast<ProPlayerObject*>(m_playerObject);
+    if (!m_fields->m_realPlayerObject) return;
+
+    ProPlayerObject* player = static_cast<ProPlayerObject*>(m_fields->m_realPlayerObject);
 
     auto f = player->m_fields.self();
 

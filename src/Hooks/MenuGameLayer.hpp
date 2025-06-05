@@ -6,6 +6,12 @@
 
 class $modify(ProMenuGameLayer, MenuGameLayer) {
 
+	struct Fields {
+		PlayerObject* m_realPlayerObject = nullptr;
+	};
+
+	bool init();
+
 	void resetPlayer();
 
 };
