@@ -2,6 +2,8 @@
 
 #include "IconButton.hpp"
 
+#include <hiimjustin000.more_icons/include/MoreIcons.hpp>
+
 IconButton* IconButton::create(CCObject* target, cocos2d::SEL_MenuHandler callback, IconType type) {
     IconButton* ret = new IconButton();
 
@@ -18,6 +20,9 @@ IconButton* IconButton::create(CCObject* target, cocos2d::SEL_MenuHandler callba
 
 bool IconButton::init(CCObject* target, cocos2d::SEL_MenuHandler callback) {
     m_icon = Utils::createIcon(m_type);
+
+    if (Loader::get()->isModLoaded("hiimjustin000.more_icons"))
+        MoreIcons::updateSimplePlayer(m_icon, m_type);
 
     cocos2d::CCSize buttonSize = m_icon->getChildByType<CCSprite>(0)->getContentSize() * 0.63f;
 

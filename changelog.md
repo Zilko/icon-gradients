@@ -1,3 +1,9 @@
+# 1.0.9
+
+* Added more icons compatibility for the ui.
+* Fixed iOS crash so support is back.
+* Possibly fixed some crash.
+
 # 1.0.8
 
 * Due to popular demand from iOS users i've removed support for their platform (it wasnt supported in the first place).

@@ -7,7 +7,7 @@
 	},
 	"id": "zilko.icon_gradients",
 	"name": "Icon Gradients",
-	"version": "v1.0.8",
+	"version": "v1.0.9",
 	"developer": "Zilko",
 	"description": "Allows u to gradient ur icons.",
 	"links": {
@@ -25,6 +25,10 @@
 		"geode.node-ids": {
 			"version": ">=1.20.1",
 			"importance": "required"
+		},
+		"hiimjustin000.more_icons": {
+			"version": ">=1.13.3",
+			"importance": "suggested"
 		}
 	},
 	"resources": {

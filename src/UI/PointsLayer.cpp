@@ -3,6 +3,8 @@
 #include "PointsLayer.hpp"
 #include "GradientLayer.hpp"
 
+#include <hiimjustin000.more_icons/include/MoreIcons.hpp>
+
 PointsLayer* PointsLayer::create(const cocos2d::CCSize& size, GradientLayer* layer) {
     PointsLayer* ret = new PointsLayer();
 
@@ -32,7 +34,7 @@ bool PointsLayer::init(cocos2d::CCSize size) {
     addChild(m_shadow);
     addChild(m_icon);
 
-    updateCenter();
+    setPlayerFrame(IconType::Cube);
 
     setContentSize(size);
     setAnchorPoint({0, 0});
@@ -299,6 +301,9 @@ void PointsLayer::setPlayerFrame(IconType type) {
         Utils::getIconID(type),
         type
     );
+
+    if (Loader::get()->isModLoaded("hiimjustin000.more_icons"))
+        MoreIcons::updateSimplePlayer(m_icon, m_type);
 
     updateCenter();
 }
