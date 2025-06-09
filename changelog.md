@@ -1,3 +1,7 @@
+# 1.0.10
+
+* Fix bug when gradient had no points
+
 # 1.0.9
 
 * Added more icons compatibility for the ui.

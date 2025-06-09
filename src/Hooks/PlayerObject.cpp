@@ -61,11 +61,15 @@ void ProPlayerObject::updateIconSprite(Gradient gradient, auto f) {
     if (!gradient.secondary.points.empty())
         updateSprite(m_iconSpriteSecondary, f->m_iconSpriteSecondary, SpriteType::Icon, true);
 
-    if (f->m_iconSprite)
+    if (f->m_iconSprite) {
         Utils::applyGradient(f->m_iconSprite, gradient.main, true);
+        f->m_iconSprite->setVisible(!gradient.main.points.empty());
+    }
 
-    if (f->m_iconSpriteSecondary)
+    if (f->m_iconSpriteSecondary) {
         Utils::applyGradient(f->m_iconSpriteSecondary, gradient.secondary, true);
+        f->m_iconSpriteSecondary->setVisible(!gradient.main.points.empty());
+    }
 }
 
 void ProPlayerObject::updateVehicleSprite(Gradient gradient, auto f) {
@@ -75,11 +79,15 @@ void ProPlayerObject::updateVehicleSprite(Gradient gradient, auto f) {
     if (!gradient.secondary.points.empty())
         updateSprite(m_vehicleSpriteSecondary, f->m_vehicleSpriteSecondary, SpriteType::Vehicle, true);
 
-    if (f->m_vehicleSprite)
+    if (f->m_vehicleSprite) {
         Utils::applyGradient(f->m_vehicleSprite, gradient.main, true);
+        f->m_vehicleSprite->setVisible(!gradient.main.points.empty());
+    }
     
-    if (f->m_vehicleSpriteSecondary)
+    if (f->m_vehicleSpriteSecondary) {
         Utils::applyGradient(f->m_vehicleSpriteSecondary, gradient.secondary, true);
+        f->m_vehicleSpriteSecondary->setVisible(!gradient.main.points.empty());
+    }
 
 }
 
