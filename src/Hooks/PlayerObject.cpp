@@ -92,7 +92,10 @@ void ProPlayerObject::updateVehicleSprite(Gradient gradient, auto f) {
 }
 
 void ProPlayerObject::updateAnimSprite(IconType type, Gradient gradient, auto f) {
-    if (m_gameLayer != GJBaseGameLayer::get() || !GJBaseGameLayer::get()) return;
+    GJBaseGameLayer* bgl = GJBaseGameLayer::get();
+
+    if (m_gameLayer != bgl || !bgl) return;
+    if (this != bgl->m_player1 && this != bgl->m_player2) return;
     if (Utils::isSettingEnabled(MOD_DISABLED)) return;
     if (m_isSecondPlayer && Utils::isSettingEnabled(P2_DISABLED)) return;
 
@@ -141,10 +144,10 @@ void ProPlayerObject::updateAnimSprite(IconType type, Gradient gradient, auto f)
 }
 
 void ProPlayerObject::updateGradient() {
-    GJBaseGameLayer* pl = GJBaseGameLayer::get();
+    GJBaseGameLayer* bgl = GJBaseGameLayer::get();
 
-    if (!pl) return;
-    if (this != pl->m_player1 && this != pl->m_player2) return;
+    if (!bgl) return;
+    if (this != bgl->m_player1 && this != bgl->m_player2) return;
     if (Utils::isSettingEnabled(MOD_DISABLED)) return;
     if (m_isSecondPlayer && Utils::isSettingEnabled(P2_DISABLED)) return;
 

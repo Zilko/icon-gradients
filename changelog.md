@@ -1,3 +1,8 @@
+# 1.0.11
+
+* Fix globe
+* Actually added ios?
+
 # 1.0.10
 
 * Fix bug when gradient had no points
