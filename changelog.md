@@ -1,3 +1,7 @@
+# 1.0.12
+
+* Fixed second color gradient not showing if main color gradient is empty.
+
 # 1.0.11
 
 * Fix globe
@@ -29,7 +33,7 @@
 
 * Added color select button to select vanilla colors.
 * Fixed gradient still showing in comments and leaderboard even if disabled.
-* Fixed lag with colorful icons mod installed by making it just not update. 
+* Fixed lag with colorful icons mod installed by making it just not update.
 
 # 1.0.5
 

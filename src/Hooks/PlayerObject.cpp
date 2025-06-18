@@ -16,7 +16,7 @@ IconType ProPlayerObject::getIconType() {
 
 void ProPlayerObject::updateVisibility() {
     auto f = m_fields.self();
-    
+
     if (f->m_iconSprite && f->m_iconSprite->getOpacity() != m_iconSprite->getOpacity())
         f->m_iconSprite->setOpacity(m_iconSprite->getOpacity());
 
@@ -68,14 +68,14 @@ void ProPlayerObject::updateIconSprite(Gradient gradient, auto f) {
 
     if (f->m_iconSpriteSecondary) {
         Utils::applyGradient(f->m_iconSpriteSecondary, gradient.secondary, true);
-        f->m_iconSpriteSecondary->setVisible(!gradient.main.points.empty());
+        f->m_iconSpriteSecondary->setVisible(!gradient.secondary.points.empty());
     }
 }
 
 void ProPlayerObject::updateVehicleSprite(Gradient gradient, auto f) {
     if (!gradient.main.points.empty())
         updateSprite(m_vehicleSprite, f->m_vehicleSprite, SpriteType::Vehicle, false);
-    
+
     if (!gradient.secondary.points.empty())
         updateSprite(m_vehicleSpriteSecondary, f->m_vehicleSpriteSecondary, SpriteType::Vehicle, true);
 
@@ -83,10 +83,10 @@ void ProPlayerObject::updateVehicleSprite(Gradient gradient, auto f) {
         Utils::applyGradient(f->m_vehicleSprite, gradient.main, true);
         f->m_vehicleSprite->setVisible(!gradient.main.points.empty());
     }
-    
+
     if (f->m_vehicleSpriteSecondary) {
         Utils::applyGradient(f->m_vehicleSpriteSecondary, gradient.secondary, true);
-        f->m_vehicleSpriteSecondary->setVisible(!gradient.main.points.empty());
+        f->m_vehicleSpriteSecondary->setVisible(!gradient.secondary.points.empty());
     }
 
 }
@@ -101,7 +101,7 @@ void ProPlayerObject::updateAnimSprite(IconType type, Gradient gradient, auto f)
 
     GJRobotSprite* sprite = type == IconType::Robot ? m_robotSprite : m_spiderSprite;
 
-    if (!sprite) return; 
+    if (!sprite) return;
     if (!sprite->m_paSprite) return;
 
     Utils::patchBatchNode(type == IconType::Robot ? m_robotBatchNode : m_spiderBatchNode);
@@ -155,7 +155,7 @@ void ProPlayerObject::updateGradient() {
 
     IconType type = getIconType();
     bool shouldFlip = m_isSecondPlayer && Utils::isSettingEnabled(P2_FLIP);
-    
+
     if (type == f->m_previousType) return;
 
     f->m_previousType = type;
@@ -183,7 +183,7 @@ void ProPlayerObject::updateGradient() {
 
         m_iconSprite->setVisible(true);
         m_iconSpriteSecondary->setVisible(true);
-        
+
         m_iconSprite->setOpacity(255);
         m_iconSpriteSecondary->setOpacity(255);
     }
@@ -245,7 +245,7 @@ void ProPlayerObject::createRobot(int p0) {
             IconType::Robot,
             Utils::getGradient(IconType::Robot, shouldFlip),
             m_fields.self()
-        );			
+        );
     });
 }
 
@@ -261,14 +261,14 @@ void ProPlayerObject::createSpider(int p0) {
             IconType::Spider,
             Utils::getGradient(IconType::Spider, shouldFlip),
             m_fields.self()
-        );			
+        );
     });
 }
 
 bool ProPlayerObject::init(int p0, int p1, GJBaseGameLayer* p2, cocos2d::CCLayer* p3, bool p4) {
     if (!PlayerObject::init(p0, p1, p2, p3, p4)) return false;
 
-    m_fields->m_thatOneUfoShipAndCubeModIsLoaded = Loader::get()->isModLoaded("yellowcat98.custom_ufo_n_ship_cube"); 
+    m_fields->m_thatOneUfoShipAndCubeModIsLoaded = Loader::get()->isModLoaded("yellowcat98.custom_ufo_n_ship_cube");
 
     Loader::get()->queueInMainThread([this] {
         updateGradient();
