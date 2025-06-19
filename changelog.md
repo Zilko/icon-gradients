@@ -1,3 +1,7 @@
+# 1.0.13
+
+* Fixed smol visual bug in ui when adding new point
+
 # 1.0.12
 
 * Fixed second color gradient not showing if main color gradient is empty.

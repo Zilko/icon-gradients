@@ -91,7 +91,10 @@ void GradientLayer::pointMoved() {
 }
 
 void GradientLayer::pointSelected(CCNode* point) {
-    m_picker->setColor(static_cast<ColorNode*>(point)->getColor());
+    cocos2d::ccColor3B color = static_cast<ColorNode*>(point)->getColor();
+    
+    m_picker->setColor(color);
+    m_colorSelector->setColor(color);
 }
 
 void GradientLayer::pointReleased() {
@@ -193,9 +196,11 @@ void GradientLayer::onAddPoint(CCObject*) {
         m_hideToggle->toggle(false);
     }
     
-    m_pointsLayer->getSelectedPoint()->setColor(
-        gm->colorForIdx(m_isSecondaryColor ? gm->getPlayerColor2() : gm->getPlayerColor())
-    );
+    cocos2d::ccColor3B color = gm->colorForIdx(m_isSecondaryColor ? gm->getPlayerColor2() : gm->getPlayerColor());
+    
+    m_pointsLayer->getSelectedPoint()->setColor(color);
+    m_picker->setColor(color);
+    m_colorSelector->setColor(color);
 
     save();
     updateUI();
@@ -392,7 +397,10 @@ void GradientLayer::textChanged(CCTextInputNode* input) {
 
     m_ignoreColorChange = true;
     
-    m_picker->setColor(ccc3(r, g, b));
+    cocos2d::ccColor3B color = ccc3(r, g, b);
+    
+    m_picker->setColor(color);
+    m_colorSelector->setColor(color);
 
     m_ignoreColorChange = false;
 }
@@ -402,9 +410,10 @@ void GradientLayer::colorValueChanged(cocos2d::ccColor3B color) {
         m_rInput->setString(std::to_string(color.r).c_str());
         m_gInput->setString(std::to_string(color.g).c_str());
         m_bInput->setString(std::to_string(color.b).c_str());
+        
+        m_colorSelector->setColor(color);
     }
 
-    m_colorSelector->setColor(color);
 
     if (ColorNode* point = m_pointsLayer->getSelectedPoint())
         point->setColor(color);
@@ -461,8 +470,6 @@ void GradientLayer::keyDown(cocos2d::enumKeyCodes key) {
         case cocos2d::enumKeyCodes::KEY_Left: move = ccp(-amount, 0); break;
         default: return;
     }
-
-    // log::debug("x {} {}", (int)cocos2d::enumKeyCodes::KEY_Up, (int)key);
 
     m_pointsLayer->moveSelected(move);
 
