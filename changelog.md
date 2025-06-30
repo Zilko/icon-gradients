@@ -1,3 +1,7 @@
+# 1.0.15
+
+* Fix spider and robot not workig
+
 # 1.0.14
 
 * Kinda improved bug with smooth scroll mod

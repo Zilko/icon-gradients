@@ -3,9 +3,9 @@
 
 #include "PlayerObject.hpp"
 
-bool ProPlayerObject::shouldReturn(GJBaseGameLayer* bgl) {
+bool ProPlayerObject::shouldReturn(GJBaseGameLayer* bgl, bool ignore) {
     if (m_gameLayer != bgl || !bgl) return true;
-    if (this != bgl->m_player1 && this != bgl->m_player2) return true;
+    if (this != bgl->m_player1 && this != bgl->m_player2 && !ignore) return true;
     if (Utils::isSettingEnabled(MOD_DISABLED)) return true;
     if (m_isSecondPlayer && Utils::isSettingEnabled(P2_DISABLED)) return true;
     
@@ -235,9 +235,11 @@ void ProPlayerObject::updatePlayerJetpackFrame(int p0) {
 void ProPlayerObject::createRobot(int p0) {
     PlayerObject::createRobot(p0);
 
-    if (shouldReturn(GJBaseGameLayer::get())) return;
+    if (getTag() == 0xCb04) return;
 
     Loader::get()->queueInMainThread([this] {
+        if (shouldReturn(GJBaseGameLayer::get())) return;
+        
         bool shouldFlip = this == m_gameLayer->m_player2 && Utils::isSettingEnabled(P2_FLIP);
 
         updateAnimSprite(
@@ -251,9 +253,11 @@ void ProPlayerObject::createRobot(int p0) {
 void ProPlayerObject::createSpider(int p0) {
     PlayerObject::createSpider(p0);
 
-    if (shouldReturn(GJBaseGameLayer::get())) return;
+    if (getTag() == 0xCb04) return;
 
     Loader::get()->queueInMainThread([this] {
+        if (shouldReturn(GJBaseGameLayer::get())) return;
+        
         bool shouldFlip = this == m_gameLayer->m_player2 && Utils::isSettingEnabled(P2_FLIP);
 
         updateAnimSprite(
