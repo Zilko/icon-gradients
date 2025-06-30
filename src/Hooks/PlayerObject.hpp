@@ -30,6 +30,8 @@ class $modify(ProPlayerObject, PlayerObject) {
 
 		bool m_thatOneUfoShipAndCubeModIsLoaded = false;
 	};
+	
+	bool shouldReturn(GJBaseGameLayer*);
 
 	IconType getIconType();
 

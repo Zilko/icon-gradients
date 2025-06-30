@@ -53,6 +53,9 @@ private:
     bool m_isSecondaryColor = false;
     bool m_ignoreColorChange = false;
     bool m_pointsHidden = false;
+    bool m_smoothScroll = false;
+    
+    float m_scroll = 0.f;
 
     ~GradientLayer();
 

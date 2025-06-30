@@ -1,3 +1,8 @@
+# 1.0.14
+
+* Kinda improved bug with smooth scroll mod
+* Fixed crash with funny font bot
+
 # 1.0.13
 
 * Fixed smol visual bug in ui when adding new point

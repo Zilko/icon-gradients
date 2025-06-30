@@ -476,12 +476,13 @@ void GradientLayer::keyDown(cocos2d::enumKeyCodes key) {
 	return FLAlertLayer::keyDown(key);
 }
 
-void GradientLayer::scrollWheel(float x, float) {
-    if (Mod::get()->getSettingValue<bool>("disable-keys")) return;
-
-    if (m_buttons.empty()) return;
-
-    bool up = x > 0;
+void GradientLayer::scrollWheel(float y, float) {
+    if (m_buttons.empty() || Mod::get()->getSettingValue<bool>("disable-keys")) return;
+    
+    m_scroll = m_smoothScroll ? m_scroll + y : y;
+    
+    if (m_scroll < 12 && m_scroll > -12 && m_smoothScroll) return;
+    
     int index = 0;
 
     for (IconButton* button : m_buttons) {
@@ -490,8 +491,10 @@ void GradientLayer::scrollWheel(float x, float) {
      
         index++;
     }
-
-    index += up ? 1 : -1;
+    
+    index += m_scroll > 0 ? 1 : -1;
+    
+    m_scroll = 0;
 
     if (index >= static_cast<int>(m_buttons.size())) index = 0;
     if (index < 0) index = static_cast<int>(m_buttons.size()) - 1;
@@ -501,8 +504,10 @@ void GradientLayer::scrollWheel(float x, float) {
 
 bool GradientLayer::setup() {
     geode::DispatchEvent<CCNode*, CCRect>("timestepyt.gdneko/create-neko-rect", m_mainLayer, {178.5f, 75, 259, 126}).post();
-
+    
     setMouseEnabled(true);
+
+    m_smoothScroll = Loader::get()->isModLoaded("prevter.smooth-scroll");
 
     CCScene* scene = CCDirector::get()->getRunningScene();
         
