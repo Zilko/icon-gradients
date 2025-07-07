@@ -88,6 +88,14 @@ void GradientLayer::updateGarage(bool quick, bool real) {
 void GradientLayer::pointMoved() {
     save();
     updateGradient();
+    
+    if (m_firstPoint)
+        if (ccpDistance(m_firstPosition, m_firstPoint->getPosition()) > 3.f) {
+            m_firstPoint = nullptr;
+            m_movePointsSprite->runAction(CCFadeTo::create(0.7f, 0));
+            Mod::get()->setSavedValue("moved-point", true);
+        }
+            
 }
 
 void GradientLayer::pointSelected(CCNode* point) {
@@ -95,6 +103,11 @@ void GradientLayer::pointSelected(CCNode* point) {
     
     m_picker->setColor(color);
     m_colorSelector->setColor(color);
+    
+    if (m_firstPoint) {
+        m_firstPoint = static_cast<ColorNode*>(point);
+        m_firstPosition = m_firstPoint->getPosition();
+    }
 }
 
 void GradientLayer::pointReleased() {
@@ -201,6 +214,12 @@ void GradientLayer::onAddPoint(CCObject*) {
     m_pointsLayer->getSelectedPoint()->setColor(color);
     m_picker->setColor(color);
     m_colorSelector->setColor(color);
+    
+    if (m_addColorsSprite) {
+        m_addColorsSprite = nullptr;
+        m_addColorsSprite->runAction(CCFadeTo::create(0.7f, 0));
+        Mod::get()->setSavedValue("added-color", true);
+    }
 
     save();
     updateUI();
@@ -461,7 +480,7 @@ void GradientLayer::keyDown(cocos2d::enumKeyCodes key) {
     }
 
     cocos2d::CCPoint move = {0, 0};
-    int amount = 1;
+    float amount = Mod::get()->getSettingValue<float>("move-step");
 
     switch (key) {
         case cocos2d::enumKeyCodes::KEY_Up: move = ccp(0, amount); break;
@@ -516,6 +535,20 @@ bool GradientLayer::setup() {
 
     m_closeBtn->setPosition(m_closeBtn->getPosition() + ccp(-3, 3));
     m_closeBtn->getChildByType<CCSprite>(0)->setScale(0.6f);
+    
+    if (!Mod::get()->getSavedValue<bool>("moved-point")) {
+        m_movePointsSprite = CCSprite::create("move_points.png"_spr);
+        m_movePointsSprite->setPosition({124, 240});
+        m_movePointsSprite->setScale(0.7f);
+        m_mainLayer->addChild(m_movePointsSprite);
+    }
+    
+    if (!Mod::get()->getSavedValue<bool>("added-color")) {
+        m_addColorsSprite = CCSprite::create("add_colors.png"_spr);
+        m_addColorsSprite->setPosition({105, 146});
+        m_addColorsSprite->setScale(0.7f);
+        m_mainLayer->addChild(m_addColorsSprite);
+    }
 
     CCSprite* spr = CCSprite::createWithSpriteFrameName("GJ_optionsBtn_001.png");
     spr->setScale(0.57f);
@@ -767,6 +800,11 @@ bool GradientLayer::setup() {
     
     Loader::get()->queueInMainThread([this] {
         m_pointsLayer->selectLast();
+        
+        if (!Mod::get()->getSavedValue<bool>("moved-point")) {
+            m_firstPoint = m_pointsLayer->getSelectedPoint();
+            m_firstPosition = m_firstPoint->getPosition();
+        }
     });
 
     return true;

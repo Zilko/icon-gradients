@@ -167,11 +167,13 @@ bool LoadLayer::setup() {
     m_scrollLayer->m_contentLayer->updateLayout();
     m_scrollLayer->moveToTop();
 
-    Scrollbar* scrollbar = Scrollbar::create(m_scrollLayer);
-    scrollbar->setPosition({233, m_size.height / 2.f});
-    scrollbar->setVisible(!gradients.empty());
+    if (!gradients.empty()) {
+        Scrollbar* scrollbar = Scrollbar::create(m_scrollLayer);
+        scrollbar->setPosition({233, m_size.height / 2.f});
+        scrollbar->setVisible(!gradients.empty());
 
-    m_mainLayer->addChild(scrollbar);
+        m_mainLayer->addChild(scrollbar);
+    }
 
     if (m_toggles.size() > 100)
         schedule(schedule_selector(LoadLayer::updateGradient), 0, kCCRepeatForever, 0);

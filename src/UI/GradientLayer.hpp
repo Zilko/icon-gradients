@@ -12,6 +12,9 @@ class GradientLayer : public geode::Popup<>, public ColorPickerDelegate, public 
 
 private:
 
+    CCSprite* m_movePointsSprite = nullptr;
+    CCSprite* m_addColorsSprite = nullptr;
+
     TextInput* m_rInput = nullptr;
     TextInput* m_gInput = nullptr;
     TextInput* m_bInput = nullptr;
@@ -39,6 +42,8 @@ private:
     ColorToggle* m_colorSelector = nullptr;
 
     PointsLayer* m_pointsLayer = nullptr;
+    
+    ColorNode* m_firstPoint = nullptr;
 
     IconButton* m_selectedButton = nullptr;
 
@@ -46,7 +51,7 @@ private:
 
     std::unordered_map<IconType, std::vector<cocos2d::CCPoint>> m_iconPoints;
 
-    cocos2d::CCPoint m_moveOffset = ccp(0, 0);
+    cocos2d::CCPoint m_firstPosition = ccp(0, 0);
 
     GradientConfig m_currentConfig;
 

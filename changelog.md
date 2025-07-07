@@ -1,3 +1,9 @@
+# 1.0.16
+
+* Fixed close button in load gradient popup not working if you had no saved gradients.
+* Added tutorial.
+* Added small useless setting.
+
 # 1.0.15
 
 * Fix spider and robot not workig

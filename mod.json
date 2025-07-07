@@ -8,7 +8,7 @@
 	},
 	"id": "zilko.icon_gradients",
 	"name": "Icon Gradients",
-	"version": "v1.0.15",
+	"version": "v1.0.16",
 	"developer": "Zilko",
 	"description": "Allows u to gradient ur icons.",
 	"links": {
@@ -105,6 +105,15 @@
 			"description": "Disables Keyboard Shortcuts exploding head",
 			"type": "bool",
 			"default": false
+		},
+		"move-step": {
+		  "name": "Move step length",
+			"description": "How much the points are going to move then using arrow keys.",
+			"type": "float",
+			"default": 1.0,
+			"max": 50.0,
+			"min": 0.001,
+			"platforms": ["win", "mac"]
 		}
 	}
 }
