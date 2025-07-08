@@ -216,8 +216,8 @@ void GradientLayer::onAddPoint(CCObject*) {
     m_colorSelector->setColor(color);
     
     if (m_addColorsSprite) {
-        m_addColorsSprite = nullptr;
         m_addColorsSprite->runAction(CCFadeTo::create(0.7f, 0));
+        m_addColorsSprite = nullptr;
         Mod::get()->setSavedValue("added-color", true);
     }
 
