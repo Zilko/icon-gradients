@@ -60,12 +60,23 @@ bool ColorToggle::init(CCObject* target, cocos2d::SEL_MenuHandler callback, bool
     return true;
 }
 
-void ColorToggle::setSelected(bool selected) {
-    m_select->setVisible(selected);
+void ColorToggle::setEnabled(bool enabled) {
+    CCMenuItemSpriteExtra::setEnabled(enabled);
+    m_sprite->setOpacity(enabled ? 255 : 85);
 }
 
-void ColorToggle::setColor(const cocos2d::ccColor3B& color) {
-    m_sprite->setColor(color);
+void ColorToggle::setSelected(bool selected) {
+    m_isSelected = selected;
+    m_select->setVisible(selected);
+    setEnabled(!selected);
+}
+
+void ColorToggle::setColor(const cocos2d::ccColor3B& color, float time) {
+    m_sprite->runAction(CCTintTo::create(time, color.r, color.g, color.b));
+}
+
+bool ColorToggle::isSelected() {
+    return m_isSelected;
 }
 
 void ColorToggle::applyGradient(GradientConfig config, bool force, bool transition) {

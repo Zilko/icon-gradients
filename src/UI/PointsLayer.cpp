@@ -77,7 +77,12 @@ void PointsLayer::removeSelected() {
 }
 
 void PointsLayer::moveSelected(const cocos2d::CCPoint& move) {
-    m_selectedPoint->setPosition(m_selectedPoint->getPosition() + move);
+    cocos2d::CCPoint pos = m_selectedPoint->getPosition() + move;
+    
+    pos.x = std::max(0.f, std::min(pos.x, getContentSize().width));
+    pos.y = std::max(0.f, std::min(pos.y, getContentSize().height));
+    
+    m_selectedPoint->setPosition(pos);
     m_layer->pointMoved();
 }
 

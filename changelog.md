@@ -1,3 +1,7 @@
+# 1.0.17
+
+* Small UI tweaks
+
 # 1.0.16
 
 * Fixed close button in load gradient popup not working if you had no saved gradients.

@@ -102,7 +102,7 @@ void GradientLayer::pointSelected(CCNode* point) {
     cocos2d::ccColor3B color = static_cast<ColorNode*>(point)->getColor();
     
     m_picker->setColor(color);
-    m_colorSelector->setColor(color);
+    m_colorSelector->setColor(color, 0.15f);
     
     if (m_firstPoint) {
         m_firstPoint = static_cast<ColorNode*>(point);
@@ -188,6 +188,7 @@ void GradientLayer::updateUI() {
     m_pasteButton->setEnabled(!Cache::getCopiedConfig().points.empty());
     m_pasteButton->setOpacity(!Cache::getCopiedConfig().points.empty() ? 255 : 140);
 
+    m_colorSelector->setEnabled(hasPoints);
     m_picker->setEnabled(hasPoints);
     m_rInput->setEnabled(hasPoints);
     m_gInput->setEnabled(hasPoints);
@@ -213,7 +214,7 @@ void GradientLayer::onAddPoint(CCObject*) {
     
     m_pointsLayer->getSelectedPoint()->setColor(color);
     m_picker->setColor(color);
-    m_colorSelector->setColor(color);
+    m_colorSelector->setColor(color, 0.15f);
     
     if (m_addColorsSprite) {
         m_addColorsSprite->runAction(CCFadeTo::create(0.7f, 0));
@@ -385,6 +386,9 @@ void GradientLayer::onLockToggle(CCObject* sender) {
 
 void GradientLayer::onColorToggle(CCObject* sender) {
     ColorToggle* toggle = static_cast<ColorToggle*>(sender);
+    
+    if (toggle == m_mainColorToggle && m_mainColorToggle->isSelected()) return;
+    if (toggle == m_secondaryColorToggle && m_secondaryColorToggle->isSelected()) return;
 
     m_mainColorToggle->setSelected(false);
     m_secondaryColorToggle->setSelected(false);
@@ -419,7 +423,7 @@ void GradientLayer::textChanged(CCTextInputNode* input) {
     cocos2d::ccColor3B color = ccc3(r, g, b);
     
     m_picker->setColor(color);
-    m_colorSelector->setColor(color);
+    m_colorSelector->setColor(color, 0.15f);
 
     m_ignoreColorChange = false;
 }

@@ -19,6 +19,19 @@ bool ColorPicker::init() {
 
     addChild(m_picker);
     setContentSize(m_picker->getContentSize());
+    
+    if (Loader::get()->isModLoaded("flow.betterpicker")) {
+        if (CCMenu* menu = m_picker->getChildByType<CCMenu*>(0))
+            menu->setVisible(false);
+            
+        for (int i = 0; i < 3; i++)
+            if (TextInput* input = m_picker->getChildByType<TextInput>(i))
+                input->setVisible(false);
+        
+        for (int i = 0; i < 3; i++)
+            if (CCLabelBMFont* lbl = m_picker->getChildByType<CCLabelBMFont>(i))
+                lbl->setVisible(false);
+    }
 
     return true;
 }

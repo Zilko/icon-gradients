@@ -21,4 +21,3 @@ public:
     const cocos2d::ccColor3B getColor();
 
 };
-
