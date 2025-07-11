@@ -1,3 +1,7 @@
+# 1.0.18
+
+* Fixed crash
+
 # 1.0.17
 
 * Small UI tweaks

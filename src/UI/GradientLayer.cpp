@@ -202,8 +202,12 @@ void GradientLayer::onAddPoint(CCObject*) {
 
     m_pointsLayer->addPoint();
     m_pointsLayer->selectLast();
-
     m_pointsLayer->getSelectedPoint()->flash();
+    
+    if (!Mod::get()->getSavedValue<bool>("moved-point")) {
+        m_firstPoint = m_pointsLayer->getSelectedPoint();
+        m_firstPosition = m_firstPoint->getPosition();
+    }
 
     if (m_pointsHidden) {
         onHideToggle(nullptr);
@@ -807,7 +811,8 @@ bool GradientLayer::setup() {
         
         if (!Mod::get()->getSavedValue<bool>("moved-point")) {
             m_firstPoint = m_pointsLayer->getSelectedPoint();
-            m_firstPosition = m_firstPoint->getPosition();
+            if (m_firstPoint)
+                m_firstPosition = m_firstPoint->getPosition();
         }
     });
 
