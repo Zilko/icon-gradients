@@ -31,9 +31,9 @@ public:
 
     void setLocked(bool, bool = false);
     void setSelected(bool);
-    void setColor(bool, bool);
+    void setColor(ColorType, bool);
 
-    void applyGradient(bool, bool, bool = false, bool = false);
+    void applyGradient(bool, ColorType, bool = false, bool = false);
 
     IconType getType();
 

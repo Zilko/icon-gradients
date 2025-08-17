@@ -23,8 +23,10 @@ class $modify(ProPlayerObject, PlayerObject) {
 
 		CCSprite* m_iconSprite = nullptr;
 		CCSprite* m_iconSpriteSecondary = nullptr;
+		CCSprite* m_iconGlow = nullptr;
 		CCSprite* m_vehicleSprite = nullptr;
 		CCSprite* m_vehicleSpriteSecondary = nullptr;
+		CCSprite* m_vehicleGlow = nullptr;
 
 		std::vector<CCSprite*> m_animSprites;
 
@@ -37,7 +39,7 @@ class $modify(ProPlayerObject, PlayerObject) {
 
 	void updateVisibility();
 
-	void updateSprite(CCSprite*, CCSprite*&, SpriteType, bool);
+	void updateSprite(CCSprite*, CCSprite*&, SpriteType, ColorType);
 
 	void updateIconSprite(Gradient, auto);
 

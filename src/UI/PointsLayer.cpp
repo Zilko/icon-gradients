@@ -269,10 +269,10 @@ void PointsLayer::updatePointScale(float value) {
         point->setScale(value);
 }
 
-void PointsLayer::updateGradient(GradientConfig config, bool secondary, bool force) {
-    Utils::applyGradient(m_icon, config, secondary, force);
+void PointsLayer::updateGradient(GradientConfig config, ColorType colorType, bool force) {
+    Utils::applyGradient(m_icon, config, colorType, force);
 
-    m_isSecondaryColor = secondary;
+    m_currentColor = colorType;
 
     updateCenter();
 }
@@ -292,7 +292,7 @@ void PointsLayer::updateCenter() {
     if (m_icon->m_spiderSprite)
         m_icon->m_spiderSprite->setPosition(m_icon->getContentSize() / 2.f);
 
-    Utils::setIconColors(m_icon, m_isSecondaryColor, false);
+    Utils::setIconColors(m_icon, m_currentColor, false);
 }
 
 ColorNode* PointsLayer::getSelectedPoint() {

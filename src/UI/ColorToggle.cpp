@@ -2,10 +2,10 @@
 
 #include "ColorToggle.hpp"
 
-ColorToggle* ColorToggle::create(CCObject* target, cocos2d::SEL_MenuHandler callback, bool secondary, bool number, float scale) {
+ColorToggle* ColorToggle::create(CCObject* target, cocos2d::SEL_MenuHandler callback, ColorType colorType, bool number, float scale) {
     ColorToggle* ret = new ColorToggle();
     
-    ret->m_isSecondary = secondary;
+    ret->m_colorType = colorType;
 
     if (ret->init(target, callback, number, scale)) {
         ret->autorelease();
@@ -20,8 +20,19 @@ bool ColorToggle::init(CCObject* target, cocos2d::SEL_MenuHandler callback, bool
     m_sprite = CCSprite::createWithSpriteFrameName("GJ_colorBtn_001.png");
     m_sprite->setScale(0.6f * scale);
 
+    const char *numberStr;
+    if (number)
+        switch (m_colorType) {
+            case ColorType::Main:
+                numberStr = "1";
+            case ColorType::Secondary:
+                numberStr = "2";
+            case ColorType::Glow:
+                numberStr = "3";
+        }
+
     if (number) {
-        CCLabelBMFont* lbl = CCLabelBMFont::create(m_isSecondary ? "2" : "1", "bigFont.fnt");
+        CCLabelBMFont* lbl = CCLabelBMFont::create(numberStr, "bigFont.fnt");
         lbl->setScale(0.525f);
         lbl->setPosition({24, 14});
 
@@ -33,7 +44,7 @@ bool ColorToggle::init(CCObject* target, cocos2d::SEL_MenuHandler callback, bool
     m_secondSprite->setOpacity(0);
 
     if (number) {
-        CCLabelBMFont* lbl = CCLabelBMFont::create(m_isSecondary ? "2" : "1", "bigFont.fnt");
+        CCLabelBMFont* lbl = CCLabelBMFont::create(numberStr, "bigFont.fnt");
         lbl->setScale(0.525f);
         lbl->setPosition({24, 14});
 
@@ -58,6 +69,10 @@ bool ColorToggle::init(CCObject* target, cocos2d::SEL_MenuHandler callback, bool
     m_secondSprite->setZOrder(m_sprite->getZOrder() + 1);
 
     return true;
+}
+
+ColorType ColorToggle::getColorType() {
+    return m_colorType;
 }
 
 void ColorToggle::setEnabled(bool enabled) {
@@ -85,8 +100,24 @@ void ColorToggle::applyGradient(GradientConfig config, bool force, bool transiti
     m_currentConfig = config;
     m_didForce = force;
 
+    int playerColor;
+    switch (m_colorType) {
+        case ColorType::Main:
+            playerColor = gm->getPlayerColor();
+            break;
+        case ColorType::Secondary:
+            playerColor = gm->getPlayerColor2();
+            break;
+        case ColorType::Glow:
+            playerColor = gm->getPlayerGlowColor();
+            break;
+        default:
+            playerColor = gm->getPlayerColor();
+            break;
+    }
+
     m_sprite->setColor(m_currentConfig.points.empty()
-        ? gm->colorForIdx(m_isSecondary ? gm->getPlayerColor2() : gm->getPlayerColor())
+        ? gm->colorForIdx(playerColor)
         : ccc3(255, 255, 255));
     
     m_sprite->setOpacity(255);

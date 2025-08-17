@@ -35,6 +35,7 @@ void ProMenuGameLayer::resetPlayer() {
     if (f->m_thatOneUfoShipAndCubeModIsLoaded) {
         if (f->m_iconSprite) f->m_iconSprite->setVisible(true);
         if (f->m_iconSpriteSecondary) f->m_iconSpriteSecondary->setVisible(true);
+        if (f->m_iconGlow) f->m_iconGlow->setVisible(true);
     }
 
     if (type != IconType::Ship && type != IconType::Jetpack && type != IconType::Ufo)
@@ -50,6 +51,7 @@ void ProMenuGameLayer::resetPlayer() {
     if (f->m_thatOneUfoShipAndCubeModIsLoaded) {
         if (f->m_iconSprite) f->m_iconSprite->setVisible(false);
         if (f->m_iconSpriteSecondary) f->m_iconSpriteSecondary->setVisible(false);
+        if (f->m_iconGlow) f->m_iconGlow->setVisible(false);
 
         player->m_iconSprite->setVisible(true);
         player->m_iconSpriteSecondary->setVisible(true);

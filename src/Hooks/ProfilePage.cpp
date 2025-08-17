@@ -38,8 +38,9 @@ void ProProfilePage::updateGradient() {
             m_fields->m_isSecondPlayer && Utils::isSettingEnabled(P2_FLIP)
         );
         
-        Utils::applyGradient(child, gradient.main, false, true);
-        Utils::applyGradient(child, gradient.secondary, true, true);
+        Utils::applyGradient(child, gradient.main, ColorType::Main, true);
+        Utils::applyGradient(child, gradient.secondary, ColorType::Secondary, true);
+        Utils::applyGradient(child, gradient.glow, ColorType::Glow, true);
     }
 }
 

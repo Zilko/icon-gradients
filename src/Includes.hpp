@@ -16,6 +16,14 @@ enum SpriteType {
     Animation = 3
 };
 
+enum ColorType {
+    Main = 1,
+    Secondary = 2,
+    Glow = 3,
+    // White = 4,
+    // Line = 5,
+};
+
 struct SimplePoint {
     cocos2d::CCPoint pos;
     cocos2d::ccColor3B color;
@@ -53,6 +61,7 @@ struct Gradient {
 
     GradientConfig main;
     GradientConfig secondary;
+    GradientConfig glow;
 
 };
 
