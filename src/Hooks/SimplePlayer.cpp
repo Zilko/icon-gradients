@@ -15,6 +15,9 @@ void ProSimplePlayer::updatePlayerFrame(int p0, IconType type) {
 		if (!getParent()) return;
 		if (!typeinfo_cast<GJItemIcon*>(getParent())) return;
 
+		if (CCSprite* spr = getChildByType<CCSprite>(0))
+			if (spr->getOpacity() <= 120) return;
+
 		Utils::applyGradient(this, Utils::getSavedConfig(type, false), false, true);
 		Utils::applyGradient(this, Utils::getSavedConfig(type, true), true, true);
 

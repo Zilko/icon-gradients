@@ -39,6 +39,8 @@ void ProPlayerObject::updateVisibility() {
         f->m_vehicleSpriteSecondary->setOpacity(m_vehicleSpriteSecondary->getOpacity());
 
     for (CCSprite* sprite : f->m_animSprites) {
+        if (!sprite->getParent()) continue;
+
         CCSprite* parent = static_cast<CCSprite*>(sprite->getParent());
         GLubyte parentOpacity = parent->getOpacity();
 

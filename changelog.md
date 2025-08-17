@@ -1,3 +1,8 @@
+# 1.0.19
+
+* Fijxed shop with colorufl icons mod and locked icons
+* Added if check to fix crash? idk l
+
 # 1.0.18
 
 * Fixed crash
