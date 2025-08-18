@@ -2,6 +2,7 @@
 #include "Cache.hpp"
 
 #include "../Hooks/SimplePlayer.hpp"
+#include "Geode/loader/Log.hpp"
 #include <string>
 
 SimplePlayer* Utils::createIcon(IconType type) {
@@ -67,6 +68,7 @@ bool Utils::isSettingEnabled(int setting) {
         case P2_DISABLED: return Cache::is2PDisabled();
         case P2_FLIP: return Cache::is2PFlip();
         case MENU_GRADIENTS: return Cache::isMenuGradientsEnabled();
+        case P2_SEPARATE: return Cache::is2PSeparate();
     }
 
     return false;
@@ -167,37 +169,47 @@ GradientConfig Utils::configFromObject(const matjson::Value& object) {
     return config;
 }
 
-GradientConfig Utils::getSavedConfig(IconType type, ColorType colorType) {
+GradientConfig Utils::getSavedConfig(IconType type, ColorType colorType, bool secondPlayer) {
     std::string id = getTypeID(type);
     std::string color = "color" + std::to_string(colorType);
+
+    if (!Utils::isSettingEnabled(P2_SEPARATE))
+        secondPlayer = false;
+
+    if (secondPlayer)
+        id += "-p2";
 
     GradientConfig config;
 
     if (!Mod::get()->hasSavedValue(id)) {
-        if (!Mod::get()->hasSavedValue("global"))
+        std::string globalKey = secondPlayer ? "global-p2" : "global";
+
+        if (!Mod::get()->hasSavedValue(globalKey)) {
             return getDefaultConfig(colorType);
-        else
-            id = "global";
+        } else
+            id = globalKey;
     }
 
     matjson::Value jsonConfig = Mod::get()->getSavedValue<matjson::Value>(id);
 
-    if (!jsonConfig.contains(color))
+    if (!jsonConfig.contains(color)) {
         return getDefaultConfig(colorType);
+    }
 
     config = configFromObject(jsonConfig[color]);
 
     return config;
 }
 
-Gradient Utils::getGradient(IconType type, bool flip) {
+Gradient Utils::getGradient(IconType type, bool secondPlayer) {
     Gradient gradient = {
-        getSavedConfig(type, ColorType::Main),
-        getSavedConfig(type, ColorType::Secondary),
-        getSavedConfig(type, ColorType::Glow)
+        getSavedConfig(type, ColorType::Main, secondPlayer),
+        getSavedConfig(type, ColorType::Secondary, secondPlayer),
+        getSavedConfig(type, ColorType::Glow, secondPlayer)
     };
 
-    if (flip) {
+    if (secondPlayer && Utils::isSettingEnabled(P2_FLIP)
+            && !Utils::isSettingEnabled(P2_SEPARATE)) {
         GradientConfig tempConfig = gradient.main;
         gradient.main = gradient.secondary;
         gradient.secondary = tempConfig;

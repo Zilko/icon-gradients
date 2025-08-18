@@ -33,7 +33,7 @@ public:
     void setSelected(bool);
     void setColor(ColorType, bool);
 
-    void applyGradient(bool, ColorType, bool = false, bool = false);
+    void applyGradient(bool, ColorType, bool = false, bool = false, bool = false);
 
     IconType getType();
 

@@ -5,6 +5,7 @@
 
 #include "../Utils/Utils.hpp"
 #include "../Utils/Cache.hpp"
+#include "PointsLayer.hpp"
 
 #include <Geode/ui/GeodeUI.hpp>
 #include <Geode/loader/Event.hpp>
@@ -28,6 +29,28 @@ $execute {
     geode::listenForSettingChanges("point-scale", +[](double value) {
         if (layer)
             layer->updatePointScale(value);
+    });
+
+    geode::listenForSettingChanges("disable-2p", +[](bool value) {
+        if (layer) {
+            if (value)
+                layer->updatePlayer(false);
+
+            layer->updatePlayerToggle();
+        }
+
+        geode::log::debug("DISABLE2P: {}", value);
+    });
+
+    geode::listenForSettingChanges("separate-2p", +[](bool value) {
+        if (layer) {
+            if (!value)
+                layer->updatePlayer(false);
+
+            layer->updatePlayerToggle();
+        }
+
+        geode::log::debug("SEPARATE2P: {}", value);
     });
 
 }
@@ -87,6 +110,27 @@ void GradientLayer::updateGarage(bool quick, bool real) {
     quick ? m_garage->updateQuickGradient() : m_garage->updateGradient();
 }
 
+void GradientLayer::updatePlayer(bool secondPlayer) {
+    m_isSecondPlayer = secondPlayer;
+
+    for (IconButton* button : m_buttons) {
+        std::string id = Utils::getTypeID(button->getType());
+        if (m_isSecondPlayer)
+            id += "-p2";
+
+        button->setLocked(Mod::get()->hasSavedValue(id), true);
+    }
+
+    load(m_selectedButton->getType(), m_currentColor, true, true, true);
+}
+
+void GradientLayer::updatePlayerToggle() {
+    Loader::get()->queueInMainThread([this] {
+        m_playerToggle->setVisible(Utils::isSettingEnabled(P2_SEPARATE));
+        m_playerToggle->toggle(false);
+    });
+}
+
 void GradientLayer::pointMoved() {
     save();
     updateGradient();
@@ -138,13 +182,13 @@ GradientLayer* GradientLayer::create() {
 }
 
 void GradientLayer::updateGradient(bool force, bool all, bool transition) {
-    m_currentConfig = Utils::getSavedConfig(m_selectedButton->getType(), m_currentColor);
+    m_currentConfig = Utils::getSavedConfig(m_selectedButton->getType(), m_currentColor, m_isSecondPlayer);
 
     updateGarage(true);
 
-    if (all) {
-        Gradient gradient = Utils::getGradient(m_selectedButton->getType(), false);
+    Gradient gradient = Utils::getGradient(m_selectedButton->getType(), m_isSecondPlayer);
 
+    if (all) {
         m_pointsLayer->updateGradient(gradient.main, ColorType::Main, force);
         m_pointsLayer->updateGradient(gradient.secondary, ColorType::Secondary, force);
         m_pointsLayer->updateGradient(gradient.glow, ColorType::Glow, force);
@@ -152,13 +196,13 @@ void GradientLayer::updateGradient(bool force, bool all, bool transition) {
         m_pointsLayer->updateGradient(m_currentConfig, m_currentColor, force);
 
     for (IconButton* button : m_buttons) {
-        button->applyGradient(force, m_currentColor, transition, all);
+        button->applyGradient(force, m_currentColor, transition, all, m_isSecondPlayer);
         button->setColor(m_currentColor, false);
     }
 
-    m_mainColorToggle->applyGradient(Utils::getSavedConfig(m_selectedButton->getType(), ColorType::Main), force, transition);
-    m_secondaryColorToggle->applyGradient(Utils::getSavedConfig(m_selectedButton->getType(), ColorType::Secondary), force, transition);
-    m_glowColorToggle->applyGradient(Utils::getSavedConfig(m_selectedButton->getType(), ColorType::Glow), force, transition);
+    m_mainColorToggle->applyGradient(gradient.main, force, transition);
+    m_secondaryColorToggle->applyGradient(gradient.secondary, force, transition);
+    m_glowColorToggle->applyGradient(gradient.glow, force, transition);
 }
 
 void GradientLayer::updateCountLabel() {
@@ -172,7 +216,7 @@ void GradientLayer::updateCountLabel() {
 }
 
 void GradientLayer::updateUI() {
-    m_currentConfig = Utils::getSavedConfig(m_selectedButton->getType(), m_currentColor);
+    m_currentConfig = Utils::getSavedConfig(m_selectedButton->getType(), m_currentColor, m_isSecondPlayer);
 
     bool hasPoints = m_currentConfig.points.size() > 0;
     bool canAddPoints = m_currentConfig.points.size() < 24;
@@ -268,7 +312,7 @@ void GradientLayer::onRemovePoint(CCObject*) {
 }
 
 void GradientLayer::onSettings(CCObject*) {
-    geode::openSettingsPopup(Mod::get(), true);
+    auto popup = geode::openSettingsPopup(Mod::get(), true);
 }
 
 void GradientLayer::onCopy(CCObject*) {
@@ -309,7 +353,7 @@ void GradientLayer::onLoad(CCObject*) {
 void GradientLayer::load(IconType type, ColorType colorType, bool force, bool all, bool transition) {
     GradientConfig previousConfig = m_currentConfig;
 
-    m_currentConfig = Utils::getSavedConfig(type, colorType);
+    m_currentConfig = Utils::getSavedConfig(type, colorType, m_isSecondPlayer);
 
     m_pointsLayer->loadPoints(m_currentConfig, previousConfig != m_currentConfig && transition);
 
@@ -335,7 +379,10 @@ void GradientLayer::save() {
 void GradientLayer::save(GradientConfig config, ColorType colorType) {
     if (!m_selectedButton) return;
     
-    std::string id = !m_selectedButton->isLocked() ? "global" : Utils::getTypeID(m_selectedButton->getType());
+    std::string id = (!m_selectedButton->isLocked() ? "global" : Utils::getTypeID(m_selectedButton->getType()));
+    if (m_isSecondPlayer)
+        id += "-p2";
+
     std::string color = "color" + std::to_string(colorType);
 
     Utils::saveConfig(config, id, color);
@@ -388,13 +435,18 @@ void GradientLayer::onLockToggle(CCObject* sender) {
     if (!m_selectedButton->isLocked()) {
         m_selectedButton->setLocked(!m_selectedButton->isLocked());
 
-        save(Utils::getSavedConfig(static_cast<IconType>(-1), ColorType::Main), ColorType::Main);
-        save(Utils::getSavedConfig(static_cast<IconType>(-1), ColorType::Secondary), ColorType::Secondary);
-        save(Utils::getSavedConfig(static_cast<IconType>(-1), ColorType::Glow), ColorType::Glow);
+        save(Utils::getSavedConfig(static_cast<IconType>(-1), ColorType::Main, m_isSecondPlayer), ColorType::Main);
+        save(Utils::getSavedConfig(static_cast<IconType>(-1), ColorType::Secondary, m_isSecondPlayer), ColorType::Secondary);
+        save(Utils::getSavedConfig(static_cast<IconType>(-1), ColorType::Glow, m_isSecondPlayer), ColorType::Glow);
     } else {
         std::string id = Utils::getTypeID(m_selectedButton->getType());
 
-        if (Mod::get()->hasSavedValue(id) && id != "global")
+        bool isGlobal = id == "global";
+
+        if (m_isSecondPlayer)
+            id += "-p2";
+
+        if (Mod::get()->hasSavedValue(id) && !isGlobal)
             Mod::get()->getSaveContainer().erase(id);
 
         bool locked = !m_selectedButton->isLocked();
@@ -429,6 +481,12 @@ void GradientLayer::onColorToggle(CCObject* sender) {
 
 void GradientLayer::onColorSelector(CCObject*) {
     ColorSelectLayer::create(this)->show();
+}
+
+void GradientLayer::onPlayerToggle(CCObject* sender) {
+    CCMenuItemToggler* toggle = static_cast<CCMenuItemToggler*>(sender);
+
+    updatePlayer(!toggle->isToggled());
 }
 
 void GradientLayer::onHideToggle(CCObject* sender) {
@@ -553,7 +611,7 @@ void GradientLayer::scrollWheel(float y, float) {
     if (index < 0) index = static_cast<int>(m_buttons.size()) - 1;
 
     onIconButton(m_buttons[index]);
-} 
+}
 
 bool GradientLayer::setup() {
     geode::DispatchEvent<CCNode*, CCRect>("timestepyt.gdneko/create-neko-rect", m_mainLayer, {178.5f, 75, 259, 126}).post();
@@ -561,6 +619,9 @@ bool GradientLayer::setup() {
     setMouseEnabled(true);
 
     m_smoothScroll = Loader::get()->isModLoaded("prevter.smooth-scroll");
+
+    if (Mod* sdiMod = Loader::get()->getLoadedMod("weebify.separate_dual_icons"))
+        m_isSecondPlayer = sdiMod->getSavedValue("2pselected", false) && Utils::isSettingEnabled(P2_SEPARATE);
 
     CCScene* scene = CCDirector::get()->getRunningScene();
         
@@ -591,6 +652,19 @@ bool GradientLayer::setup() {
     btn->setPosition(m_size);
 
     m_buttonMenu->addChild(btn);
+
+    m_playerToggle = CCMenuItemToggler::create(
+        CCSprite::create("toggle_player_primary.png"_spr),
+        CCSprite::create("toggle_player_secondary.png"_spr),
+        this,
+        menu_selector(GradientLayer::onPlayerToggle)
+    );
+    m_playerToggle->setPosition({62, 255});
+    m_playerToggle->setVisible(Utils::isSettingEnabled(P2_SEPARATE));
+
+    m_playerToggle->toggle(m_isSecondPlayer);
+
+    m_buttonMenu->addChild(m_playerToggle);
 
     setTitle("Icon Gradients");
     m_title->setPosition({178.5f, 262});
@@ -824,8 +898,13 @@ bool GradientLayer::setup() {
 
     m_buttonMenu->addChild(m_colorSelector);
 
-    for (IconButton* button : m_buttons)
-        button->setLocked(Mod::get()->hasSavedValue(Utils::getTypeID(button->getType())), true);
+    for (IconButton* button : m_buttons) {
+        std::string id = Utils::getTypeID(button->getType());
+        if (m_isSecondPlayer)
+            id += "-p2";
+
+        button->setLocked(Mod::get()->hasSavedValue(id), true);
+    }
 
     m_mainColorToggle->setSelected(true);
 

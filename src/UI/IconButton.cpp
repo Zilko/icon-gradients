@@ -108,17 +108,17 @@ void IconButton::setLocked(bool locked, bool instant) {
     }
 }
 
-void IconButton::applyGradient(bool force, ColorType colorType, bool transition, bool all) {
+void IconButton::applyGradient(bool force, ColorType colorType, bool transition, bool all, bool secondPlayer) {
     GameManager* gm = GameManager::get();
 
     GradientConfig previousConfig = m_currentConfig;
 
     // transition = false; // ignore
 
-    m_currentConfig = Utils::getSavedConfig(m_type, colorType);
+    m_currentConfig = Utils::getSavedConfig(m_type, colorType, secondPlayer);
 
     if (all) {
-        Gradient gradient = Utils::getGradient(m_type, false);
+        Gradient gradient = Utils::getGradient(m_type, secondPlayer);
 
         Utils::applyGradient(m_icon, gradient.main, ColorType::Main, force);
         Utils::applyGradient(m_icon, gradient.secondary, ColorType::Secondary, force);

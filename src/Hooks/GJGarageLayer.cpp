@@ -55,10 +55,7 @@ void ProGJGarageLayer::updateGradient(bool colorful) {
 
 		if (Loader::get()->isModLoaded("weebify.separate_dual_icons"))
 			if (SimplePlayer* icon = typeinfo_cast<SimplePlayer*>(getChildByID("player2-icon"))) {
-				Gradient gradient = Utils::getGradient(
-					Utils::getIconType(icon),
-					Utils::isSettingEnabled(P2_FLIP)
-				);
+				Gradient gradient = Utils::getGradient( Utils::getIconType(icon), true);
 
 				Utils::applyGradient(icon, gradient.main, ColorType::Main, true);
 				Utils::applyGradient(icon, gradient.secondary, ColorType::Secondary, true);

@@ -19,7 +19,7 @@ public:
     static std::vector<GradientConfig> getSavedGradients();
 
     static GradientConfig configFromObject(const matjson::Value&);
-    static GradientConfig getSavedConfig(IconType, ColorType);
+    static GradientConfig getSavedConfig(IconType, ColorType, bool = false);
     static GradientConfig getDefaultConfig(ColorType);
     static matjson::Value getSaveObject(GradientConfig);
 

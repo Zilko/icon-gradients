@@ -33,10 +33,7 @@ void ProProfilePage::updateGradient() {
             if (!m_fields->m_isShip)
                 type = IconType::Jetpack;
 
-        Gradient gradient = Utils::getGradient(
-            type,
-            m_fields->m_isSecondPlayer && Utils::isSettingEnabled(P2_FLIP)
-        );
+        Gradient gradient = Utils::getGradient(type, m_fields->m_isSecondPlayer);
         
         Utils::applyGradient(child, gradient.main, ColorType::Main, true);
         Utils::applyGradient(child, gradient.secondary, ColorType::Secondary, true);

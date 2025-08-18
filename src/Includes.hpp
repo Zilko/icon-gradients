@@ -9,6 +9,7 @@ const int MOD_DISABLED = 1;
 const int P2_DISABLED = 2;
 const int P2_FLIP = 3;
 const int MENU_GRADIENTS = 4;
+const int P2_SEPARATE = 5;
 
 enum SpriteType {
     Icon = 1,
