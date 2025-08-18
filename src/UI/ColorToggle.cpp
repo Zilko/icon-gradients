@@ -25,10 +25,13 @@ bool ColorToggle::init(CCObject* target, cocos2d::SEL_MenuHandler callback, bool
         switch (m_colorType) {
             case ColorType::Main:
                 numberStr = "1";
+                break;
             case ColorType::Secondary:
                 numberStr = "2";
+                break;
             case ColorType::Glow:
                 numberStr = "3";
+                break;
         }
 
     if (number) {
