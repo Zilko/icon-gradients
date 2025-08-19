@@ -241,7 +241,8 @@ Gradient Utils::getGradient(IconType type, bool secondPlayer) {
     Gradient gradient = {
         getSavedConfig(type, ColorType::Main, secondPlayer),
         getSavedConfig(type, ColorType::Secondary, secondPlayer),
-        getSavedConfig(type, ColorType::Glow, secondPlayer)
+        getSavedConfig(type, ColorType::Glow, secondPlayer),
+        getSavedConfig(type, ColorType::White, secondPlayer)
     };
 
     if (
@@ -380,9 +381,12 @@ void Utils::applyGradient(SimplePlayer* icon, GradientConfig config, ColorType c
                     
                     applyGradient(spr, config, iconType, id, blend, secondPlayer, false, extra);
                 }
-                    
+
                 break;
             }
+            case ColorType::White:
+                applyGradient(otherSprite->m_extraSprite, config, iconType, 400, blend, secondPlayer, false, extra);
+                break;
         }
     } else {
         CCSprite* sprite = nullptr;
@@ -400,6 +404,9 @@ void Utils::applyGradient(SimplePlayer* icon, GradientConfig config, ColorType c
             case ColorType::Glow:
                 id = 300;
                 sprite = icon->m_outlineSprite;
+                break;
+            case ColorType::White:
+                sprite = icon->m_detailSprite;
                 break;
         }
 

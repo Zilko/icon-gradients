@@ -1,4 +1,5 @@
 #include "../Utils/Utils.hpp"
+#include "ccTypes.h"
 
 #include "IconButton.hpp"
 

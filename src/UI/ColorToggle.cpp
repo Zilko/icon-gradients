@@ -1,4 +1,5 @@
 #include "../Utils/Utils.hpp"
+#include "ccTypes.h"
 
 #include "ColorToggle.hpp"
 #include "GradientLayer.hpp"
@@ -49,6 +50,9 @@ bool ColorToggle::init(CCObject* target, SEL_MenuHandler callback, bool number, 
             break;
         case ColorType::Glow:
             numberStr = "3";
+            break;
+        case ColorType::White:
+            numberStr = "4";
             break;
     }
 

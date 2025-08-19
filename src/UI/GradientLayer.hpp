@@ -41,6 +41,7 @@ private:
     ColorToggle* m_mainColorToggle = nullptr;
     ColorToggle* m_secondaryColorToggle = nullptr;
     ColorToggle* m_glowColorToggle = nullptr;
+    ColorToggle* m_whiteColorToggle = nullptr;
     ColorToggle* m_colorSelector = nullptr;
     
     PlayerToggle* m_playerToggle = nullptr;

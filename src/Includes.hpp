@@ -20,7 +20,7 @@ enum ColorType {
     Main = 1,
     Secondary = 2,
     Glow = 3,
-    // White = 4,
+    White = 4,
     // Line = 5,
 };
 
@@ -62,6 +62,7 @@ struct Gradient {
     GradientConfig main;
     GradientConfig secondary;
     GradientConfig glow;
+    GradientConfig white;
 
 };
 
