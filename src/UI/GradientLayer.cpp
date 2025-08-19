@@ -885,6 +885,11 @@ bool GradientLayer::setup() {
 
     m_buttonMenu->addChild(m_glowColorToggle);
 
+    m_whiteColorToggle = ColorToggle::create(this, menu_selector(GradientLayer::onColorToggle), ColorType::White);
+    m_whiteColorToggle->setPosition({282, 36});
+
+    m_buttonMenu->addChild(m_whiteColorToggle);
+
     m_whiteColorToggle = ColorToggle::create(this, menu_selector(GradientLayer::onColorToggle), ColorType::White, this);
     m_whiteColorToggle->setPosition({282, 33});
 
