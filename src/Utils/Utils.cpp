@@ -246,7 +246,8 @@ Gradient Utils::getGradient(IconType type, bool secondPlayer) {
         getSavedConfig(type, ColorType::Main, secondPlayer),
         getSavedConfig(type, ColorType::Secondary, secondPlayer),
         getSavedConfig(type, ColorType::Glow, secondPlayer),
-        getSavedConfig(type, ColorType::White, secondPlayer)
+        getSavedConfig(type, ColorType::White, secondPlayer),
+        getSavedConfig(type, ColorType::Line, secondPlayer)
     };
 
     if (
@@ -389,9 +390,35 @@ void Utils::applyGradient(SimplePlayer* icon, GradientConfig config, ColorType c
 
                 break;
             }
-            case ColorType::White:
+            case ColorType::White: {
                 applyGradient(otherSprite->m_extraSprite, config, iconType, 400, blend, secondPlayer, false, extra);
                 break;
+            }
+            case ColorType::Line:
+                int id = 500;
+                for (CCSpritePart* spr : CCArrayExt<CCSpritePart*>(otherSprite->m_headSprite->getParent()->getChildren())) {
+                    if (!typeinfo_cast<CCSpritePart*>(spr)) continue;
+
+                    id++;
+
+                    CCSprite* lineSprite;
+                    if ((lineSprite = typeinfo_cast<CCSprite*>(icon->getChildByID("gradient_line"_spr)))) {
+                        lineSprite->setDisplayFrame(spr->displayFrame());
+                    } else {
+                        lineSprite = CCSprite::createWithSpriteFrame(spr->displayFrame());
+                        lineSprite->setID("gradient_line"_spr);
+
+                        spr->addChild(lineSprite);
+
+                        force = true;
+                    }
+
+                    lineSprite->setContentSize(spr->getContentSize());
+                    lineSprite->setPosition(spr->getContentSize()/2);
+
+                    applyGradient(lineSprite, config, iconType, id, blend, secondPlayer, false, extra, true);
+                }
+            break;
         }
     } else {
         CCSprite* sprite = nullptr;
@@ -413,13 +440,31 @@ void Utils::applyGradient(SimplePlayer* icon, GradientConfig config, ColorType c
             case ColorType::White:
                 sprite = icon->m_detailSprite;
                 break;
+            case ColorType::Line: {
+                if (CCSprite* lineSprite = typeinfo_cast<CCSprite*>(icon->getChildByID("gradient_line"_spr))) {
+                    lineSprite->setDisplayFrame(icon->m_firstLayer->displayFrame());
+                    sprite = lineSprite;
+                } else {
+                    sprite = CCSprite::createWithSpriteFrame(icon->m_firstLayer->displayFrame());
+                    sprite->setID("gradient_line"_spr);
+
+                    icon->m_firstLayer->addChild(sprite);
+
+                    force = true;
+                }
+
+                sprite->setContentSize(icon->m_firstLayer->getContentSize());
+                sprite->setPosition(icon->m_firstLayer->getContentSize()/2);
+
+                break;
+            }
         }
 
-        applyGradient(sprite, config, iconType, id, blend, secondPlayer, false, extra);
+        applyGradient(sprite, config, iconType, id, blend, secondPlayer, false, extra, colorType == ColorType::Line);
     }
 }
 
-void Utils::applyGradient(CCSprite* sprite, GradientConfig config, IconType iconType, int id, bool blend, bool secondPlayer, bool playerObject, int extra) {
+void Utils::applyGradient(CCSprite* sprite, GradientConfig config, bool force, bool blend, bool line) {
     if (!sprite) return;
     
     if (config.points.empty())
@@ -444,7 +489,7 @@ void Utils::applyGradient(CCSprite* sprite, GradientConfig config, IconType icon
      
     if (!program || extra == -4732) {
         std::string vertPath = (Mod::get()->getResourcesDir() / "position.vert").string();
-        std::string shaderPath = (Mod::get()->getResourcesDir() / fmt::format("{}_gradient{}.fsh", config.isLinear ? "linear" : "radial", blend ? "_blend" : "")).string();
+        std::string shaderPath = (Mod::get()->getResourcesDir() / fmt::format("{}_gradient{}.fsh", config.isLinear ? "linear" : "radial", line ? "_line" : blend ? "_blend" : "")).string();
 
         if (!std::filesystem::exists(vertPath) || !std::filesystem::exists(shaderPath))
             return;

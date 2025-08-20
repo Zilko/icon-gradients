@@ -93,6 +93,9 @@ void ProPlayerObject::updateIconSprite(Gradient gradient, auto f) {
     if (!gradient.white.points.empty())
         updateSprite(m_iconSpriteWhitener, f->m_iconSpriteWhitener, SpriteType::Icon, ColorType::White);
 
+    if (!gradient.line.points.empty())
+        updateSprite(m_iconSprite, f->m_iconSpriteLine, SpriteType::Icon, ColorType::Line);
+
     if (f->m_iconSprite) {
         Utils::applyGradient(f->m_iconSprite, gradient.main, getIconType(), 105, false, m_isSecondPlayer, true, 2);
         f->m_iconSprite->setVisible(!gradient.main.points.empty());
@@ -112,6 +115,11 @@ void ProPlayerObject::updateIconSprite(Gradient gradient, auto f) {
         Utils::applyGradient(f->m_iconSpriteWhitener, gradient.white, getIconType(), 405, false, m_isSecondPlayer, true, 2);
         f->m_iconSpriteWhitener->setVisible(!gradient.white.points.empty());
     }
+    
+    if (f->m_iconSpriteLine) {
+        Utils::applyGradient(f->m_iconSpriteLine, gradient.line, true, false, true);
+        f->m_iconSpriteLine->setVisible(!gradient.line.points.empty());
+    }
 }
 
 void ProPlayerObject::updateVehicleSprite(Gradient gradient, auto f) {
@@ -126,6 +134,9 @@ void ProPlayerObject::updateVehicleSprite(Gradient gradient, auto f) {
 
     if (!gradient.white.points.empty())
         updateSprite(m_vehicleSpriteWhitener, f->m_vehicleSpriteWhitener, SpriteType::Vehicle, ColorType::White);
+
+    if (!gradient.line.points.empty())
+        updateSprite(m_vehicleSprite, f->m_vehicleSpriteLine, SpriteType::Vehicle, ColorType::Line);
 
     if (f->m_vehicleSprite) {
         Utils::applyGradient(f->m_vehicleSprite, gradient.main, getIconType(), 104, false, m_isSecondPlayer, true, 44);
@@ -145,6 +156,11 @@ void ProPlayerObject::updateVehicleSprite(Gradient gradient, auto f) {
     if (f->m_vehicleSpriteWhitener) {
         Utils::applyGradient(f->m_vehicleSpriteWhitener, gradient.white, getIconType(), 404, false, m_isSecondPlayer, true, 44);
         f->m_vehicleSpriteWhitener->setVisible(!gradient.white.points.empty());
+    }
+
+    if (f->m_vehicleSpriteLine) {
+        Utils::applyGradient(f->m_vehicleSpriteLine, gradient.line, true, false, true);
+        f->m_vehicleSpriteLine->setVisible(!gradient.line.points.empty());
     }
 
 }
@@ -215,6 +231,9 @@ void ProPlayerObject::updateAnimSprite(IconType type, Gradient gradient, auto f)
 
         count++;
     }
+
+    count = 1;
+    
     if (!gradient.white.points.empty()) {
         CCSprite* spr = CCSprite::createWithSpriteFrame(sprite->m_extraSprite->displayFrame());
         spr->setID(fmt::format("{}-gradient-{}"_spr, Utils::getTypeID(SpriteType::Animation), count).c_str());
@@ -225,6 +244,24 @@ void ProPlayerObject::updateAnimSprite(IconType type, Gradient gradient, auto f)
         f->m_animSprites.push_back(spr);
 
         Utils::applyGradient(spr, gradient.white, type, 400 + count, false, m_isSecondPlayer, true, 55);
+
+        count++;
+    }
+
+    count = 1;
+
+    for (CCSpritePart* spr : CCArrayExt<CCSpritePart*>(sprite->m_paSprite->m_spriteParts)) {
+        if (gradient.line.points.empty()) break;
+
+        CCSprite* sprite = CCSprite::createWithSpriteFrame(spr->displayFrame());
+        sprite->setID(fmt::format("{}-gradient-{}"_spr, Utils::getTypeID(SpriteType::Animation), count).c_str());
+        sprite->setAnchorPoint({0, 0});
+
+        spr->addChild(sprite);
+
+        f->m_animSprites.push_back(sprite);
+
+        Utils::applyGradient(sprite, gradient.line, true, false, true);
 
         count++;
     }

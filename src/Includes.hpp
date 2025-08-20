@@ -21,7 +21,7 @@ enum ColorType {
     Secondary = 2,
     Glow = 3,
     White = 4,
-    // Line = 5,
+    Line = 5,
 };
 
 struct SimplePoint {
@@ -63,6 +63,7 @@ struct Gradient {
     GradientConfig secondary;
     GradientConfig glow;
     GradientConfig white;
+    GradientConfig line;
 
 };
 
