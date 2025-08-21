@@ -19,7 +19,7 @@ uniform vec2 uvMax;
 void main() {
     vec4 texColor = texture2D(u_texture, v_texCoord);
 
-    float gray = max(max(texColor.r, texColor.g), texColor.b);
+    float gray = max(max(texColor.r, texColor.g), texColor.b) - 0.05;
     float mask = pow(2.0, -10.0 * gray);
 
     texColor = vec4(vec3(texColor.a * mask), texColor.a * mask);

@@ -402,11 +402,11 @@ void Utils::applyGradient(SimplePlayer* icon, GradientConfig config, ColorType c
                     id++;
 
                     CCSprite* lineSprite;
-                    if ((lineSprite = typeinfo_cast<CCSprite*>(icon->getChildByID("gradient_line"_spr)))) {
+                    if ((lineSprite = typeinfo_cast<CCSprite*>(spr->getChildByID("gradient-line"_spr)))) {
                         lineSprite->setDisplayFrame(spr->displayFrame());
                     } else {
                         lineSprite = CCSprite::createWithSpriteFrame(spr->displayFrame());
-                        lineSprite->setID("gradient_line"_spr);
+                        lineSprite->setID("gradient-line"_spr);
 
                         spr->addChild(lineSprite);
 
@@ -415,6 +415,8 @@ void Utils::applyGradient(SimplePlayer* icon, GradientConfig config, ColorType c
 
                     lineSprite->setContentSize(spr->getContentSize());
                     lineSprite->setPosition(spr->getContentSize()/2);
+
+                    lineSprite->setVisible(!config.points.empty());
 
                     applyGradient(lineSprite, config, iconType, id, blend, secondPlayer, false, extra, true);
                 }
@@ -441,12 +443,12 @@ void Utils::applyGradient(SimplePlayer* icon, GradientConfig config, ColorType c
                 sprite = icon->m_detailSprite;
                 break;
             case ColorType::Line: {
-                if (CCSprite* lineSprite = typeinfo_cast<CCSprite*>(icon->getChildByID("gradient_line"_spr))) {
+                if (CCSprite* lineSprite = typeinfo_cast<CCSprite*>(icon->m_firstLayer->getChildByID("gradient-line"_spr))) {
                     lineSprite->setDisplayFrame(icon->m_firstLayer->displayFrame());
                     sprite = lineSprite;
                 } else {
                     sprite = CCSprite::createWithSpriteFrame(icon->m_firstLayer->displayFrame());
-                    sprite->setID("gradient_line"_spr);
+                    sprite->setID("gradient-line"_spr);
 
                     icon->m_firstLayer->addChild(sprite);
 
@@ -455,6 +457,8 @@ void Utils::applyGradient(SimplePlayer* icon, GradientConfig config, ColorType c
 
                 sprite->setContentSize(icon->m_firstLayer->getContentSize());
                 sprite->setPosition(icon->m_firstLayer->getContentSize()/2);
+
+                sprite->setVisible(!config.points.empty());
 
                 break;
             }
