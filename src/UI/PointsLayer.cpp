@@ -303,7 +303,7 @@ void PointsLayer::setPlayerFrame(IconType type) {
     m_type = type;
     
     m_icon->updatePlayerFrame(
-        Utils::getIconID(type),
+        Utils::getIconID(type, m_layer->isSecondPlayer()),
         type
     );
 

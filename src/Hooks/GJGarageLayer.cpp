@@ -68,12 +68,15 @@ void ProGJGarageLayer::updateGradient(bool colorful) {
 	auto f = m_fields.self();
 	bool loadedGradient = false;
 	Gradient gradient;
+	bool p2Selected = false;
+	if (Mod* sdiMod = Loader::get()->getLoadedMod("weebify.separate_dual_icons"))
+		p2Selected = sdiMod->getSavedValue<bool>("2pselected");
 
 	for (SimplePlayer* icon : f->m_allIcons) {
 		IconType type = Utils::getIconType(icon);
 
 		if (!loadedGradient) {
-			gradient = Utils::getGradient(type, false);
+			gradient = Utils::getGradient(type, p2Selected);
 			loadedGradient = true;
 		}
 

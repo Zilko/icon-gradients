@@ -110,6 +110,8 @@ public:
     void updateGarage(bool, bool = false);
     void updatePlayer(bool);
     void updatePlayerToggle();
+    
+    bool isSecondPlayer();
 
     void pointMoved();
     void pointSelected(CCNode*);

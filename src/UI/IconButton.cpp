@@ -4,10 +4,11 @@
 
 #include <hiimjustin000.more_icons/include/MoreIcons.hpp>
 
-IconButton* IconButton::create(CCObject* target, cocos2d::SEL_MenuHandler callback, IconType type) {
+IconButton* IconButton::create(CCObject* target, cocos2d::SEL_MenuHandler callback, IconType type, bool secondPlayer) {
     IconButton* ret = new IconButton();
 
     ret->m_type = type;
+    ret->m_isSecondPlayer = secondPlayer;
 
     if (ret->init(target, callback)) {
         ret->autorelease();
@@ -19,7 +20,7 @@ IconButton* IconButton::create(CCObject* target, cocos2d::SEL_MenuHandler callba
 };
 
 bool IconButton::init(CCObject* target, cocos2d::SEL_MenuHandler callback) {
-    m_icon = Utils::createIcon(m_type);
+    m_icon = Utils::createIcon(m_type, m_isSecondPlayer);
 
     if (Loader::get()->isModLoaded("hiimjustin000.more_icons"))
         MoreIcons::updateSimplePlayer(m_icon, m_type);
@@ -164,6 +165,11 @@ void IconButton::applyGradient(bool force, ColorType colorType, bool transition,
         CCCallFunc::create(this, callfunc_selector(IconButton::onAnimationEnded)),
         nullptr
     ));
+}
+
+void IconButton::updateSprite(bool secondPlayer) {
+    m_isSecondPlayer = secondPlayer;
+    m_icon->updatePlayerFrame(Utils::getIconID(m_type, secondPlayer), m_type);
 }
 
 void IconButton::onAnimationEnded() {

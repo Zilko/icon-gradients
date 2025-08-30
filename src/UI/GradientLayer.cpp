@@ -113,12 +113,16 @@ void GradientLayer::updateGarage(bool quick, bool real) {
 void GradientLayer::updatePlayer(bool secondPlayer) {
     m_isSecondPlayer = secondPlayer;
 
+    m_pointsLayer->setPlayerFrame(m_selectedButton->getType());
+
     for (IconButton* button : m_buttons) {
         std::string id = Utils::getTypeID(button->getType());
         if (m_isSecondPlayer)
             id += "-p2";
 
         button->setLocked(Mod::get()->hasSavedValue(id), true);
+
+        button->updateSprite(m_isSecondPlayer);
     }
 
     load(m_selectedButton->getType(), m_currentColor, true, true, true);
@@ -129,6 +133,10 @@ void GradientLayer::updatePlayerToggle() {
         m_playerToggle->setVisible(Utils::isSettingEnabled(P2_SEPARATE));
         m_playerToggle->toggle(false);
     });
+}
+
+bool GradientLayer::isSecondPlayer() {
+    return m_isSecondPlayer;
 }
 
 void GradientLayer::pointMoved() {
@@ -692,7 +700,7 @@ bool GradientLayer::setup() {
     for (size_t i = 0; i < 9; ++i) {
         IconType type = static_cast<IconType>(i);
 
-        IconButton* btn = IconButton::create(this, menu_selector(GradientLayer::onIconButton), type);
+        IconButton* btn = IconButton::create(this, menu_selector(GradientLayer::onIconButton), type, m_isSecondPlayer);
 
         m_buttons.push_back(btn);
 

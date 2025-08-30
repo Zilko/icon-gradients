@@ -4,11 +4,11 @@ class Utils {
 
 public:
 
-    static SimplePlayer* createIcon(IconType);
+    static SimplePlayer* createIcon(IconType, bool = false);
 
     static CCMenuItemToggler* createTypeToggle(bool, cocos2d::CCPoint, CCObject*, cocos2d::SEL_MenuHandler);
 
-    static int getIconID(IconType);
+    static int getIconID(IconType, bool = false);
     static bool isGradientSaved(GradientConfig);
     static bool isSettingEnabled(int);
 
