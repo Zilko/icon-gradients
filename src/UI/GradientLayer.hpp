@@ -97,6 +97,7 @@ private:
     void updateGradient(bool = false, bool = false, bool = false);
     void updateCountLabel();
     void updateUI();
+    void updateColorToggles();
 
     void colorValueChanged(ccColor3B) override;
     void textChanged(CCTextInputNode*) override;

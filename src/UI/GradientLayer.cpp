@@ -93,6 +93,8 @@ void GradientLayer::updateGarage() {
 void GradientLayer::updatePlayer(bool secondPlayer) {
     m_isSecondPlayer = secondPlayer;
 
+    updateColorToggles();
+
     m_pointsLayer->setPlayerFrame(m_selectedButton->getType());
 
     for (IconButton* button : m_buttons) {
@@ -258,6 +260,30 @@ void GradientLayer::updateUI() {
     m_bInput->setEnabled(hasPoints);
 
     m_pointsLayer->setPointsHidden(m_pointsHidden, 0.f);
+}
+
+void GradientLayer::updateColorToggles() {
+    bool isGlowActive = GameManager::get()->getPlayerGlow();
+    if (m_isSecondPlayer)
+        if (Mod* sdiMod = Loader::get()->getLoadedMod("weebify.separate_dual_icons"))
+            isGlowActive = sdiMod->getSavedValue<bool>("glow", false);
+
+    std::vector<float> colorTogglePos;
+    if (isGlowActive)
+        colorTogglePos = {174, 201, 228, 255, 282};
+    else
+        colorTogglePos = {175, 211, 0, 247, 282};
+
+    m_mainColorToggle->setPosition({colorTogglePos[0], 36});
+    m_secondaryColorToggle->setPosition({colorTogglePos[1], 36});
+    m_glowColorToggle->setPosition({colorTogglePos[2], 36});
+    m_whiteColorToggle->setPosition({colorTogglePos[3], 36});
+    m_lineColorToggle->setPosition({colorTogglePos[4], 36});
+
+    if (m_glowColorToggle->isSelected() && !isGlowActive)
+        onColorToggle(m_mainColorToggle);
+
+    m_glowColorToggle->setVisible(isGlowActive);
 }
 
 void GradientLayer::onAddPoint(CCObject*) {
@@ -894,20 +920,16 @@ bool GradientLayer::setup() {
     m_buttonMenu->addChild(m_glowColorToggle);
 
     m_whiteColorToggle = ColorToggle::create(this, menu_selector(GradientLayer::onColorToggle), ColorType::White);
-    m_whiteColorToggle->setPosition({colorTogglePos[3], 36});
-
     m_buttonMenu->addChild(m_whiteColorToggle);
 
     m_lineColorToggle = ColorToggle::create(this, menu_selector(GradientLayer::onColorToggle), ColorType::Line);
-    m_lineColorToggle->setPosition({colorTogglePos[4], 36});
-
     m_buttonMenu->addChild(m_lineColorToggle);
 
-    m_mainColorToggle->applyGradient(Utils::getDefaultConfig(ColorType::Main, m_isSecondPlayer), true, false);
-    m_secondaryColorToggle->applyGradient(Utils::getDefaultConfig(ColorType::Secondary, m_isSecondPlayer), true, false);
-    m_glowColorToggle->applyGradient(Utils::getDefaultConfig(ColorType::Glow, m_isSecondPlayer), true, false);
-    m_whiteColorToggle->applyGradient(Utils::getDefaultConfig(ColorType::White, m_isSecondPlayer), true, false);
-    m_lineColorToggle->applyGradient(Utils::getDefaultConfig(ColorType::Line, m_isSecondPlayer), true, false);
+    m_mainColorToggle->applyGradient(Utils::getDefaultConfig(ColorType::Main), true, true);
+    m_secondaryColorToggle->applyGradient(Utils::getDefaultConfig(ColorType::Secondary), true, true);
+    m_glowColorToggle->applyGradient(Utils::getDefaultConfig(ColorType::Glow), true, true);
+    m_whiteColorToggle->applyGradient(Utils::getDefaultConfig(ColorType::White), true, true);
+    m_lineColorToggle->applyGradient(Utils::getDefaultConfig(ColorType::Line), true, true);
 
     m_colorSelector = ColorToggle::create(this, menu_selector(GradientLayer::onColorSelector), ColorType::Main, this, false);
     m_colorSelector->setPosition({65, 28});
