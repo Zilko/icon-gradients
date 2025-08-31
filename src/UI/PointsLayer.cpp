@@ -292,7 +292,7 @@ void PointsLayer::updateCenter() {
     if (m_icon->m_spiderSprite)
         m_icon->m_spiderSprite->setPosition(m_icon->getContentSize() / 2.f);
 
-    Utils::setIconColors(m_icon, m_currentColor, false);
+    Utils::setIconColors(m_icon, m_currentColor, false, m_layer->isSecondPlayer());
 }
 
 ColorNode* PointsLayer::getSelectedPoint() {

@@ -27,7 +27,7 @@ public:
 
     static void removeSavedGradient(GradientConfig);
     static void saveConfig(GradientConfig, const std::string&, const std::string&);
-    static void setIconColors(SimplePlayer*, ColorType, bool);
+    static void setIconColors(SimplePlayer*, ColorType, bool, bool = false);
     static void applyGradient(SimplePlayer*, GradientConfig, ColorType, bool, bool = false);
     static void applyGradient(CCSprite*, GradientConfig, bool, bool = false);
     static void patchBatchNode(CCSpriteBatchNode*);

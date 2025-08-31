@@ -80,8 +80,8 @@ void IconButton::setSelected(bool selected) {
     m_select->setVisible(selected);
 }
 
-void IconButton::setColor(ColorType colorType, bool white) {
-    Utils::setIconColors(m_icon, colorType, white);
+void IconButton::setColor(ColorType colorType, bool white, bool secondPlayer) {
+    Utils::setIconColors(m_icon, colorType, white, secondPlayer);
 }
 
 void IconButton::setLocked(bool locked, bool instant) {

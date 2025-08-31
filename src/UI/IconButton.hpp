@@ -32,7 +32,7 @@ public:
 
     void setLocked(bool, bool = false);
     void setSelected(bool);
-    void setColor(ColorType, bool);
+    void setColor(ColorType, bool, bool = false);
 
     void applyGradient(bool, ColorType, bool = false, bool = false, bool = false);
     void updateSprite(bool);

@@ -9,6 +9,7 @@ SimplePlayer* Utils::createIcon(IconType type, bool secondPlayer) {
     SimplePlayer* icon = SimplePlayer::create(1);
 
     icon->updatePlayerFrame(getIconID(type, secondPlayer), type);
+    icon->disableGlowOutline();
 
     return icon;
 }
@@ -234,7 +235,7 @@ Gradient Utils::getGradient(IconType type, bool secondPlayer) {
     return gradient;
 }
 
-void Utils::setIconColors(SimplePlayer* icon, ColorType colorType, bool white) {
+void Utils::setIconColors(SimplePlayer* icon, ColorType colorType, bool white, bool secondPlayer) {
     GameManager* gm = GameManager::get();
 
     cocos2d::ccColor3B color1 = white ? ccc3(255, 255, 255)
@@ -242,14 +243,31 @@ void Utils::setIconColors(SimplePlayer* icon, ColorType colorType, bool white) {
 
     cocos2d::ccColor3B color2 = white ? ccc3(255, 255, 255)
         : gm->colorForIdx(gm->getPlayerColor2());
+    
+    bool hasGlowOutline = gm->getPlayerGlow();
+    cocos2d::ccColor3B colorGlow = white ? ccc3(255, 255, 255)
+        : gm->colorForIdx(gm->getPlayerGlowColor());
+    
+    if (secondPlayer) {
+        if (Mod* sdiMod = Loader::get()->getLoadedMod("weebify.separate_dual_icons")) {
+            color1 = gm->colorForIdx(sdiMod->getSavedValue<int>("color1", 0));
+            color2 = gm->colorForIdx(sdiMod->getSavedValue<int>("color2", 0));
+            hasGlowOutline = sdiMod->getSavedValue<bool>("glow", false);
+            colorGlow = gm->colorForIdx(sdiMod->getSavedValue<int>("colorglow", 0));
+        } else {
+            cocos2d::ccColor3B tmpColor = color1;
+            color1 = color2;
+            color2 = tmpColor;
+        }
+    }
 
     icon->setColor(color1);
     icon->setSecondColor(color2);
 
-    icon->m_hasGlowOutline = gm->getPlayerGlow();;
+    icon->m_hasGlowOutline = hasGlowOutline;
 
     if (icon->m_hasGlowOutline)
-        icon->enableCustomGlowColor(gm->colorForIdx(gm->getPlayerGlowColor()));
+        icon->enableCustomGlowColor(colorGlow);
     else
         icon->disableCustomGlowColor();
 

@@ -205,7 +205,7 @@ void GradientLayer::updateGradient(bool force, bool all, bool transition) {
 
     for (IconButton* button : m_buttons) {
         button->applyGradient(force, m_currentColor, transition, all, m_isSecondPlayer);
-        button->setColor(m_currentColor, false);
+        button->setColor(m_currentColor, false, m_isSecondPlayer);
     }
 
     m_mainColorToggle->applyGradient(gradient.main, force, transition);
