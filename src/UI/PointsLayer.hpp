@@ -32,7 +32,7 @@ private:
     bool m_isLinear = true;
     bool m_isMoving = false;
     bool m_isAnimating = false;
-    bool m_isSecondaryColor = false;
+    ColorType m_currentColor = ColorType::Main;
     bool m_ignoreColorChange = false;
     bool m_pointsHidden = false;
 
@@ -66,7 +66,7 @@ public:
     void updateHover(const cocos2d::CCPoint&);
     void updatePointOpacity(int);
     void updatePointScale(float);
-    void updateGradient(GradientConfig, bool, bool = false);
+    void updateGradient(GradientConfig, ColorType, bool = false);
     void updateGradient(float);
 
     void setPlayerFrame(IconType);

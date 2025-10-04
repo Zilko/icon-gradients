@@ -2,6 +2,7 @@
 #include "Cache.hpp"
 
 #include "../Hooks/SimplePlayer.hpp"
+#include <string>
 
 SimplePlayer* Utils::createIcon(IconType type) {
     SimplePlayer* icon = SimplePlayer::create(1);
@@ -71,10 +72,24 @@ bool Utils::isSettingEnabled(int setting) {
     return false;
 }
 
-GradientConfig Utils::getDefaultConfig(bool secondary) {
+GradientConfig Utils::getDefaultConfig(ColorType colorType) {
     GameManager* gm = GameManager::get();
-    int color = secondary ? gm->getPlayerColor2() : gm->getPlayerColor();
-    
+    int color;
+    switch (colorType) {
+        case ColorType::Main:
+            color = gm->getPlayerColor();
+            break;
+        case ColorType::Secondary:
+            color = gm->getPlayerColor2();
+            break;
+        case ColorType::Glow:
+            color = gm->getPlayerGlowColor();
+            break;
+        default:
+            color = gm->getPlayerColor();
+            break;
+    }
+
     return {
         {
             {{0.5f, 1.1f}, gm->colorForIdx(color)},
@@ -152,15 +167,15 @@ GradientConfig Utils::configFromObject(const matjson::Value& object) {
     return config;
 }
 
-GradientConfig Utils::getSavedConfig(IconType type, bool secondary) {
+GradientConfig Utils::getSavedConfig(IconType type, ColorType colorType) {
     std::string id = getTypeID(type);
-    std::string color = secondary ? "color2" : "color1";
+    std::string color = "color" + std::to_string(colorType);
 
     GradientConfig config;
 
     if (!Mod::get()->hasSavedValue(id)) {
         if (!Mod::get()->hasSavedValue("global"))
-            return getDefaultConfig(secondary);
+            return getDefaultConfig(colorType);
         else
             id = "global";
     }
@@ -168,7 +183,7 @@ GradientConfig Utils::getSavedConfig(IconType type, bool secondary) {
     matjson::Value jsonConfig = Mod::get()->getSavedValue<matjson::Value>(id);
 
     if (!jsonConfig.contains(color))
-        return getDefaultConfig(secondary);
+        return getDefaultConfig(colorType);
 
     config = configFromObject(jsonConfig[color]);
 
@@ -177,8 +192,9 @@ GradientConfig Utils::getSavedConfig(IconType type, bool secondary) {
 
 Gradient Utils::getGradient(IconType type, bool flip) {
     Gradient gradient = {
-        getSavedConfig(type, false),
-        getSavedConfig(type, true)
+        getSavedConfig(type, ColorType::Main),
+        getSavedConfig(type, ColorType::Secondary),
+        getSavedConfig(type, ColorType::Glow)
     };
 
     if (flip) {
@@ -190,7 +206,7 @@ Gradient Utils::getGradient(IconType type, bool flip) {
     return gradient;
 }
 
-void Utils::setIconColors(SimplePlayer* icon, bool secondary, bool white) {
+void Utils::setIconColors(SimplePlayer* icon, ColorType colorType, bool white) {
     GameManager* gm = GameManager::get();
 
     cocos2d::ccColor3B color1 = white ? ccc3(255, 255, 255)
@@ -249,26 +265,52 @@ std::vector<GradientConfig> Utils::getSavedGradients() {
     return ret;
 }
 
-void Utils::applyGradient(SimplePlayer* icon, GradientConfig config, bool secondary, bool force, bool blend) {
+void Utils::applyGradient(SimplePlayer* icon, GradientConfig config, ColorType colorType, bool force, bool blend) {
     GJRobotSprite* otherSprite = nullptr;
 
     if (icon->m_robotSprite) if (icon->m_robotSprite->isVisible()) otherSprite = icon->m_robotSprite;
     if (icon->m_spiderSprite) if (icon->m_spiderSprite->isVisible()) otherSprite = icon->m_spiderSprite;
 
     if (otherSprite) {
-        if (secondary)
-            for (CCSprite* spr : CCArrayExt<CCSprite*>(otherSprite->m_secondArray)) {
-                if (!typeinfo_cast<CCSprite*>(spr) || spr == otherSprite->m_headSprite) continue;
+        switch (colorType) {
+            case ColorType::Main:
+                for (CCSpritePart* spr : CCArrayExt<CCSpritePart*>(otherSprite->m_headSprite->getParent()->getChildren())) {
+                    if (!typeinfo_cast<CCSpritePart*>(spr)) continue;
+                    applyGradient(spr, config, force, blend);
+                }
+            break;
+            case ColorType::Secondary:
+                for (CCSprite* spr : CCArrayExt<CCSprite*>(otherSprite->m_secondArray)) {
+                    if (!typeinfo_cast<CCSprite*>(spr) || spr == otherSprite->m_headSprite) continue;
 
-                applyGradient(spr, config, force, blend);
-            }
-        else
-            for (CCSpritePart* spr : CCArrayExt<CCSpritePart*>(otherSprite->m_headSprite->getParent()->getChildren())) {
-                if (!typeinfo_cast<CCSpritePart*>(spr)) continue;
-                applyGradient(spr, config, force, blend);
-            }
-    } else
-        applyGradient(secondary ? icon->m_secondLayer : icon->m_firstLayer, config, force);
+                    applyGradient(spr, config, force, blend);
+                }
+            break;
+            case ColorType::Glow:
+                for (CCSprite* spr : CCArrayExt<CCSprite*>(otherSprite->m_glowSprite->getChildren())) {
+                    // if (!typeinfo_cast<CCSprite*>(spr) || spr == otherSprite->m_headSprite) continue;
+
+                    applyGradient(spr, config, force, blend);
+                }
+            break;
+        }
+    } else {
+        CCSprite* sprite = nullptr;
+
+        switch (colorType) {
+            case ColorType::Main:
+                sprite = icon->m_firstLayer;
+                break;
+            case ColorType::Secondary:
+                sprite = icon->m_secondLayer;
+                break;
+            case ColorType::Glow:
+                sprite = icon->m_outlineSprite;
+                break;
+        }
+
+        applyGradient(sprite, config, force);
+    }
 }
 
 void Utils::applyGradient(CCSprite* sprite, GradientConfig config, bool force, bool blend) {

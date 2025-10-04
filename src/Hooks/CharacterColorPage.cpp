@@ -16,9 +16,12 @@ void ProCharacterColorPage::updateGradient() {
             if (type == IconType::Ship)
                 if (!m_fields->m_isShip)
                     type = IconType::Jetpack;
+
+            Gradient gradient = Utils::getGradient(type, false);
             
-            Utils::applyGradient(array[i], Utils::getSavedConfig(type, false), false, true);
-            Utils::applyGradient(array[i], Utils::getSavedConfig(type, true), true, true);
+            Utils::applyGradient(array[i], gradient.main, ColorType::Main, true);
+            Utils::applyGradient(array[i], gradient.secondary, ColorType::Secondary, true);
+            Utils::applyGradient(array[i], gradient.glow, ColorType::Glow, true);
         }
     });
 }

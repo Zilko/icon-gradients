@@ -12,7 +12,10 @@ void ProCommentCell::loadFromComment(GJComment* comment) {
             if (SimplePlayer* icon = typeinfo_cast<SimplePlayer*>(userMenu->getChildByID("player-icon"))) {
                 IconType type = Utils::getIconType(icon);
 
-                Utils::applyGradient(icon, Utils::getSavedConfig(type, false), false, true);
-                Utils::applyGradient(icon, Utils::getSavedConfig(type, true), true, true);
+                Gradient gradient = Utils::getGradient(type, false);
+
+                Utils::applyGradient(icon, gradient.main, ColorType::Main, true);
+                Utils::applyGradient(icon, gradient.secondary, ColorType::Secondary, true);
+                Utils::applyGradient(icon, gradient.glow, ColorType::Glow, true);
             }
 }

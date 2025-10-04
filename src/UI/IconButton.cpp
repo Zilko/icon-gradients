@@ -79,8 +79,8 @@ void IconButton::setSelected(bool selected) {
     m_select->setVisible(selected);
 }
 
-void IconButton::setColor(bool secondary, bool white) {
-    Utils::setIconColors(m_icon, secondary, white);
+void IconButton::setColor(ColorType colorType, bool white) {
+    Utils::setIconColors(m_icon, colorType, white);
 }
 
 void IconButton::setLocked(bool locked, bool instant) {
@@ -108,26 +108,44 @@ void IconButton::setLocked(bool locked, bool instant) {
     }
 }
 
-void IconButton::applyGradient(bool force, bool secondary, bool transition, bool both) {
+void IconButton::applyGradient(bool force, ColorType colorType, bool transition, bool all) {
     GameManager* gm = GameManager::get();
 
     GradientConfig previousConfig = m_currentConfig;
 
     // transition = false; // ignore
 
-    m_currentConfig = Utils::getSavedConfig(m_type, secondary);
+    m_currentConfig = Utils::getSavedConfig(m_type, colorType);
 
-    if (both)
-        Utils::applyGradient(m_icon, Utils::getSavedConfig(m_type, !secondary), !secondary, force);
-    
-    Utils::applyGradient(m_icon, m_currentConfig, secondary, force);
+    if (all) {
+        Gradient gradient = Utils::getGradient(m_type, false);
+
+        Utils::applyGradient(m_icon, gradient.main, ColorType::Main, force);
+        Utils::applyGradient(m_icon, gradient.secondary, ColorType::Secondary, force);
+        Utils::applyGradient(m_icon, gradient.glow, ColorType::Glow, force);
+    } else
+        Utils::applyGradient(m_icon, m_currentConfig, colorType, force);
+
+    int playerColor;
+    switch (colorType) {
+        case ColorType::Main:
+            playerColor = gm->getPlayerColor();
+            break;
+        case ColorType::Secondary:
+            playerColor = gm->getPlayerColor2();
+            break;
+        case ColorType::Glow:
+            playerColor = gm->getPlayerGlowColor();
+            break;
+        break;
+    }
 
     m_dot->setColor(m_currentConfig.points.empty()
-        ? gm->colorForIdx(secondary ? gm->getPlayerColor2() : gm->getPlayerColor())
+        ? gm->colorForIdx(playerColor)
         : ccc3(255, 255, 255));
 
     m_secondDot->setColor(m_currentConfig.points.empty()
-        ? gm->colorForIdx(secondary ? gm->getPlayerColor2() : gm->getPlayerColor())
+        ? gm->colorForIdx(playerColor)
         : ccc3(255, 255, 255));
 
     if (!transition || !isLocked() || previousConfig == m_currentConfig)

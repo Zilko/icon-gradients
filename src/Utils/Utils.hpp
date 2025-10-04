@@ -19,16 +19,16 @@ public:
     static std::vector<GradientConfig> getSavedGradients();
 
     static GradientConfig configFromObject(const matjson::Value&);
-    static GradientConfig getSavedConfig(IconType, bool);
-    static GradientConfig getDefaultConfig(bool);
+    static GradientConfig getSavedConfig(IconType, ColorType);
+    static GradientConfig getDefaultConfig(ColorType);
     static matjson::Value getSaveObject(GradientConfig);
 
     static Gradient getGradient(IconType, bool);
 
     static void removeSavedGradient(GradientConfig);
     static void saveConfig(GradientConfig, const std::string&, const std::string&);
-    static void setIconColors(SimplePlayer*, bool, bool);
-    static void applyGradient(SimplePlayer*, GradientConfig, bool, bool, bool = false);
+    static void setIconColors(SimplePlayer*, ColorType, bool);
+    static void applyGradient(SimplePlayer*, GradientConfig, ColorType, bool, bool = false);
     static void applyGradient(CCSprite*, GradientConfig, bool, bool = false);
     static void patchBatchNode(CCSpriteBatchNode*);
 

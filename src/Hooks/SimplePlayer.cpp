@@ -18,8 +18,11 @@ void ProSimplePlayer::updatePlayerFrame(int p0, IconType type) {
 		if (CCSprite* spr = getChildByType<CCSprite>(0))
 			if (spr->getOpacity() <= 120) return;
 
-		Utils::applyGradient(this, Utils::getSavedConfig(type, false), false, true);
-		Utils::applyGradient(this, Utils::getSavedConfig(type, true), true, true);
+		Gradient gradient = Utils::getGradient(type, false);
+
+		Utils::applyGradient(this, gradient.main, ColorType::Main, true);
+		Utils::applyGradient(this, gradient.secondary, ColorType::Secondary, true);
+		Utils::applyGradient(this, gradient.glow, ColorType::Glow, true);
 
 		autorelease();
 	});

@@ -10,7 +10,10 @@ void ProGJLevelScoreCell::loadFromScore(GJUserScore* score) {
     if (SimplePlayer* icon = m_mainLayer->getChildByType<SimplePlayer>(0)) {
         IconType type = Utils::getIconType(icon);
 
-        Utils::applyGradient(icon, Utils::getSavedConfig(type, false), false, true);
-        Utils::applyGradient(icon, Utils::getSavedConfig(type, true), true, true);
+        Gradient gradient = Utils::getGradient(type, false);
+
+        Utils::applyGradient(icon, gradient.main, ColorType::Main, true);
+        Utils::applyGradient(icon, gradient.secondary, ColorType::Secondary, true);
+        Utils::applyGradient(icon, gradient.glow, ColorType::Glow, true);
     }
 }

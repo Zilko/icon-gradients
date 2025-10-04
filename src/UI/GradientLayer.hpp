@@ -39,6 +39,7 @@ private:
 
     ColorToggle* m_mainColorToggle = nullptr;
     ColorToggle* m_secondaryColorToggle = nullptr;
+    ColorToggle* m_glowColorToggle = nullptr;
     ColorToggle* m_colorSelector = nullptr;
 
     PointsLayer* m_pointsLayer = nullptr;
@@ -55,7 +56,7 @@ private:
 
     GradientConfig m_currentConfig;
 
-    bool m_isSecondaryColor = false;
+    ColorType m_currentColor = ColorType::Main;
     bool m_ignoreColorChange = false;
     bool m_pointsHidden = false;
     bool m_smoothScroll = false;
@@ -81,8 +82,8 @@ private:
     void onSave(CCObject*);
     void onLoad(CCObject*);
 
-    void load(IconType, bool, bool = false, bool = false, bool = false);
-    void save(GradientConfig, bool);
+    void load(IconType, ColorType, bool = false, bool = false, bool = false);
+    void save(GradientConfig, ColorType);
     void save();
 
     void updateGradient(bool = false, bool = false, bool = false);

@@ -12,7 +12,7 @@ private:
 
     GradientConfig m_currentConfig;
 
-    bool m_isSecondary = false;
+    ColorType m_colorType = ColorType::Main;
     bool m_didForce = false;
     bool m_isSelected = false;
 
@@ -22,7 +22,9 @@ private:
 
 public:
 
-    static ColorToggle* create(CCObject*, cocos2d::SEL_MenuHandler, bool, bool = true,float = 1.f);
+    static ColorToggle* create(CCObject*, cocos2d::SEL_MenuHandler, ColorType, bool = true,float = 1.f);
+
+    ColorType getColorType();
 
     void setEnabled(bool) override;
     void setSelected(bool);

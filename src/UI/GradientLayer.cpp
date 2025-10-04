@@ -1,4 +1,5 @@
 #include "GradientLayer.hpp"
+#include "Geode/loader/Log.hpp"
 #include "LoadLayer.hpp"
 #include "ColorSelectLayer.hpp"
 
@@ -8,6 +9,7 @@
 #include <Geode/ui/GeodeUI.hpp>
 #include <Geode/loader/Event.hpp>
 #include <Geode/loader/Dispatch.hpp>
+#include <string>
 
 GradientLayer* layer = nullptr;
 
@@ -135,23 +137,28 @@ GradientLayer* GradientLayer::create() {
     return nullptr;
 }
 
-void GradientLayer::updateGradient(bool force, bool both, bool transition) {
-    m_currentConfig = Utils::getSavedConfig(m_selectedButton->getType(), m_isSecondaryColor);
+void GradientLayer::updateGradient(bool force, bool all, bool transition) {
+    m_currentConfig = Utils::getSavedConfig(m_selectedButton->getType(), m_currentColor);
 
     updateGarage(true);
 
-    if (both)
-        m_pointsLayer->updateGradient(Utils::getSavedConfig(m_selectedButton->getType(), !m_isSecondaryColor), !m_isSecondaryColor, force);
-    
-    m_pointsLayer->updateGradient(m_currentConfig, m_isSecondaryColor, force);
+    if (all) {
+        Gradient gradient = Utils::getGradient(m_selectedButton->getType(), false);
+
+        m_pointsLayer->updateGradient(gradient.main, ColorType::Main, force);
+        m_pointsLayer->updateGradient(gradient.secondary, ColorType::Secondary, force);
+        m_pointsLayer->updateGradient(gradient.glow, ColorType::Glow, force);
+    } else
+        m_pointsLayer->updateGradient(m_currentConfig, m_currentColor, force);
 
     for (IconButton* button : m_buttons) {
-        button->applyGradient(force, m_isSecondaryColor, transition, both);
-        button->setColor(m_isSecondaryColor, false);
+        button->applyGradient(force, m_currentColor, transition, all);
+        button->setColor(m_currentColor, false);
     }
 
-    m_mainColorToggle->applyGradient(Utils::getSavedConfig(m_selectedButton->getType(), false), force, transition);
-    m_secondaryColorToggle->applyGradient(Utils::getSavedConfig(m_selectedButton->getType(), true), force, transition);
+    m_mainColorToggle->applyGradient(Utils::getSavedConfig(m_selectedButton->getType(), ColorType::Main), force, transition);
+    m_secondaryColorToggle->applyGradient(Utils::getSavedConfig(m_selectedButton->getType(), ColorType::Secondary), force, transition);
+    m_glowColorToggle->applyGradient(Utils::getSavedConfig(m_selectedButton->getType(), ColorType::Glow), force, transition);
 }
 
 void GradientLayer::updateCountLabel() {
@@ -165,7 +172,7 @@ void GradientLayer::updateCountLabel() {
 }
 
 void GradientLayer::updateUI() {
-    m_currentConfig = Utils::getSavedConfig(m_selectedButton->getType(), m_isSecondaryColor);
+    m_currentConfig = Utils::getSavedConfig(m_selectedButton->getType(), m_currentColor);
 
     bool hasPoints = m_currentConfig.points.size() > 0;
     bool canAddPoints = m_currentConfig.points.size() < 24;
@@ -213,8 +220,21 @@ void GradientLayer::onAddPoint(CCObject*) {
         onHideToggle(nullptr);
         m_hideToggle->toggle(false);
     }
-    
-    cocos2d::ccColor3B color = gm->colorForIdx(m_isSecondaryColor ? gm->getPlayerColor2() : gm->getPlayerColor());
+
+    int playerColor;
+    switch (m_currentColor) {
+        case ColorType::Main:
+            playerColor = gm->getPlayerColor();
+            break;
+        case ColorType::Secondary:
+            playerColor = gm->getPlayerColor2();
+            break;
+        case ColorType::Glow:
+            playerColor = gm->getPlayerGlowColor();
+            break;
+    }
+
+    cocos2d::ccColor3B color = gm->colorForIdx(playerColor);
     
     m_pointsLayer->getSelectedPoint()->setColor(color);
     m_picker->setColor(color);
@@ -267,8 +287,8 @@ void GradientLayer::onPaste(CCObject*) {
 void GradientLayer::load(GradientConfig config) {
     if (config.points.empty()) return;
 
-    save(config, m_isSecondaryColor);
-    load(m_selectedButton->getType(), m_isSecondaryColor, true, true, true);
+    save(config, m_currentColor);
+    load(m_selectedButton->getType(), m_currentColor, true, true, true);
 } 
 
 void GradientLayer::onSave(CCObject*) {
@@ -286,10 +306,10 @@ void GradientLayer::onLoad(CCObject*) {
     LoadLayer::create(this)->show();
 }
 
-void GradientLayer::load(IconType type, bool secondary, bool force, bool both, bool transition) {
+void GradientLayer::load(IconType type, ColorType colorType, bool force, bool all, bool transition) {
     GradientConfig previousConfig = m_currentConfig;
 
-    m_currentConfig = Utils::getSavedConfig(type, secondary);
+    m_currentConfig = Utils::getSavedConfig(type, colorType);
 
     m_pointsLayer->loadPoints(m_currentConfig, previousConfig != m_currentConfig && transition);
 
@@ -300,7 +320,7 @@ void GradientLayer::load(IconType type, bool secondary, bool force, bool both, b
         }
 
     updateUI();
-    updateGradient(force, both, transition);
+    updateGradient(force, all, transition);
 
     m_linearToggle->toggle(m_currentConfig.isLinear);
     m_radialToggle->toggle(!m_currentConfig.isLinear);
@@ -309,14 +329,14 @@ void GradientLayer::load(IconType type, bool secondary, bool force, bool both, b
 
 void GradientLayer::save() {
     m_currentConfig.points = m_pointsLayer->getPoints();
-    save(m_currentConfig, m_isSecondaryColor);
+    save(m_currentConfig, m_currentColor);
 }
 
-void GradientLayer::save(GradientConfig config, bool secondary) {
+void GradientLayer::save(GradientConfig config, ColorType colorType) {
     if (!m_selectedButton) return;
     
     std::string id = !m_selectedButton->isLocked() ? "global" : Utils::getTypeID(m_selectedButton->getType());
-    std::string color = secondary ? "color2" : "color1";
+    std::string color = "color" + std::to_string(colorType);
 
     Utils::saveConfig(config, id, color);
 }
@@ -335,7 +355,7 @@ void GradientLayer::onIconButton(CCObject* sender) {
 
     m_selectedButton = button;
 
-    load(button->getType(), m_isSecondaryColor, true, true, true);
+    load(button->getType(), m_currentColor, true, true, true);
 
     Cache::setLastSelected(button->getType());
 }
@@ -368,8 +388,9 @@ void GradientLayer::onLockToggle(CCObject* sender) {
     if (!m_selectedButton->isLocked()) {
         m_selectedButton->setLocked(!m_selectedButton->isLocked());
 
-        save(Utils::getSavedConfig(static_cast<IconType>(-1), !m_isSecondaryColor), !m_isSecondaryColor);
-        save(Utils::getSavedConfig(static_cast<IconType>(-1), m_isSecondaryColor), m_isSecondaryColor);
+        save(Utils::getSavedConfig(static_cast<IconType>(-1), ColorType::Main), ColorType::Main);
+        save(Utils::getSavedConfig(static_cast<IconType>(-1), ColorType::Secondary), ColorType::Secondary);
+        save(Utils::getSavedConfig(static_cast<IconType>(-1), ColorType::Glow), ColorType::Glow);
     } else {
         std::string id = Utils::getTypeID(m_selectedButton->getType());
 
@@ -380,7 +401,7 @@ void GradientLayer::onLockToggle(CCObject* sender) {
         
         m_selectedButton->setLocked(locked);
 
-        load(static_cast<IconType>(-1), m_isSecondaryColor, true, true, true);
+        load(static_cast<IconType>(-1), m_currentColor, true, true, true);
 
         Loader::get()->queueInMainThread([this, locked] {
             m_dotToggle->toggle(locked);
@@ -393,15 +414,17 @@ void GradientLayer::onColorToggle(CCObject* sender) {
     
     if (toggle == m_mainColorToggle && m_mainColorToggle->isSelected()) return;
     if (toggle == m_secondaryColorToggle && m_secondaryColorToggle->isSelected()) return;
+    if (toggle == m_glowColorToggle && m_glowColorToggle->isSelected()) return;
 
     m_mainColorToggle->setSelected(false);
     m_secondaryColorToggle->setSelected(false);
+    m_glowColorToggle->setSelected(false);
 
     toggle->setSelected(true);
 
-    m_isSecondaryColor = m_secondaryColorToggle == toggle;
+    m_currentColor = toggle->getColorType();
 
-    load(m_selectedButton->getType(), m_isSecondaryColor, true, true, true);
+    load(m_selectedButton->getType(), m_currentColor, true, true, true);
 }
 
 void GradientLayer::onColorSelector(CCObject*) {
@@ -466,6 +489,9 @@ void GradientLayer::keyDown(cocos2d::enumKeyCodes key) {
 
     if (key == cocos2d::enumKeyCodes::KEY_Two)
         return onColorToggle(m_secondaryColorToggle);
+
+    if (key == cocos2d::enumKeyCodes::KEY_Three)
+        return onColorToggle(m_glowColorToggle);
 
     if (key == cocos2d::enumKeyCodes::KEY_C)
         return onCopy(nullptr);
@@ -613,7 +639,7 @@ bool GradientLayer::setup() {
 
     m_picker = ColorPicker::create();
     m_picker->setScale(0.575f);
-    m_picker->setPosition({112, 75});
+    m_picker->setPosition({112, 85});
     m_picker->setDelegate(this);
 
     m_mainLayer->addChild(m_picker);
@@ -621,27 +647,27 @@ bool GradientLayer::setup() {
     CCLabelBMFont* lbl = CCLabelBMFont::create("R", "bigFont.fnt");
     lbl->setOpacity(140);
     lbl->setScale(0.425f);
-    lbl->setPosition({175, 100});
+    lbl->setPosition({175, 120});
 
     m_mainLayer->addChild(lbl);
 
     lbl = CCLabelBMFont::create("G", "bigFont.fnt");
     lbl->setOpacity(140);
     lbl->setScale(0.425f);
-    lbl->setPosition({175, 75});
+    lbl->setPosition({175, 95});
 
     m_mainLayer->addChild(lbl);
 
     lbl = CCLabelBMFont::create("B", "bigFont.fnt");
     lbl->setOpacity(140);
     lbl->setScale(0.425f);
-    lbl->setPosition({175, 50});
+    lbl->setPosition({175, 70});
 
     m_mainLayer->addChild(lbl);
 
     m_rInput = TextInput::create(50, "R");
     m_rInput->setScale(0.625f);
-    m_rInput->setPosition({205, 100});
+    m_rInput->setPosition({205, 120});
     m_rInput->setString("255");
     m_rInput->getInputNode()->setDelegate(this);
     m_rInput->getInputNode()->setAllowedChars("0123456789");
@@ -650,7 +676,7 @@ bool GradientLayer::setup() {
 
     m_gInput = TextInput::create(50, "G");
     m_gInput->setScale(0.625f);
-    m_gInput->setPosition({205, 75});
+    m_gInput->setPosition({205, 95});
     m_gInput->setString("255");
     m_gInput->getInputNode()->setDelegate(this);
     m_gInput->getInputNode()->setAllowedChars("0123456789");
@@ -659,7 +685,7 @@ bool GradientLayer::setup() {
 
     m_bInput = TextInput::create(50, "B");
     m_bInput->setScale(0.625f);
-    m_bInput->setPosition({205, 50});
+    m_bInput->setPosition({205, 70});
     m_bInput->setString("255");
     m_bInput->getInputNode()->setDelegate(this);
     m_bInput->getInputNode()->setAllowedChars("0123456789");
@@ -774,20 +800,26 @@ bool GradientLayer::setup() {
 
     m_buttonMenu->addChild(m_dotToggle);
 
-    m_mainColorToggle = ColorToggle::create(this, menu_selector(GradientLayer::onColorToggle), false);
-    m_mainColorToggle->setPosition({247, 36});
+    m_mainColorToggle = ColorToggle::create(this, menu_selector(GradientLayer::onColorToggle), ColorType::Main);
+    m_mainColorToggle->setPosition({211, 36});
 
     m_buttonMenu->addChild(m_mainColorToggle);
 
-    m_secondaryColorToggle = ColorToggle::create(this, menu_selector(GradientLayer::onColorToggle), true);
-    m_secondaryColorToggle->setPosition({282, 36});
+    m_secondaryColorToggle = ColorToggle::create(this, menu_selector(GradientLayer::onColorToggle), ColorType::Secondary);
+    m_secondaryColorToggle->setPosition({247, 36});
 
     m_buttonMenu->addChild(m_secondaryColorToggle);
 
-    m_mainColorToggle->applyGradient(Utils::getDefaultConfig(false), true, true);
-    m_secondaryColorToggle->applyGradient(Utils::getDefaultConfig(true), true, true);
+    m_glowColorToggle = ColorToggle::create(this, menu_selector(GradientLayer::onColorToggle), ColorType::Glow);
+    m_glowColorToggle->setPosition({282, 36});
 
-    m_colorSelector = ColorToggle::create(this, menu_selector(GradientLayer::onColorSelector), false, false);
+    m_buttonMenu->addChild(m_glowColorToggle);
+
+    m_mainColorToggle->applyGradient(Utils::getDefaultConfig(ColorType::Main), true, true);
+    m_secondaryColorToggle->applyGradient(Utils::getDefaultConfig(ColorType::Secondary), true, true);
+    m_glowColorToggle->applyGradient(Utils::getDefaultConfig(ColorType::Glow), true, true);
+
+    m_colorSelector = ColorToggle::create(this, menu_selector(GradientLayer::onColorSelector), ColorType::Main, false);
     m_colorSelector->setPosition({65, 28});
 
     m_buttonMenu->addChild(m_colorSelector);
@@ -797,7 +829,7 @@ bool GradientLayer::setup() {
 
     m_mainColorToggle->setSelected(true);
 
-    load(IconType::Cube, false, true, true);
+    load(IconType::Cube, ColorType::Main, true, true);
 
     if (Cache::getLastSelected() != IconType::Cube)
         Loader::get()->queueInMainThread([this] {

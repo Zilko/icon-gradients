@@ -28,13 +28,15 @@ void ProGJGarageLayer::updateGradient(bool colorful) {
 	if (Utils::isSettingEnabled(MOD_DISABLED)) {
 		if (!m_playerObject) return;
 
-		Utils::applyGradient(m_playerObject, {{}, true}, false, true);
-		Utils::applyGradient(m_playerObject, {{}, true}, true, true);
+		Utils::applyGradient(m_playerObject, {{}, true}, ColorType::Main, true);
+		Utils::applyGradient(m_playerObject, {{}, true}, ColorType::Secondary, true);
+		Utils::applyGradient(m_playerObject, {{}, true}, ColorType::Glow, true);
 
 		if (Loader::get()->isModLoaded("weebify.separate_dual_icons"))
 			if (SimplePlayer* icon = typeinfo_cast<SimplePlayer*>(getChildByID("player2-icon"))) {
-				Utils::applyGradient(icon, {{}, true}, false, true);
-				Utils::applyGradient(icon, {{}, true}, true, true);
+				Utils::applyGradient(icon, {{}, true}, ColorType::Main, true);
+				Utils::applyGradient(icon, {{}, true}, ColorType::Secondary, true);
+				Utils::applyGradient(icon, {{}, true}, ColorType::Glow, true);
 			}
 		
 		return;
@@ -45,8 +47,11 @@ void ProGJGarageLayer::updateGradient(bool colorful) {
 		
 		IconType type = Utils::getIconType(m_playerObject);
 
-		Utils::applyGradient(m_playerObject, Utils::getSavedConfig(type, false), false, true);
-		Utils::applyGradient(m_playerObject, Utils::getSavedConfig(type, true), true, true);
+		Gradient gradient = Utils::getGradient(type, false);
+
+		Utils::applyGradient(m_playerObject, gradient.main, ColorType::Main, true);
+		Utils::applyGradient(m_playerObject, gradient.secondary, ColorType::Secondary, true);
+		Utils::applyGradient(m_playerObject, gradient.glow, ColorType::Glow, true);
 
 		if (Loader::get()->isModLoaded("weebify.separate_dual_icons"))
 			if (SimplePlayer* icon = typeinfo_cast<SimplePlayer*>(getChildByID("player2-icon"))) {
@@ -55,8 +60,9 @@ void ProGJGarageLayer::updateGradient(bool colorful) {
 					Utils::isSettingEnabled(P2_FLIP)
 				);
 
-				Utils::applyGradient(icon, gradient.main, false, true);
-				Utils::applyGradient(icon, gradient.secondary, true, true);
+				Utils::applyGradient(icon, gradient.main, ColorType::Main, true);
+				Utils::applyGradient(icon, gradient.secondary, ColorType::Secondary, true);
+				Utils::applyGradient(icon, gradient.glow, ColorType::Glow, true);
 			}
 	});
 
@@ -74,8 +80,9 @@ void ProGJGarageLayer::updateGradient(bool colorful) {
 			loadedGradient = true;
 		}
 
-		Utils::applyGradient(icon, gradient.main, false, true);
-		Utils::applyGradient(icon, gradient.secondary, true, true);
+		Utils::applyGradient(icon, gradient.main, ColorType::Main, true);
+		Utils::applyGradient(icon, gradient.secondary, ColorType::Secondary, true);
+		Utils::applyGradient(icon, gradient.glow, ColorType::Glow, true);
 	}
 }
 
