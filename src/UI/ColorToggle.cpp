@@ -20,7 +20,7 @@ bool ColorToggle::init(CCObject* target, cocos2d::SEL_MenuHandler callback, bool
     m_sprite = CCSprite::createWithSpriteFrameName("GJ_colorBtn_001.png");
     m_sprite->setScale(0.6f * scale);
 
-    const char *numberStr;
+    std::string numberStr;
     if (number)
         switch (m_colorType) {
             case ColorType::Main:
@@ -35,7 +35,7 @@ bool ColorToggle::init(CCObject* target, cocos2d::SEL_MenuHandler callback, bool
         }
 
     if (number) {
-        CCLabelBMFont* lbl = CCLabelBMFont::create(numberStr, "bigFont.fnt");
+        CCLabelBMFont* lbl = CCLabelBMFont::create(numberStr.c_str(), "bigFont.fnt");
         lbl->setScale(0.525f);
         lbl->setPosition({24, 14});
 
@@ -47,7 +47,7 @@ bool ColorToggle::init(CCObject* target, cocos2d::SEL_MenuHandler callback, bool
     m_secondSprite->setOpacity(0);
 
     if (number) {
-        CCLabelBMFont* lbl = CCLabelBMFont::create(numberStr, "bigFont.fnt");
+        CCLabelBMFont* lbl = CCLabelBMFont::create(numberStr.c_str(), "bigFont.fnt");
         lbl->setScale(0.525f);
         lbl->setPosition({24, 14});
 
@@ -79,6 +79,8 @@ ColorType ColorToggle::getColorType() {
 }
 
 void ColorToggle::setEnabled(bool enabled) {
+    if (m_isDisabledForever) return;
+    
     CCMenuItemSpriteExtra::setEnabled(enabled);
     m_sprite->setOpacity(enabled ? 255 : 85);
 }
@@ -99,7 +101,9 @@ bool ColorToggle::isSelected() {
 
 void ColorToggle::applyGradient(GradientConfig config, bool force, bool transition) {
     GameManager* gm = GameManager::get();
-
+    
+    if (config == m_currentConfig && m_isDisabledForever) return;
+    
     m_currentConfig = config;
     m_didForce = force;
 
@@ -149,4 +153,24 @@ void ColorToggle::onAnimationEnded() {
 
     m_sprite->setOpacity(255);
     m_secondSprite->setOpacity(0);
+}
+
+void ColorToggle::disableForever() {
+    setEnabled(false);
+    
+    m_isDisabledForever = true;
+    
+    CCSprite* spr = CCSprite::createWithSpriteFrameName("GJ_colorBtn_001.png");
+    spr->setPosition(m_sprite->getContentSize() / 2.f);
+    spr->setColor({0, 0, 0});
+    spr->setOpacity(140);
+    
+    m_sprite->addChild(spr, 2);
+    
+    spr = CCSprite::createWithSpriteFrameName("GJ_colorBtn_001.png");
+    spr->setPosition(m_secondSprite->getContentSize() / 2.f);
+    spr->setColor({0, 0, 0});
+    spr->setOpacity(140);
+    
+    m_secondSprite->addChild(spr, 2);
 }

@@ -1,32 +1,29 @@
-#include "GradientLayer.hpp"
-#include "Geode/loader/Log.hpp"
-#include "LoadLayer.hpp"
 #include "ColorSelectLayer.hpp"
+#include "GradientLayer.hpp"
+#include "LoadLayer.hpp"
 
 #include "../Utils/Utils.hpp"
 #include "../Utils/Cache.hpp"
 #include "PointsLayer.hpp"
 
 #include <Geode/ui/GeodeUI.hpp>
-#include <Geode/loader/Event.hpp>
 #include <Geode/loader/Dispatch.hpp>
-#include <string>
 
 GradientLayer* layer = nullptr;
 
 $execute {
 
-    geode::listenForSettingChanges("disabled", +[](bool value) {
+    listenForSettingChanges("disabled", +[](bool value) {
         if (layer)
             layer->updateGarage(false);
     });
 
-    geode::listenForSettingChanges("point-opacity", +[](int64_t value) {
+    listenForSettingChanges("point-opacity", +[](int64_t value) {
         if (layer)
             layer->updatePointOpacity(value);
     });
 
-    geode::listenForSettingChanges("point-scale", +[](double value) {
+    listenForSettingChanges("point-scale", +[](double value) {
         if (layer)
             layer->updatePointScale(value);
     });
@@ -320,7 +317,7 @@ void GradientLayer::onRemovePoint(CCObject*) {
 }
 
 void GradientLayer::onSettings(CCObject*) {
-    auto popup = geode::openSettingsPopup(Mod::get(), true);
+    openSettingsPopup(Mod::get(), true);
 }
 
 void GradientLayer::onCopy(CCObject*) {
@@ -622,7 +619,7 @@ void GradientLayer::scrollWheel(float y, float) {
 }
 
 bool GradientLayer::setup() {
-    geode::DispatchEvent<CCNode*, CCRect>("timestepyt.gdneko/create-neko-rect", m_mainLayer, {178.5f, 75, 259, 126}).post();
+    DispatchEvent<CCNode*, CCRect>("timestepyt.gdneko/create-neko-rect", m_mainLayer, {178.5f, 75, 259, 126}).post();
     
     setMouseEnabled(true);
 
@@ -729,27 +726,27 @@ bool GradientLayer::setup() {
     CCLabelBMFont* lbl = CCLabelBMFont::create("R", "bigFont.fnt");
     lbl->setOpacity(140);
     lbl->setScale(0.425f);
-    lbl->setPosition({175, 120});
+    lbl->setPosition({175, 100});
 
     m_mainLayer->addChild(lbl);
 
     lbl = CCLabelBMFont::create("G", "bigFont.fnt");
     lbl->setOpacity(140);
     lbl->setScale(0.425f);
-    lbl->setPosition({175, 95});
+    lbl->setPosition({175, 75});
 
     m_mainLayer->addChild(lbl);
 
     lbl = CCLabelBMFont::create("B", "bigFont.fnt");
     lbl->setOpacity(140);
     lbl->setScale(0.425f);
-    lbl->setPosition({175, 70});
+    lbl->setPosition({175, 50});
 
     m_mainLayer->addChild(lbl);
 
     m_rInput = TextInput::create(50, "R");
     m_rInput->setScale(0.625f);
-    m_rInput->setPosition({205, 120});
+    m_rInput->setPosition({205, 100});
     m_rInput->setString("255");
     m_rInput->getInputNode()->setDelegate(this);
     m_rInput->getInputNode()->setAllowedChars("0123456789");
@@ -758,7 +755,7 @@ bool GradientLayer::setup() {
 
     m_gInput = TextInput::create(50, "G");
     m_gInput->setScale(0.625f);
-    m_gInput->setPosition({205, 95});
+    m_gInput->setPosition({205, 75});
     m_gInput->setString("255");
     m_gInput->getInputNode()->setDelegate(this);
     m_gInput->getInputNode()->setAllowedChars("0123456789");
@@ -767,7 +764,7 @@ bool GradientLayer::setup() {
 
     m_bInput = TextInput::create(50, "B");
     m_bInput->setScale(0.625f);
-    m_bInput->setPosition({205, 70});
+    m_bInput->setPosition({205, 50});
     m_bInput->setString("255");
     m_bInput->getInputNode()->setDelegate(this);
     m_bInput->getInputNode()->setAllowedChars("0123456789");
@@ -845,21 +842,21 @@ bool GradientLayer::setup() {
 
     m_buttonMenu->addChild(m_loadButton);
 
-    m_linearToggle = Utils::createTypeToggle(false, {264.3f, 116}, this, menu_selector(GradientLayer::onTypeToggle));
+    m_linearToggle = Utils::createTypeToggle(false, {245, 102}, this, menu_selector(GradientLayer::onTypeToggle));
     m_buttonMenu->addChild(m_linearToggle);
 
-    m_radialToggle = Utils::createTypeToggle(true, {264.3f, 76}, this, menu_selector(GradientLayer::onTypeToggle));
+    m_radialToggle = Utils::createTypeToggle(true, {285, 102}, this, menu_selector(GradientLayer::onTypeToggle));
     m_buttonMenu->addChild(m_radialToggle);
 
     lbl = CCLabelBMFont::create("Linear", "bigFont.fnt");
     lbl->setScale(0.255f);
-    lbl->setPosition({264.3f, 99});
+    lbl->setPosition({245, 86});
 
     m_mainLayer->addChild(lbl);
 
     lbl = CCLabelBMFont::create("Radial", "bigFont.fnt");
     lbl->setScale(0.255f);
-    lbl->setPosition({264.3f, 58});
+    lbl->setPosition({285, 86});
 
     m_mainLayer->addChild(lbl);
 
@@ -883,17 +880,20 @@ bool GradientLayer::setup() {
     m_buttonMenu->addChild(m_dotToggle);
 
     m_mainColorToggle = ColorToggle::create(this, menu_selector(GradientLayer::onColorToggle), ColorType::Main);
-    m_mainColorToggle->setPosition({211, 36});
+    m_mainColorToggle->setPosition({265, 63});
 
     m_buttonMenu->addChild(m_mainColorToggle);
 
     m_secondaryColorToggle = ColorToggle::create(this, menu_selector(GradientLayer::onColorToggle), ColorType::Secondary);
-    m_secondaryColorToggle->setPosition({247, 36});
+    m_secondaryColorToggle->setPosition({247, 33});
 
     m_buttonMenu->addChild(m_secondaryColorToggle);
 
     m_glowColorToggle = ColorToggle::create(this, menu_selector(GradientLayer::onColorToggle), ColorType::Glow);
-    m_glowColorToggle->setPosition({282, 36});
+    m_glowColorToggle->setPosition({282, 33});
+    
+    if (!GameManager::get()->getPlayerGlow())
+        m_glowColorToggle->disableForever();
 
     m_buttonMenu->addChild(m_glowColorToggle);
 

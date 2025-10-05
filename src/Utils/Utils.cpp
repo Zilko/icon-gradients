@@ -2,8 +2,6 @@
 #include "Cache.hpp"
 
 #include "../Hooks/SimplePlayer.hpp"
-#include "Geode/loader/Log.hpp"
-#include <string>
 
 SimplePlayer* Utils::createIcon(IconType type, bool secondPlayer) {
     SimplePlayer* icon = SimplePlayer::create(1);
