@@ -1,5 +1,5 @@
 {
-	"geode": "4.7.0",
+	"geode": "4.9.0",
 	"gd": {
 		"win": "2.2074",
 		"android": "2.2074",
@@ -8,7 +8,7 @@
 	},
 	"id": "zilko.icon_gradients",
 	"name": "Icon Gradients",
-	"version": "v1.0.19",
+	"version": "v1.1.0",
 	"developer": "Zilko",
 	"description": "Allows u to gradient ur icons.",
 	"links": {

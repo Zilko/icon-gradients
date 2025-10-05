@@ -1,3 +1,7 @@
+# 1.1.0
+
+* Added Glow support thanks to Kevadroz.
+
 # 1.0.19
 
 * Fijxed shop with colorufl icons mod and locked icons

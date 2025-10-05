@@ -13,8 +13,10 @@ private:
     GradientConfig m_currentConfig;
 
     ColorType m_colorType = ColorType::Main;
+    
     bool m_didForce = false;
     bool m_isSelected = false;
+    bool m_isDisabledForever = false;
 
     bool init(CCObject*, cocos2d::SEL_MenuHandler, bool, float);
 
@@ -33,5 +35,6 @@ public:
     bool isSelected() override;
 
     void applyGradient(GradientConfig, bool, bool);
+    void disableForever();
 
 };

@@ -2,7 +2,6 @@
 #include "Cache.hpp"
 
 #include "../Hooks/SimplePlayer.hpp"
-#include <string>
 
 SimplePlayer* Utils::createIcon(IconType type) {
     SimplePlayer* icon = SimplePlayer::create(1);

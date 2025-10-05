@@ -1,7 +1,6 @@
 #pragma once
 
-#include <Geode/modify/GJGarageLayer.hpp>
-#include <Geode/modify/SimplePlayer.hpp>
+#include <Geode/Geode.hpp>
 
 using namespace geode::prelude;
 
