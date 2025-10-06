@@ -79,7 +79,7 @@ ColorType ColorToggle::getColorType() {
 }
 
 void ColorToggle::setEnabled(bool enabled) {
-    if (m_isDisabledForever) return;
+    if (m_forceDisabled) return;
     
     CCMenuItemSpriteExtra::setEnabled(enabled);
     m_sprite->setOpacity(enabled ? 255 : 85);
@@ -102,7 +102,7 @@ bool ColorToggle::isSelected() {
 void ColorToggle::applyGradient(GradientConfig config, bool force, bool transition) {
     GameManager* gm = GameManager::get();
     
-    if (config == m_currentConfig && m_isDisabledForever) return;
+    if (config == m_currentConfig && m_forceDisabled) return;
     
     m_currentConfig = config;
     m_didForce = force;
@@ -155,22 +155,34 @@ void ColorToggle::onAnimationEnded() {
     m_secondSprite->setOpacity(0);
 }
 
-void ColorToggle::disableForever() {
-    setEnabled(false);
+void ColorToggle::setForceDisabled(bool disabled) {
+    setEnabled(!disabled);
+
+    m_forceDisabled = disabled;
     
-    m_isDisabledForever = true;
+    setEnabled(!disabled);
     
-    CCSprite* spr = CCSprite::createWithSpriteFrameName("GJ_colorBtn_001.png");
-    spr->setPosition(m_sprite->getContentSize() / 2.f);
-    spr->setColor({0, 0, 0});
-    spr->setOpacity(140);
+    if (m_darkererSprite1 && m_darkererSprite2) {
+        m_darkererSprite1->setVisible(disabled);
+        m_darkererSprite2->setVisible(disabled);
+        
+        return;
+    }
     
-    m_sprite->addChild(spr, 2);
+    m_darkererSprite1 = CCSprite::createWithSpriteFrameName("GJ_colorBtn_001.png");
+    m_darkererSprite1->setPosition(m_sprite->getContentSize() / 2.f);
+    m_darkererSprite1->setColor({0, 0, 0});
+    m_darkererSprite1->setOpacity(140);
     
-    spr = CCSprite::createWithSpriteFrameName("GJ_colorBtn_001.png");
-    spr->setPosition(m_secondSprite->getContentSize() / 2.f);
-    spr->setColor({0, 0, 0});
-    spr->setOpacity(140);
+    m_sprite->addChild(m_darkererSprite1, 2);
     
-    m_secondSprite->addChild(spr, 2);
+    m_darkererSprite2 = CCSprite::createWithSpriteFrameName("GJ_colorBtn_001.png");
+    m_darkererSprite2->setPosition(m_secondSprite->getContentSize() / 2.f);
+    m_darkererSprite2->setColor({0, 0, 0});
+    m_darkererSprite2->setOpacity(140);
+    
+    m_secondSprite->addChild(m_darkererSprite2, 2);
+    
+    m_darkererSprite1->setVisible(disabled);
+    m_darkererSprite2->setVisible(disabled);
 }

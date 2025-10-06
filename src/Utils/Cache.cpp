@@ -10,23 +10,23 @@ $on_mod(Loaded) {
     Cache::set2PFlip(Mod::get()->getSettingValue<bool>("flip-2p"));
     Cache::setMenuGradientsEnabled(Mod::get()->getSettingValue<bool>("menu-gradients"));
 
-    geode::listenForSettingChanges("disabled", +[](bool value) {
+    listenForSettingChanges("disabled", +[](bool value) {
         Cache::setModDisabled(value);
     });
 
-    geode::listenForSettingChanges("disable-2p", +[](bool value) {
+    listenForSettingChanges("disable-2p", +[](bool value) {
         Cache::set2PDisabled(value);
     });
 
-    geode::listenForSettingChanges("separate-2p", +[](bool value) {
+    listenForSettingChanges("separate-2p", +[](bool value) {
         Cache::set2PSeparate(value);
     });
     
-    geode::listenForSettingChanges("flip-2p", +[](bool value) {
+    listenForSettingChanges("flip-2p", +[](bool value) {
         Cache::set2PFlip(value);
     });
 
-    geode::listenForSettingChanges("menu-gradients", +[](bool value) {
+    listenForSettingChanges("menu-gradients", +[](bool value) {
         Cache::setMenuGradientsEnabled(value);
     });
 

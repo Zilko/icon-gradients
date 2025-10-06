@@ -1,3 +1,7 @@
+# 1.2.0
+
+* Added Separate Second Player Gradient thanks to Kevadroz.
+
 # 1.1.0
 
 * Added Glow support thanks to Kevadroz.

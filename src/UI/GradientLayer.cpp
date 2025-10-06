@@ -27,26 +27,22 @@ $execute {
             layer->updatePointScale(value);
     });
 
-    geode::listenForSettingChanges("disable-2p", +[](bool value) {
+    listenForSettingChanges("disable-2p", +[](bool value) {
         if (layer) {
             if (value)
                 layer->updatePlayer(false);
 
             layer->updatePlayerToggle();
         }
-
-        geode::log::debug("DISABLE2P: {}", value);
     });
 
-    geode::listenForSettingChanges("separate-2p", +[](bool value) {
+    listenForSettingChanges("separate-2p", +[](bool value) {
         if (layer) {
             if (!value)
                 layer->updatePlayer(false);
 
             layer->updatePlayerToggle();
         }
-
-        geode::log::debug("SEPARATE2P: {}", value);
     });
 
 }
@@ -117,11 +113,31 @@ void GradientLayer::updatePlayer(bool secondPlayer) {
             id += "-p2";
 
         button->setLocked(Mod::get()->hasSavedValue(id), true);
-
         button->updateSprite(m_isSecondPlayer);
     }
 
     load(m_selectedButton->getType(), m_currentColor, true, true, true);
+    
+    updateGlowToggle();
+}
+
+void GradientLayer::updateGlowToggle() {
+    bool isGlowActive = GameManager::get()->getPlayerGlow();
+    if (m_isSecondPlayer)
+        if (Mod* sdiMod = Loader::get()->getLoadedMod("weebify.separate_dual_icons"))
+            isGlowActive = sdiMod->getSavedValue<bool>("glow", false);
+
+    if (m_glowColorToggle->isSelected() && !isGlowActive) {
+        m_noTransition = true;
+        
+        onColorToggle(m_mainColorToggle);
+        
+        m_noTransition = false;
+        
+        m_pointsLayer->selectFirst();
+    }
+
+    m_glowColorToggle->setForceDisabled(!isGlowActive);
 }
 
 void GradientLayer::updatePlayerToggle() {
@@ -359,7 +375,7 @@ void GradientLayer::load(IconType type, ColorType colorType, bool force, bool al
 
     m_currentConfig = Utils::getSavedConfig(type, colorType, m_isSecondPlayer);
 
-    m_pointsLayer->loadPoints(m_currentConfig, previousConfig != m_currentConfig && transition);
+    m_pointsLayer->loadPoints(m_currentConfig, previousConfig != m_currentConfig && transition && !m_noTransition);
 
     for (IconButton* button : m_buttons)
         if (type == button->getType()) {
@@ -526,7 +542,6 @@ void GradientLayer::colorValueChanged(cocos2d::ccColor3B color) {
         m_colorSelector->setColor(color);
     }
 
-
     if (ColorNode* point = m_pointsLayer->getSelectedPoint())
         point->setColor(color);
 
@@ -656,19 +671,6 @@ bool GradientLayer::setup() {
     btn->setPosition(m_size);
 
     m_buttonMenu->addChild(btn);
-
-    m_playerToggle = CCMenuItemToggler::create(
-        CCSprite::create("toggle_player_primary.png"_spr),
-        CCSprite::create("toggle_player_secondary.png"_spr),
-        this,
-        menu_selector(GradientLayer::onPlayerToggle)
-    );
-    m_playerToggle->setPosition({62, 255});
-    m_playerToggle->setVisible(Utils::isSettingEnabled(P2_SEPARATE));
-
-    m_playerToggle->toggle(m_isSecondPlayer);
-
-    m_buttonMenu->addChild(m_playerToggle);
 
     setTitle("Icon Gradients");
     m_title->setPosition({178.5f, 262});
@@ -840,6 +842,21 @@ bool GradientLayer::setup() {
     m_loadButton->setCascadeOpacityEnabled(true);
 
     m_buttonMenu->addChild(m_loadButton);
+    
+    m_playerToggle = CCMenuItemToggler::create(
+        CCSprite::create("buton-p2.png"_spr),
+        CCSprite::create("buton-p1.png"_spr),
+        this,
+        menu_selector(GradientLayer::onPlayerToggle)
+    );
+    m_playerToggle->setPosition({211, 147});
+    m_playerToggle->setCascadeOpacityEnabled(true);
+    m_playerToggle->setScale(0.43f);
+    m_playerToggle->setOpacity(140);
+    m_playerToggle->setVisible(Utils::isSettingEnabled(P2_SEPARATE));
+    m_playerToggle->toggle(m_isSecondPlayer);
+
+    m_buttonMenu->addChild(m_playerToggle);
 
     m_linearToggle = Utils::createTypeToggle(false, {245, 102}, this, menu_selector(GradientLayer::onTypeToggle));
     m_buttonMenu->addChild(m_linearToggle);
@@ -890,9 +907,6 @@ bool GradientLayer::setup() {
 
     m_glowColorToggle = ColorToggle::create(this, menu_selector(GradientLayer::onColorToggle), ColorType::Glow);
     m_glowColorToggle->setPosition({282, 33});
-    
-    if (!GameManager::get()->getPlayerGlow())
-        m_glowColorToggle->disableForever();
 
     m_buttonMenu->addChild(m_glowColorToggle);
 
@@ -933,6 +947,8 @@ bool GradientLayer::setup() {
                 m_firstPosition = m_firstPoint->getPosition();
         }
     });
-
+    
+    updateGlowToggle();
+    
     return true;
 }

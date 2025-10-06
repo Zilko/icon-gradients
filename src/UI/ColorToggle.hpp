@@ -9,6 +9,8 @@ private:
     CCSprite* m_sprite = nullptr;
     CCSprite* m_secondSprite = nullptr;
     CCSprite* m_select = nullptr;
+    CCSprite* m_darkererSprite1 = nullptr;
+    CCSprite* m_darkererSprite2 = nullptr;
 
     GradientConfig m_currentConfig;
 
@@ -16,7 +18,7 @@ private:
     
     bool m_didForce = false;
     bool m_isSelected = false;
-    bool m_isDisabledForever = false;
+    bool m_forceDisabled = false;
 
     bool init(CCObject*, cocos2d::SEL_MenuHandler, bool, float);
 
@@ -35,6 +37,6 @@ public:
     bool isSelected() override;
 
     void applyGradient(GradientConfig, bool, bool);
-    void disableForever();
+    void setForceDisabled(bool);
 
 };

@@ -58,10 +58,12 @@ private:
     GradientConfig m_currentConfig;
 
     ColorType m_currentColor = ColorType::Main;
+    
     bool m_isSecondPlayer = false;
     bool m_ignoreColorChange = false;
     bool m_pointsHidden = false;
     bool m_smoothScroll = false;
+    bool m_noTransition = false;
     
     float m_scroll = 0.f;
 
@@ -110,6 +112,7 @@ public:
     void updateGarage(bool, bool = false);
     void updatePlayer(bool);
     void updatePlayerToggle();
+    void updateGlowToggle();
     
     bool isSecondPlayer();
 

@@ -2,7 +2,7 @@
 
 class GradientLayer;
 
-class ColorSelectLayer : public geode::Popup<> {
+class ColorSelectLayer : public Popup<> {
 
 private:
 
