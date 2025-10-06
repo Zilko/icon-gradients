@@ -1,6 +1,4 @@
 #include "../Utils/Utils.hpp"
-#include "Geode/binding/GJGarageLayer.hpp"
-#include "Geode/cocos/CCDirector.h"
 
 #include "SimplePlayer.hpp"
 
