@@ -55,10 +55,7 @@ void ProGJGarageLayer::updateGradient(bool colorful) {
 
 		if (Loader::get()->isModLoaded("weebify.separate_dual_icons"))
 			if (SimplePlayer* icon = typeinfo_cast<SimplePlayer*>(getChildByID("player2-icon"))) {
-				Gradient gradient = Utils::getGradient(
-					Utils::getIconType(icon),
-					Utils::isSettingEnabled(P2_FLIP)
-				);
+				Gradient gradient = Utils::getGradient( Utils::getIconType(icon), true);
 
 				Utils::applyGradient(icon, gradient.main, ColorType::Main, true);
 				Utils::applyGradient(icon, gradient.secondary, ColorType::Secondary, true);
@@ -71,12 +68,15 @@ void ProGJGarageLayer::updateGradient(bool colorful) {
 	auto f = m_fields.self();
 	bool loadedGradient = false;
 	Gradient gradient;
+	bool p2Selected = false;
+	if (Mod* sdiMod = Loader::get()->getLoadedMod("weebify.separate_dual_icons"))
+		p2Selected = sdiMod->getSavedValue<bool>("2pselected");
 
 	for (SimplePlayer* icon : f->m_allIcons) {
 		IconType type = Utils::getIconType(icon);
 
 		if (!loadedGradient) {
-			gradient = Utils::getGradient(type, false);
+			gradient = Utils::getGradient(type, p2Selected);
 			loadedGradient = true;
 		}
 

@@ -10,6 +10,7 @@ protected:
 
     bool m_disabled = false;
     bool m_p2disabled = false;
+    bool m_p2separate = false;
     bool m_p2flip = false;
     bool m_menuGradients = false;
 
@@ -32,6 +33,10 @@ public:
     static void set2PFlip(bool);
 
     static bool is2PFlip();
+
+    static void set2PSeparate(bool);
+
+    static bool is2PSeparate();
 
     static void set2PDisabled(bool);
 

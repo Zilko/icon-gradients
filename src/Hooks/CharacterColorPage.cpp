@@ -7,7 +7,11 @@
 void ProCharacterColorPage::updateGradient() {
     if (Utils::isSettingEnabled(MOD_DISABLED)) return;
 
-    Loader::get()->queueInMainThread([this] {
+    bool p2Selected = false;
+    if (Mod* sdiMod = Loader::get()->getLoadedMod("weebify.separate_dual_icons"))
+		p2Selected = sdiMod->getSavedValue<bool>("2pselected");
+
+    Loader::get()->queueInMainThread([this, p2Selected] {
         CCArrayExt<SimplePlayer*> array = CCArrayExt<SimplePlayer*>(m_playerObjects);
 
         for (int i = 0; i < array.size(); i++) {
@@ -17,7 +21,7 @@ void ProCharacterColorPage::updateGradient() {
                 if (!m_fields->m_isShip)
                     type = IconType::Jetpack;
 
-            Gradient gradient = Utils::getGradient(type, false);
+            Gradient gradient = Utils::getGradient(type, p2Selected);
             
             Utils::applyGradient(array[i], gradient.main, ColorType::Main, true);
             Utils::applyGradient(array[i], gradient.secondary, ColorType::Secondary, true);

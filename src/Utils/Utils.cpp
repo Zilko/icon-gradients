@@ -3,10 +3,11 @@
 
 #include "../Hooks/SimplePlayer.hpp"
 
-SimplePlayer* Utils::createIcon(IconType type) {
+SimplePlayer* Utils::createIcon(IconType type, bool secondPlayer) {
     SimplePlayer* icon = SimplePlayer::create(1);
 
-    icon->updatePlayerFrame(getIconID(type), type);
+    icon->updatePlayerFrame(getIconID(type, secondPlayer), type);
+    icon->disableGlowOutline();
 
     return icon;
 }
@@ -35,20 +36,36 @@ CCMenuItemToggler* Utils::createTypeToggle(bool radial, cocos2d::CCPoint pos, CC
     return toggle;
 }
 
-int Utils::getIconID(IconType type) {
+int Utils::getIconID(IconType type, bool secondPlayer) {
     GameManager* gm = GameManager::get();
 
-    switch (type) {
-        case IconType::Cube: return gm->getPlayerFrame();
-        case IconType::Ship: return gm->getPlayerShip();
-        case IconType::Ball: return gm->getPlayerBall();
-        case IconType::Ufo: return gm->getPlayerBird();
-        case IconType::Wave: return gm->getPlayerDart();
-        case IconType::Robot: return gm->getPlayerRobot();
-        case IconType::Spider: return gm->getPlayerSpider();
-        case IconType::Swing: return gm->getPlayerSwing();
-        case IconType::Jetpack: return gm->getPlayerJetpack();
-        default: return gm->getPlayerFrame();
+    if (!(secondPlayer && Loader::get()->isModLoaded("weebify.separate_dual_icons")))
+        switch (type) {
+            case IconType::Cube: return gm->getPlayerFrame();
+            case IconType::Ship: return gm->getPlayerShip();
+            case IconType::Ball: return gm->getPlayerBall();
+            case IconType::Ufo: return gm->getPlayerBird();
+            case IconType::Wave: return gm->getPlayerDart();
+            case IconType::Robot: return gm->getPlayerRobot();
+            case IconType::Spider: return gm->getPlayerSpider();
+            case IconType::Swing: return gm->getPlayerSwing();
+            case IconType::Jetpack: return gm->getPlayerJetpack();
+            default: return gm->getPlayerFrame();
+        }
+    else {
+        Mod* sdiMod =  Loader::get()->getLoadedMod("weebify.separate_dual_icons");
+        switch (type) {
+            case IconType::Cube: return sdiMod->getSavedValue<int>("cube", 1);
+            case IconType::Ship: return sdiMod->getSavedValue<int>("ship", 1);
+            case IconType::Ball: return sdiMod->getSavedValue<int>("roll", 1);
+            case IconType::Ufo: return sdiMod->getSavedValue<int>("bird", 1);
+            case IconType::Wave: return sdiMod->getSavedValue<int>("dart", 1);
+            case IconType::Robot: return sdiMod->getSavedValue<int>("robot", 1);
+            case IconType::Spider: return sdiMod->getSavedValue<int>("spider", 1);
+            case IconType::Swing: return sdiMod->getSavedValue<int>("swing", 1);
+            case IconType::Jetpack: return sdiMod->getSavedValue<int>("jetpack", 1);
+            default: return sdiMod->getSavedValue<int>("cube", 1);
+        }
     }
 }
 
@@ -66,6 +83,7 @@ bool Utils::isSettingEnabled(int setting) {
         case P2_DISABLED: return Cache::is2PDisabled();
         case P2_FLIP: return Cache::is2PFlip();
         case MENU_GRADIENTS: return Cache::isMenuGradientsEnabled();
+        case P2_SEPARATE: return Cache::is2PSeparate();
     }
 
     return false;
@@ -166,37 +184,47 @@ GradientConfig Utils::configFromObject(const matjson::Value& object) {
     return config;
 }
 
-GradientConfig Utils::getSavedConfig(IconType type, ColorType colorType) {
+GradientConfig Utils::getSavedConfig(IconType type, ColorType colorType, bool secondPlayer) {
     std::string id = getTypeID(type);
     std::string color = "color" + std::to_string(colorType);
+
+    if (!Utils::isSettingEnabled(P2_SEPARATE))
+        secondPlayer = false;
+
+    if (secondPlayer)
+        id += "-p2";
 
     GradientConfig config;
 
     if (!Mod::get()->hasSavedValue(id)) {
-        if (!Mod::get()->hasSavedValue("global"))
+        std::string globalKey = secondPlayer ? "global-p2" : "global";
+
+        if (!Mod::get()->hasSavedValue(globalKey)) {
             return getDefaultConfig(colorType);
-        else
-            id = "global";
+        } else
+            id = globalKey;
     }
 
     matjson::Value jsonConfig = Mod::get()->getSavedValue<matjson::Value>(id);
 
-    if (!jsonConfig.contains(color))
+    if (!jsonConfig.contains(color)) {
         return getDefaultConfig(colorType);
+    }
 
     config = configFromObject(jsonConfig[color]);
 
     return config;
 }
 
-Gradient Utils::getGradient(IconType type, bool flip) {
+Gradient Utils::getGradient(IconType type, bool secondPlayer) {
     Gradient gradient = {
-        getSavedConfig(type, ColorType::Main),
-        getSavedConfig(type, ColorType::Secondary),
-        getSavedConfig(type, ColorType::Glow)
+        getSavedConfig(type, ColorType::Main, secondPlayer),
+        getSavedConfig(type, ColorType::Secondary, secondPlayer),
+        getSavedConfig(type, ColorType::Glow, secondPlayer)
     };
 
-    if (flip) {
+    if (secondPlayer && Utils::isSettingEnabled(P2_FLIP)
+            && !Utils::isSettingEnabled(P2_SEPARATE)) {
         GradientConfig tempConfig = gradient.main;
         gradient.main = gradient.secondary;
         gradient.secondary = tempConfig;
@@ -205,7 +233,7 @@ Gradient Utils::getGradient(IconType type, bool flip) {
     return gradient;
 }
 
-void Utils::setIconColors(SimplePlayer* icon, ColorType colorType, bool white) {
+void Utils::setIconColors(SimplePlayer* icon, ColorType colorType, bool white, bool secondPlayer) {
     GameManager* gm = GameManager::get();
 
     cocos2d::ccColor3B color1 = white ? ccc3(255, 255, 255)
@@ -213,14 +241,31 @@ void Utils::setIconColors(SimplePlayer* icon, ColorType colorType, bool white) {
 
     cocos2d::ccColor3B color2 = white ? ccc3(255, 255, 255)
         : gm->colorForIdx(gm->getPlayerColor2());
+    
+    bool hasGlowOutline = gm->getPlayerGlow();
+    cocos2d::ccColor3B colorGlow = white ? ccc3(255, 255, 255)
+        : gm->colorForIdx(gm->getPlayerGlowColor());
+    
+    if (secondPlayer) {
+        if (Mod* sdiMod = Loader::get()->getLoadedMod("weebify.separate_dual_icons")) {
+            color1 = gm->colorForIdx(sdiMod->getSavedValue<int>("color1", 0));
+            color2 = gm->colorForIdx(sdiMod->getSavedValue<int>("color2", 0));
+            hasGlowOutline = sdiMod->getSavedValue<bool>("glow", false);
+            colorGlow = gm->colorForIdx(sdiMod->getSavedValue<int>("colorglow", 0));
+        } else {
+            cocos2d::ccColor3B tmpColor = color1;
+            color1 = color2;
+            color2 = tmpColor;
+        }
+    }
 
     icon->setColor(color1);
     icon->setSecondColor(color2);
 
-    icon->m_hasGlowOutline = gm->getPlayerGlow();;
+    icon->m_hasGlowOutline = hasGlowOutline;
 
     if (icon->m_hasGlowOutline)
-        icon->enableCustomGlowColor(gm->colorForIdx(gm->getPlayerGlowColor()));
+        icon->enableCustomGlowColor(colorGlow);
     else
         icon->disableCustomGlowColor();
 

@@ -15,6 +15,7 @@ private:
     SimplePlayer* m_icon = nullptr;
 
     IconType m_type = IconType::Cube;
+    bool m_isSecondPlayer = false;
 
     GradientConfig m_currentConfig;
 
@@ -27,13 +28,14 @@ private:
 
 public:
 
-    static IconButton* create(CCObject*, cocos2d::SEL_MenuHandler, IconType);
+    static IconButton* create(CCObject*, cocos2d::SEL_MenuHandler, IconType, bool = false);
 
     void setLocked(bool, bool = false);
     void setSelected(bool);
-    void setColor(ColorType, bool);
+    void setColor(ColorType, bool, bool = false);
 
-    void applyGradient(bool, ColorType, bool = false, bool = false);
+    void applyGradient(bool, ColorType, bool = false, bool = false, bool = false);
+    void updateSprite(bool);
 
     IconType getType();
 

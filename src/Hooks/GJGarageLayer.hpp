@@ -6,6 +6,10 @@
 
 class $modify(ProGJGarageLayer, GJGarageLayer) {
 
+	static void onModify(auto& self) {
+		(void)self.setHookPriorityBeforePre("GJGarageLayer::onSelect", "weebify.separate_dual_icons");
+	}
+
 	struct Fields {
 		SEL_MenuHandler m_originalCallback = nullptr;
 

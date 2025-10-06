@@ -4,11 +4,11 @@ class Utils {
 
 public:
 
-    static SimplePlayer* createIcon(IconType);
+    static SimplePlayer* createIcon(IconType, bool = false);
 
     static CCMenuItemToggler* createTypeToggle(bool, cocos2d::CCPoint, CCObject*, cocos2d::SEL_MenuHandler);
 
-    static int getIconID(IconType);
+    static int getIconID(IconType, bool = false);
     static bool isGradientSaved(GradientConfig);
     static bool isSettingEnabled(int);
 
@@ -19,7 +19,7 @@ public:
     static std::vector<GradientConfig> getSavedGradients();
 
     static GradientConfig configFromObject(const matjson::Value&);
-    static GradientConfig getSavedConfig(IconType, ColorType);
+    static GradientConfig getSavedConfig(IconType, ColorType, bool = false);
     static GradientConfig getDefaultConfig(ColorType);
     static matjson::Value getSaveObject(GradientConfig);
 
@@ -27,7 +27,7 @@ public:
 
     static void removeSavedGradient(GradientConfig);
     static void saveConfig(GradientConfig, const std::string&, const std::string&);
-    static void setIconColors(SimplePlayer*, ColorType, bool);
+    static void setIconColors(SimplePlayer*, ColorType, bool, bool = false);
     static void applyGradient(SimplePlayer*, GradientConfig, ColorType, bool, bool = false);
     static void applyGradient(CCSprite*, GradientConfig, bool, bool = false);
     static void patchBatchNode(CCSpriteBatchNode*);

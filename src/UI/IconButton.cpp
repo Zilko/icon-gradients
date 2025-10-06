@@ -4,10 +4,11 @@
 
 #include <hiimjustin000.more_icons/include/MoreIcons.hpp>
 
-IconButton* IconButton::create(CCObject* target, cocos2d::SEL_MenuHandler callback, IconType type) {
+IconButton* IconButton::create(CCObject* target, cocos2d::SEL_MenuHandler callback, IconType type, bool secondPlayer) {
     IconButton* ret = new IconButton();
 
     ret->m_type = type;
+    ret->m_isSecondPlayer = secondPlayer;
 
     if (ret->init(target, callback)) {
         ret->autorelease();
@@ -19,7 +20,7 @@ IconButton* IconButton::create(CCObject* target, cocos2d::SEL_MenuHandler callba
 };
 
 bool IconButton::init(CCObject* target, cocos2d::SEL_MenuHandler callback) {
-    m_icon = Utils::createIcon(m_type);
+    m_icon = Utils::createIcon(m_type, m_isSecondPlayer);
 
     if (Loader::get()->isModLoaded("hiimjustin000.more_icons"))
         MoreIcons::updateSimplePlayer(m_icon, m_type);
@@ -79,8 +80,8 @@ void IconButton::setSelected(bool selected) {
     m_select->setVisible(selected);
 }
 
-void IconButton::setColor(ColorType colorType, bool white) {
-    Utils::setIconColors(m_icon, colorType, white);
+void IconButton::setColor(ColorType colorType, bool white, bool secondPlayer) {
+    Utils::setIconColors(m_icon, colorType, white, secondPlayer);
 }
 
 void IconButton::setLocked(bool locked, bool instant) {
@@ -108,17 +109,17 @@ void IconButton::setLocked(bool locked, bool instant) {
     }
 }
 
-void IconButton::applyGradient(bool force, ColorType colorType, bool transition, bool all) {
+void IconButton::applyGradient(bool force, ColorType colorType, bool transition, bool all, bool secondPlayer) {
     GameManager* gm = GameManager::get();
 
     GradientConfig previousConfig = m_currentConfig;
 
     // transition = false; // ignore
 
-    m_currentConfig = Utils::getSavedConfig(m_type, colorType);
+    m_currentConfig = Utils::getSavedConfig(m_type, colorType, secondPlayer);
 
     if (all) {
-        Gradient gradient = Utils::getGradient(m_type, false);
+        Gradient gradient = Utils::getGradient(m_type, secondPlayer);
 
         Utils::applyGradient(m_icon, gradient.main, ColorType::Main, force);
         Utils::applyGradient(m_icon, gradient.secondary, ColorType::Secondary, force);
@@ -164,6 +165,11 @@ void IconButton::applyGradient(bool force, ColorType colorType, bool transition,
         CCCallFunc::create(this, callfunc_selector(IconButton::onAnimationEnded)),
         nullptr
     ));
+}
+
+void IconButton::updateSprite(bool secondPlayer) {
+    m_isSecondPlayer = secondPlayer;
+    m_icon->updatePlayerFrame(Utils::getIconID(m_type, secondPlayer), m_type);
 }
 
 void IconButton::onAnimationEnded() {

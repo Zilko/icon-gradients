@@ -60,7 +60,15 @@
 			"name": "Flip Second Player Colors",
 			"description": "Flip colors for second player like vanilla gd does.",
 			"type": "bool",
-			"default": true
+			"default": true,
+			"enable-if": "!separate-2p && !disable-2p"
+		},
+		"separate-2p":{
+			"name": "Separate Second Player Gradient",
+			"description": "Makes the second player use a separate set of gradients.",
+			"type": "bool",
+			"default": false,
+			"enable-if": "!disable-2p"
 		},
 		"disable-2p":{
 			"name": "Disable Second Player Gradient",

@@ -195,13 +195,12 @@ void ProPlayerObject::updateGradient() {
     auto f = m_fields.self();
 
     IconType type = getIconType();
-    bool shouldFlip = m_isSecondPlayer && Utils::isSettingEnabled(P2_FLIP);
 
     if (type == f->m_previousType) return;
 
     f->m_previousType = type;
 
-    Gradient gradient = Utils::getGradient(type, shouldFlip);
+    Gradient gradient = Utils::getGradient(type, m_isSecondPlayer);
 
     if (f->m_thatOneUfoShipAndCubeModIsLoaded) {
         if (f->m_iconSprite) f->m_iconSprite->setVisible(true);
@@ -215,7 +214,7 @@ void ProPlayerObject::updateGradient() {
     updateVehicleSprite(gradient, f);
 
     updateIconSprite(
-        Utils::getGradient(IconType::Cube, shouldFlip),
+        Utils::getGradient(IconType::Cube, m_isSecondPlayer),
         f
     );
 
@@ -283,12 +282,10 @@ void ProPlayerObject::createRobot(int p0) {
 
     Loader::get()->queueInMainThread([this] {
         if (shouldReturn(GJBaseGameLayer::get())) return;
-        
-        bool shouldFlip = this == m_gameLayer->m_player2 && Utils::isSettingEnabled(P2_FLIP);
 
         updateAnimSprite(
             IconType::Robot,
-            Utils::getGradient(IconType::Robot, shouldFlip),
+            Utils::getGradient(IconType::Robot, this == m_gameLayer->m_player2),
             m_fields.self()
         );
     });
@@ -301,12 +298,10 @@ void ProPlayerObject::createSpider(int p0) {
 
     Loader::get()->queueInMainThread([this] {
         if (shouldReturn(GJBaseGameLayer::get())) return;
-        
-        bool shouldFlip = this == m_gameLayer->m_player2 && Utils::isSettingEnabled(P2_FLIP);
 
         updateAnimSprite(
             IconType::Spider,
-            Utils::getGradient(IconType::Spider, shouldFlip),
+            Utils::getGradient(IconType::Spider, this == m_gameLayer->m_player2),
             m_fields.self()
         );
     });

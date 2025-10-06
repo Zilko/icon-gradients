@@ -292,7 +292,7 @@ void PointsLayer::updateCenter() {
     if (m_icon->m_spiderSprite)
         m_icon->m_spiderSprite->setPosition(m_icon->getContentSize() / 2.f);
 
-    Utils::setIconColors(m_icon, m_currentColor, false);
+    Utils::setIconColors(m_icon, m_currentColor, false, m_layer->isSecondPlayer());
 }
 
 ColorNode* PointsLayer::getSelectedPoint() {
@@ -303,7 +303,7 @@ void PointsLayer::setPlayerFrame(IconType type) {
     m_type = type;
     
     m_icon->updatePlayerFrame(
-        Utils::getIconID(type),
+        Utils::getIconID(type, m_layer->isSecondPlayer()),
         type
     );
 

@@ -30,6 +30,7 @@ private:
     CCMenuItemToggler* m_radialToggle = nullptr;
     CCMenuItemToggler* m_dotToggle = nullptr;
     CCMenuItemToggler* m_hideToggle = nullptr;
+    CCMenuItemToggler* m_playerToggle = nullptr;
 
     CCLabelBMFont* m_countLabel = nullptr;
 
@@ -57,6 +58,7 @@ private:
     GradientConfig m_currentConfig;
 
     ColorType m_currentColor = ColorType::Main;
+    bool m_isSecondPlayer = false;
     bool m_ignoreColorChange = false;
     bool m_pointsHidden = false;
     bool m_smoothScroll = false;
@@ -72,6 +74,7 @@ private:
     void onColorToggle(CCObject*);
     void onHideToggle(CCObject*);
     void onColorSelector(CCObject*);
+    void onPlayerToggle(CCObject*);
 
     void onIconButton(CCObject*);
     void onAddPoint(CCObject*);
@@ -105,6 +108,10 @@ public:
     void updatePointOpacity(int);
     void updatePointScale(float);
     void updateGarage(bool, bool = false);
+    void updatePlayer(bool);
+    void updatePlayerToggle();
+    
+    bool isSecondPlayer();
 
     void pointMoved();
     void pointSelected(CCNode*);
