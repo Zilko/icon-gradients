@@ -75,7 +75,7 @@ bool PlayerToggle::init() {
     addChild(menu);
     
     CCNode* container = CCNode::create();
-    container->setContentSize({26.39f, 13.74f});
+    container->setContentSize(ccp(26.39f, 13.74f) * 1.5f);
     
     m_p1Lbl = CCLabelBMFont::create("P1", "bigFont.fnt");
     m_p1Lbl->setScale(0.3f);
@@ -90,7 +90,7 @@ bool PlayerToggle::init() {
     menu->addChild(m_p1Btn);
     
     container = CCNode::create();
-    container->setContentSize({26.39f, 13.74f});
+    container->setContentSize(ccp(26.39f, 13.74f) * 1.5f);
     
     m_p2Lbl = CCLabelBMFont::create("P2", "bigFont.fnt");m_p1Lbl->setScale(0.3f);
     m_p2Lbl->setOpacity(100);
