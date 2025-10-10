@@ -132,6 +132,11 @@ void ProGJGarageLayer::updateGradient() {
 				Gradient gradient = Utils::getGradient(Utils::getIconType(icon), true);
 				Utils::applyGradient(icon, gradient, false, true, 202);
 			}
+		
+        if (!p2 || !Utils::isSettingEnabled(P2_DISABLED)) {
+            auto f = self->m_fields.self();
+      		Utils::applyGradient(f->m_pageIcon, Utils::getGradient(Utils::getIconType(f->m_pageIcon), p2), false, false, 66);
+        }
 	});
 }
 

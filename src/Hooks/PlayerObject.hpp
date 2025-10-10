@@ -28,14 +28,18 @@ class $modify(ProPlayerObject, PlayerObject) {
 		CCSprite* m_vehicleSpriteSecondary = nullptr;
 		CCSprite* m_vehicleGlow = nullptr;
 
-		std::vector<CCSprite*> m_animSprites;
+		std::vector<Ref<CCSprite>> m_animSprites;
+		std::unordered_map<CCSprite*, Ref<CCSprite>> m_animSpriteParents;
 
 		bool m_thatOneUfoShipAndCubeModIsLoaded = false;
+		bool m_separateDualIconsIsLoaded = false;
 	};
 	
 	bool shouldReturn(GJBaseGameLayer*, bool = false);
 
 	IconType getIconType();
+	
+	void updateCube(float);
 
 	void updateVisibility();
 
@@ -64,7 +68,7 @@ class $modify(ProPlayerObject, PlayerObject) {
     void updatePlayerSwingFrame(int);
 
     void updatePlayerJetpackFrame(int);
-
+    
 	void createRobot(int);
 
 	void createSpider(int);

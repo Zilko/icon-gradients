@@ -1,5 +1,4 @@
 #include "../Utils/Utils.hpp"
-#include "../Utils/Cache.hpp"
 
 #include "PlayerObject.hpp"
 
@@ -23,9 +22,20 @@ IconType ProPlayerObject::getIconType() {
     return IconType::Cube;
 }
 
-void ProPlayerObject::updateVisibility() {
+void ProPlayerObject::updateCube(float) {
     auto f = m_fields.self();
+    
+    if (getIconType() == IconType::Cube) {
+        f->m_previousType = static_cast<IconType>(-1);
+        updateGradient();
+    }
+}
 
+void ProPlayerObject::updateVisibility() {
+    if (shouldReturn(GJBaseGameLayer::get())) return;
+        
+    auto f = m_fields.self();
+    
     if (f->m_iconSprite && f->m_iconSprite->getOpacity() != m_iconSprite->getOpacity())
         f->m_iconSprite->setOpacity(m_iconSprite->getOpacity());
 
@@ -44,16 +54,9 @@ void ProPlayerObject::updateVisibility() {
     if (f->m_vehicleGlow && f->m_vehicleGlow->getOpacity() != m_vehicleGlow->getOpacity())
         f->m_vehicleGlow->setOpacity(m_vehicleGlow->getOpacity());
 
-    for (CCSprite* sprite : f->m_animSprites) {
-        if (!sprite->getParent()) continue;
-
-        CCSprite* parent = static_cast<CCSprite*>(sprite->getParent());
-        GLubyte parentOpacity = parent->getOpacity();
-
-        if (sprite->getOpacity() != parentOpacity) {
-            sprite->setOpacity(parentOpacity);
-        }
-    }
+    for (CCSprite* sprite : f->m_animSprites)
+        if (f->m_animSpriteParents.contains(sprite))
+            sprite->setOpacity(f->m_animSpriteParents.at(sprite)->getOpacity());
 }
 
 
@@ -82,17 +85,17 @@ void ProPlayerObject::updateIconSprite(Gradient gradient, auto f) {
         updateSprite(m_iconGlow, f->m_iconGlow, SpriteType::Icon, ColorType::Glow);
 
     if (f->m_iconSprite) {
-        Utils::applyGradient(f->m_iconSprite, gradient.main, getIconType(), 100, false, m_isSecondPlayer, true, 1);
+        Utils::applyGradient(f->m_iconSprite, gradient.main, getIconType(), 105, false, m_isSecondPlayer, true, 2);
         f->m_iconSprite->setVisible(!gradient.main.points.empty());
     }
 
     if (f->m_iconSpriteSecondary) {
-        Utils::applyGradient(f->m_iconSpriteSecondary, gradient.secondary, getIconType(), 200, false, m_isSecondPlayer, true, 1);
+        Utils::applyGradient(f->m_iconSpriteSecondary, gradient.secondary, getIconType(), 205, false, m_isSecondPlayer, true, 2);
         f->m_iconSpriteSecondary->setVisible(!gradient.secondary.points.empty());
     }
     
     if (f->m_iconGlow) {
-        Utils::applyGradient(f->m_iconGlow, gradient.glow, getIconType(), 300, false, m_isSecondPlayer, true, 1);
+        Utils::applyGradient(f->m_iconGlow, gradient.glow, getIconType(), 305, false, m_isSecondPlayer, true, 2);
         f->m_iconGlow->setVisible(!gradient.glow.points.empty());
     }
 }
@@ -108,17 +111,17 @@ void ProPlayerObject::updateVehicleSprite(Gradient gradient, auto f) {
         updateSprite(m_vehicleGlow, f->m_vehicleGlow, SpriteType::Vehicle, ColorType::Glow);
 
     if (f->m_vehicleSprite) {
-        Utils::applyGradient(f->m_vehicleSprite, gradient.main, getIconType(), 100, false, m_isSecondPlayer, true, 1);
+        Utils::applyGradient(f->m_vehicleSprite, gradient.main, getIconType(), 104, false, m_isSecondPlayer, true, 44);
         f->m_vehicleSprite->setVisible(!gradient.main.points.empty());
     }
 
     if (f->m_vehicleSpriteSecondary) {
-        Utils::applyGradient(f->m_vehicleSpriteSecondary, gradient.secondary, getIconType(), 200, false, m_isSecondPlayer, true, 1);
+        Utils::applyGradient(f->m_vehicleSpriteSecondary, gradient.secondary, getIconType(), 204, false, m_isSecondPlayer, true, 44);
         f->m_vehicleSpriteSecondary->setVisible(!gradient.secondary.points.empty());
     }
 
     if (f->m_vehicleGlow) {
-        Utils::applyGradient(f->m_vehicleGlow, gradient.glow, getIconType(), 300, false, m_isSecondPlayer, true, 1);
+        Utils::applyGradient(f->m_vehicleGlow, gradient.glow, getIconType(), 304, false, m_isSecondPlayer, true, 44);
         f->m_vehicleGlow->setVisible(!gradient.glow.points.empty());
     }
 
@@ -146,8 +149,9 @@ void ProPlayerObject::updateAnimSprite(IconType type, Gradient gradient, auto f)
         spr->addChild(sprite);
 
         f->m_animSprites.push_back(sprite);
+        f->m_animSpriteParents[sprite] = spr;
 
-        Utils::applyGradient(sprite, gradient.main, type, 100 + count, false, m_isSecondPlayer, true, 1);
+        Utils::applyGradient(sprite, gradient.main, type, 100 + count, false, m_isSecondPlayer, true, 55);
 
         count++;
     }
@@ -164,8 +168,9 @@ void ProPlayerObject::updateAnimSprite(IconType type, Gradient gradient, auto f)
         spr->addChild(sprite);
 
         f->m_animSprites.push_back(sprite);
+        f->m_animSpriteParents[sprite] = spr;
 
-        Utils::applyGradient(sprite, gradient.secondary, type, 200 + count, false, m_isSecondPlayer, true, 1);
+        Utils::applyGradient(sprite, gradient.secondary, type, 200 + count, false, m_isSecondPlayer, true, 55);
 
         count++;
     }
@@ -182,8 +187,9 @@ void ProPlayerObject::updateAnimSprite(IconType type, Gradient gradient, auto f)
         spr->addChild(sprite);
 
         f->m_animSprites.push_back(sprite);
+        f->m_animSpriteParents[sprite] = spr;
 
-        Utils::applyGradient(sprite, gradient.glow, type, 300 + count, false, m_isSecondPlayer, true, 1);
+        Utils::applyGradient(sprite, gradient.glow, type, 300 + count, false, m_isSecondPlayer, true, 55);
 
         count++;
     }
@@ -212,11 +218,7 @@ void ProPlayerObject::updateGradient() {
         return updateIconSprite(gradient, f);
 
     updateVehicleSprite(gradient, f);
-
-    updateIconSprite(
-        Utils::getGradient(IconType::Cube, m_isSecondPlayer),
-        f
-    );
+    updateIconSprite(Utils::getGradient(IconType::Cube, m_isSecondPlayer), f);
 
     if (f->m_thatOneUfoShipAndCubeModIsLoaded && !m_isSecondPlayer) {
         if (f->m_iconSprite) f->m_iconSprite->setVisible(false);
@@ -311,8 +313,16 @@ bool ProPlayerObject::init(int p0, int p1, GJBaseGameLayer* p2, CCLayer* p3, boo
     if (!PlayerObject::init(p0, p1, p2, p3, p4)) return false;
 
     m_fields->m_thatOneUfoShipAndCubeModIsLoaded = Loader::get()->isModLoaded("yellowcat98.custom_ufo_n_ship_cube");
-
+    
     Loader::get()->queueInMainThread([self = Ref(this)] {
+        if (
+            LevelEditorLayer::get()
+            && self->m_isSecondPlayer
+            && Loader::get()->isModLoaded("weebify.separate_dual_icons")
+        ) {
+            self->schedule(schedule_selector(ProPlayerObject::updateCube));
+        }
+        
         self->updateGradient();
     });
 
