@@ -38,6 +38,10 @@ CCMenuItemToggler* Utils::createTypeToggle(bool radial, CCPoint pos, CCObject* t
 
 ccColor3B Utils::getPlayerColor(ColorType colorType, bool secondPlayer) {
     GameManager* gm = GameManager::get();
+
+    if (colorType == ColorType::White)
+        return ccWHITE;
+
     Mod* sdiMod = Loader::get()->getLoadedMod("weebify.separate_dual_icons");
     int color;
     
@@ -336,6 +340,7 @@ void Utils::applyGradient(SimplePlayer* icon, Gradient gradient, bool blend, boo
     applyGradient(icon, gradient.main, ColorType::Main, blend, secondPlayer, extra);
     applyGradient(icon, gradient.secondary, ColorType::Secondary, blend, secondPlayer, extra);
     applyGradient(icon, gradient.glow, ColorType::Glow, blend, secondPlayer, extra);
+    applyGradient(icon, gradient.white, ColorType::White, blend, secondPlayer, extra);
 }
     
 void Utils::applyGradient(SimplePlayer* icon, GradientConfig config, ColorType colorType, bool blend, bool secondPlayer, int extra) {

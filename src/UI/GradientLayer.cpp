@@ -871,19 +871,24 @@ bool GradientLayer::setup() {
     m_buttonMenu->addChild(m_dotToggle);
 
     m_mainColorToggle = ColorToggle::create(this, menu_selector(GradientLayer::onColorToggle), ColorType::Main, this);
-    m_mainColorToggle->setPosition({265, 63});
+    m_mainColorToggle->setPosition({247, 63});
 
     m_buttonMenu->addChild(m_mainColorToggle);
 
     m_secondaryColorToggle = ColorToggle::create(this, menu_selector(GradientLayer::onColorToggle), ColorType::Secondary, this);
-    m_secondaryColorToggle->setPosition({247, 33});
+    m_secondaryColorToggle->setPosition({282, 63});
 
     m_buttonMenu->addChild(m_secondaryColorToggle);
 
     m_glowColorToggle = ColorToggle::create(this, menu_selector(GradientLayer::onColorToggle), ColorType::Glow, this);
-    m_glowColorToggle->setPosition({282, 33});
+    m_glowColorToggle->setPosition({247, 33});
 
     m_buttonMenu->addChild(m_glowColorToggle);
+
+    m_whiteColorToggle = ColorToggle::create(this, menu_selector(GradientLayer::onColorToggle), ColorType::White, this);
+    m_whiteColorToggle->setPosition({282, 33});
+
+    m_buttonMenu->addChild(m_whiteColorToggle);
 
     m_mainColorToggle->applyGradient(Utils::getDefaultConfig(ColorType::Main, m_isSecondPlayer), true, false);
     m_secondaryColorToggle->applyGradient(Utils::getDefaultConfig(ColorType::Secondary, m_isSecondPlayer), true, false);

@@ -103,7 +103,7 @@ void ProPlayerObject::updateIconSprite(Gradient gradient, auto f) {
     }
     
     if (f->m_iconSpriteWhitener) {
-        Utils::applyGradient(f->m_iconSpriteWhitener, gradient.white, true);
+        Utils::applyGradient(f->m_iconSpriteWhitener, gradient.white, getIconType(), 405, false, m_isSecondPlayer, true, 2);
         f->m_iconSpriteWhitener->setVisible(!gradient.white.points.empty());
     }
 }
@@ -137,7 +137,7 @@ void ProPlayerObject::updateVehicleSprite(Gradient gradient, auto f) {
     }
 
     if (f->m_vehicleSpriteWhitener) {
-        Utils::applyGradient(f->m_vehicleSpriteWhitener, gradient.white, true);
+        Utils::applyGradient(f->m_vehicleSpriteWhitener, gradient.white, getIconType(), 404, false, m_isSecondPlayer, true, 44);
         f->m_vehicleSpriteWhitener->setVisible(!gradient.white.points.empty());
     }
 
@@ -218,7 +218,7 @@ void ProPlayerObject::updateAnimSprite(IconType type, Gradient gradient, auto f)
 
         f->m_animSprites.push_back(spr);
 
-        Utils::applyGradient(spr, gradient.white, true);
+        Utils::applyGradient(spr, gradient.white, type, 400 + count, false, m_isSecondPlayer, true, 55);
 
         count++;
     }
