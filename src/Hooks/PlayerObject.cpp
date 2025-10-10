@@ -45,6 +45,9 @@ void ProPlayerObject::updateVisibility() {
     if (f->m_iconGlow && f->m_iconGlow->getOpacity() != m_iconGlow->getOpacity())
         f->m_iconGlow->setOpacity(m_iconGlow->getOpacity());
 
+    if (f->m_iconSpriteWhitener && f->m_iconSpriteWhitener->getOpacity() != m_iconSpriteWhitener->getOpacity())
+        f->m_iconSpriteWhitener->setOpacity(m_iconSpriteWhitener->getOpacity());
+
     if (f->m_vehicleSprite && f->m_vehicleSprite->getOpacity() != m_vehicleSprite->getOpacity())
         f->m_vehicleSprite->setOpacity(m_vehicleSprite->getOpacity());
 
@@ -53,6 +56,9 @@ void ProPlayerObject::updateVisibility() {
 
     if (f->m_vehicleGlow && f->m_vehicleGlow->getOpacity() != m_vehicleGlow->getOpacity())
         f->m_vehicleGlow->setOpacity(m_vehicleGlow->getOpacity());
+
+    if (f->m_vehicleSpriteWhitener && f->m_vehicleSpriteWhitener->getOpacity() != m_vehicleSpriteWhitener->getOpacity())
+        f->m_vehicleSpriteWhitener->setOpacity(m_vehicleSpriteWhitener->getOpacity());
 
     for (CCSprite* sprite : f->m_animSprites)
         if (f->m_animSpriteParents.contains(sprite))
@@ -241,6 +247,7 @@ void ProPlayerObject::updateGradient() {
         if (f->m_iconSprite) f->m_iconSprite->setVisible(true);
         if (f->m_iconSpriteSecondary) f->m_iconSpriteSecondary->setVisible(true);
         if (f->m_iconGlow) f->m_iconGlow->setVisible(true);
+        if (f->m_iconSpriteWhitener) f->m_iconSpriteWhitener->setVisible(true);
     }
 
     if (type != IconType::Ship && type != IconType::Jetpack && type != IconType::Ufo)
@@ -253,12 +260,17 @@ void ProPlayerObject::updateGradient() {
         if (f->m_iconSprite) f->m_iconSprite->setVisible(false);
         if (f->m_iconSpriteSecondary) f->m_iconSpriteSecondary->setVisible(false);
         if (f->m_iconGlow) f->m_iconGlow->setVisible(false);
+        if (f->m_iconSpriteWhitener) f->m_iconSpriteWhitener->setVisible(false);
 
         m_iconSprite->setVisible(true);
         m_iconSpriteSecondary->setVisible(true);
+        m_iconGlow->setVisible(m_hasGlow);
+        m_iconSpriteWhitener->setVisible(true);
 
         m_iconSprite->setOpacity(255);
         m_iconSpriteSecondary->setOpacity(255);
+        m_iconGlow->setOpacity(255);
+        m_iconSpriteWhitener->setOpacity(255);
     }
 }
 
