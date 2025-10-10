@@ -24,7 +24,7 @@ void ColorSelectLayer::onColor(CCObject* sender) {
     onClose(nullptr);
 }
 
-void ColorSelectLayer::createButton(int color, const cocos2d::CCPoint& pos) {
+void ColorSelectLayer::createButton(int color, const CCPoint& pos) {
     CCSprite* spr = CCSprite::createWithSpriteFrameName("GJ_colorBtn_001.png");
     spr->setColor(GameManager::get()->colorForIdx(color));
     spr->setScale(0.65f);

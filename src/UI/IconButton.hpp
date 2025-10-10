@@ -22,13 +22,15 @@ private:
     bool m_isLocked = false;
     bool m_didForce = false;
 
-    bool init(CCObject*, cocos2d::SEL_MenuHandler);
+    bool init(CCObject*, SEL_MenuHandler);
+    
+    void updatePlayerScale();
 
     void onAnimationEnded();
 
 public:
 
-    static IconButton* create(CCObject*, cocos2d::SEL_MenuHandler, IconType, bool = false);
+    static IconButton* create(CCObject*, SEL_MenuHandler, IconType, bool = false);
 
     void setLocked(bool, bool = false);
     void setSelected(bool);

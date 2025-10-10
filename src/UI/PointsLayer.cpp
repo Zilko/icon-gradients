@@ -5,7 +5,7 @@
 
 #include <hiimjustin000.more_icons/include/MoreIcons.hpp>
 
-PointsLayer* PointsLayer::create(const cocos2d::CCSize& size, GradientLayer* layer) {
+PointsLayer* PointsLayer::create(const CCSize& size, GradientLayer* layer) {
     PointsLayer* ret = new PointsLayer();
 
     ret->m_layer = layer;
@@ -19,7 +19,7 @@ PointsLayer* PointsLayer::create(const cocos2d::CCSize& size, GradientLayer* lay
     return nullptr;
 };
 
-bool PointsLayer::init(cocos2d::CCSize size) {
+bool PointsLayer::init(CCSize size) {
     if (!CCLayer::init()) return false;
 
     m_shadow = CCSprite::create("shadow.png"_spr);
@@ -76,8 +76,8 @@ void PointsLayer::removeSelected() {
     m_selectedPoint = nullptr;
 }
 
-void PointsLayer::moveSelected(const cocos2d::CCPoint& move) {
-    cocos2d::CCPoint pos = m_selectedPoint->getPosition() + move;
+void PointsLayer::moveSelected(const CCPoint& move) {
+    CCPoint pos = m_selectedPoint->getPosition() + move;
     
     pos.x = std::max(0.f, std::min(pos.x, getContentSize().width));
     pos.y = std::max(0.f, std::min(pos.y, getContentSize().height));
@@ -87,19 +87,19 @@ void PointsLayer::moveSelected(const cocos2d::CCPoint& move) {
 }
 
 void PointsLayer::addPoint() {
-    cocos2d::CCSize size = m_icon->getContentSize() * m_icon->getScale();
-    cocos2d::CCPoint position = m_icon->getPosition();
+    CCSize size = m_icon->getContentSize() * m_icon->getScale();
+    CCPoint position = m_icon->getPosition();
 
-    std::vector<cocos2d::CCPoint> corners = {
+    std::vector<CCPoint> corners = {
         {position.x - size.width / 2, position.y + size.height / 2},
         {position.x + size.width / 2, position.y + size.height / 2},
         {position.x - size.width / 2, position.y - size.height / 2},
         {position.x + size.width / 2, position.y - size.height / 2}
     };
 
-    cocos2d::CCPoint pos = {0, 0};
+    CCPoint pos = {0, 0};
     
-    for (const cocos2d::CCPoint& corner : corners) {
+    for (const CCPoint& corner : corners) {
         bool taken = false;
 
         for (ColorNode* point : m_points) {
@@ -124,7 +124,7 @@ void PointsLayer::addPoint() {
     addPoint(pos);
 }
 
-void PointsLayer::addPoint(const cocos2d::CCPoint& pos, bool invis) {
+void PointsLayer::addPoint(const CCPoint& pos, bool invis) {
     ColorNode* node = ColorNode::create(invis, Mod::get()->getSettingValue<int64_t>("point-opacity"));
 
     node->setPosition(pos);
@@ -135,7 +135,7 @@ void PointsLayer::addPoint(const cocos2d::CCPoint& pos, bool invis) {
     m_points.push_back(node);
 }
 
-ColorNode* PointsLayer::getNodeForPos(cocos2d::CCPoint pos) {
+ColorNode* PointsLayer::getNodeForPos(CCPoint pos) {
     pos = convertToNodeSpace(pos);
 
     ColorNode* ret = nullptr;
@@ -180,7 +180,7 @@ void PointsLayer::selectPoint(ColorNode* point) {
 bool PointsLayer::ccTouchBegan(CCTouch* touch, CCEvent* event) { 
     if (m_isAnimating) return false;
 
-    cocos2d::CCPoint pos = touch->getLocation();
+    CCPoint pos = touch->getLocation();
 
     for (int i = 0; i < m_removingPoints.size(); i++)
         if (!m_removingPoints[i]->isAnimating()) {
@@ -212,7 +212,7 @@ void PointsLayer::ccTouchMoved(CCTouch* touch, CCEvent* event) {
     CCLayer::ccTouchMoved(touch, event);
 
     if (m_isMoving && m_selectedPoint) {
-        cocos2d::CCPoint pos = convertToNodeSpace(touch->getLocation()) + m_moveOffset;
+        CCPoint pos = convertToNodeSpace(touch->getLocation()) + m_moveOffset;
 
         pos.x = std::max(0.f, std::min(pos.x, getContentSize().width));
         pos.y = std::max(0.f, std::min(pos.y, getContentSize().height));
@@ -245,7 +245,7 @@ IconType PointsLayer::getType() {
     return m_type;
 }
 
-void PointsLayer::updateHover(const cocos2d::CCPoint& pos) {
+void PointsLayer::updateHover(const CCPoint& pos) {
     if (ColorNode* point = getNodeForPos(pos)) {
         point->setHovered(true);
 
@@ -270,7 +270,7 @@ void PointsLayer::updatePointScale(float value) {
 }
 
 void PointsLayer::updateGradient(GradientConfig config, ColorType colorType, bool force) {
-    Utils::applyGradient(m_icon, config, colorType, force);
+    Utils::applyGradient(m_icon, config, colorType, false, m_layer->isSecondPlayer(), 1000);
 
     m_currentColor = colorType;
 
@@ -308,7 +308,7 @@ void PointsLayer::setPlayerFrame(IconType type) {
     );
 
     if (Loader::get()->isModLoaded("hiimjustin000.more_icons"))
-        MoreIcons::updateSimplePlayer(m_icon, m_type);
+        MoreIcons::updateSimplePlayer(m_icon, m_type, m_layer->isSecondPlayer());
 
     updateCenter();
 }
@@ -324,11 +324,11 @@ void PointsLayer::setPointsHidden(bool hidden, float time) {
     m_pointsHidden = hidden;
 }
 
-cocos2d::CCPoint PointsLayer::getRelativePos(ColorNode* point) {
+CCPoint PointsLayer::getRelativePos(ColorNode* point) {
     if (!point) return {0, 0};
 
-    cocos2d::CCSize iconSize = ccp(30.5f, 30) * m_icon->getScale();
-    cocos2d::CCPoint realPos = point->getPosition() + m_pointOffset - (m_icon->getPosition() - iconSize * m_icon->getAnchorPoint());
+    CCSize iconSize = ccp(30.5f, 30) * m_icon->getScale();
+    CCPoint realPos = point->getPosition() + m_pointOffset - (m_icon->getPosition() - iconSize * m_icon->getAnchorPoint());
 
     return {
         realPos.x / iconSize.width,
@@ -346,8 +346,8 @@ void PointsLayer::loadPoints(GradientConfig config, bool animate) {
 
     // m_icon->runAction(CCFadeTo::create(0.05f, 0));
 
-    cocos2d::CCSize iconSize = ccp(30.5f, 30) * m_icon->getScale();
-    cocos2d::CCPoint bottomLeft = m_icon->getPosition() - iconSize / 2.f;
+    CCSize iconSize = ccp(30.5f, 30) * m_icon->getScale();
+    CCPoint bottomLeft = m_icon->getPosition() - iconSize / 2.f;
     
     std::unordered_set<SimplePoint> replacedPoints;
     std::unordered_set<ColorNode*> movedPoints;
@@ -365,8 +365,8 @@ void PointsLayer::loadPoints(GradientConfig config, bool animate) {
 
         replacedPoints.insert(m_currentConfig.points[i]);
 
-        cocos2d::CCPoint pos = bottomLeft + m_currentConfig.points[i].pos * iconSize;
-        cocos2d::ccColor3B color = m_currentConfig.points[i].color;
+        CCPoint pos = bottomLeft + m_currentConfig.points[i].pos * iconSize;
+        ccColor3B color = m_currentConfig.points[i].color;
 
         points[i]->setColor(color, 0.2f);
         points[i]->runAction(CCEaseSineOut::create(CCMoveTo::create(0.1f, pos)));
@@ -409,9 +409,9 @@ void PointsLayer::loadPoints(GradientConfig config, bool animate) {
 void PointsLayer::onAnimationEnded() {
     // m_icon->runAction(CCFadeTo::create(0.05f, 255));
 
-    cocos2d::CCSize iconSize = ccp(30.5f, 30) * m_icon->getScale();
-    cocos2d::CCPoint bottomLeft = m_icon->getPosition() - iconSize / 2.f;
-    cocos2d::CCPoint selectPos = {0, 0};
+    CCSize iconSize = ccp(30.5f, 30) * m_icon->getScale();
+    CCPoint bottomLeft = m_icon->getPosition() - iconSize / 2.f;
+    CCPoint selectPos = {0, 0};
 
     for (ColorNode* point : m_points)
         if (point->isSelected()) {
@@ -431,7 +431,7 @@ void PointsLayer::onAnimationEnded() {
     ColorNode* realSelectedPoint = nullptr;
 
     for (const SimplePoint& point : m_currentConfig.points) {
-        cocos2d::CCPoint pos = bottomLeft + point.pos * iconSize;
+        CCPoint pos = bottomLeft + point.pos * iconSize;
 
         addPoint(pos);
         

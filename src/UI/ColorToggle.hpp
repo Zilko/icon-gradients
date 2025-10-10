@@ -2,6 +2,8 @@
 
 #include "../Includes.hpp"
 
+class GradientLayer;
+
 class ColorToggle : public CCMenuItemSpriteExtra {
 
 private:
@@ -9,8 +11,11 @@ private:
     CCSprite* m_sprite = nullptr;
     CCSprite* m_secondSprite = nullptr;
     CCSprite* m_select = nullptr;
-    CCSprite* m_darkererSprite1 = nullptr;
-    CCSprite* m_darkererSprite2 = nullptr;
+    CCSprite* m_darkererSprite = nullptr;
+    
+    CCLabelBMFont* m_numberLabel = nullptr;
+    
+    GradientLayer* m_layer = nullptr;
 
     GradientConfig m_currentConfig;
 
@@ -19,20 +24,21 @@ private:
     bool m_didForce = false;
     bool m_isSelected = false;
     bool m_forceDisabled = false;
+    bool m_shouldCache = true;
 
-    bool init(CCObject*, cocos2d::SEL_MenuHandler, bool, float);
+    bool init(CCObject*, SEL_MenuHandler, bool, float);
 
     void onAnimationEnded();
 
 public:
 
-    static ColorToggle* create(CCObject*, cocos2d::SEL_MenuHandler, ColorType, bool = true,float = 1.f);
+    static ColorToggle* create(CCObject*, SEL_MenuHandler, ColorType, GradientLayer*, bool = true, float = 1.f, bool = true);
 
     ColorType getColorType();
 
     void setEnabled(bool) override;
     void setSelected(bool);
-    void setColor(const cocos2d::ccColor3B&, float = 0.f);
+    void setColor(const ccColor3B&, float = 0.f);
     
     bool isSelected() override;
 

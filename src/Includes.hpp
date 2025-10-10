@@ -25,8 +25,8 @@ enum ColorType {
 };
 
 struct SimplePoint {
-    cocos2d::CCPoint pos;
-    cocos2d::ccColor3B color;
+    CCPoint pos;
+    ccColor3B color;
 
     bool operator==(const SimplePoint& other) const {
         return pos.equals(other.pos) && color.r == other.color.r &&

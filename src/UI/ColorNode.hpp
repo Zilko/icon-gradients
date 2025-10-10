@@ -10,9 +10,9 @@ private:
     CCSprite* m_circle = nullptr;
     CCSprite* m_select = nullptr;
 
-    cocos2d::CCPoint m_relativePos = {0, 0};
+    CCPoint m_relativePos = {0, 0};
 
-    cocos2d::ccColor3B m_color = ccc3(255, 255, 255);
+    ccColor3B m_color = ccc3(255, 255, 255);
 
     bool m_isHovered = false;
     bool m_isSelected = false;
@@ -27,13 +27,13 @@ public:
 
     static ColorNode* create(bool, int = 255);
 
-    void setColor(const cocos2d::ccColor3B&, float = 0.f);
+    void setColor(const ccColor3B&, float = 0.f);
     void setOpacity(int);
     void setSelected(bool);
     void setHovered(bool);
     void setHidden(bool, float, bool = false);
 
-    cocos2d::ccColor3B getColor();
+    ccColor3B getColor();
     CCSprite* getSprite();
 
     bool isSelected();

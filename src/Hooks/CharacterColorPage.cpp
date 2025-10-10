@@ -11,21 +11,18 @@ void ProCharacterColorPage::updateGradient() {
     if (Mod* sdiMod = Loader::get()->getLoadedMod("weebify.separate_dual_icons"))
 		p2Selected = sdiMod->getSavedValue<bool>("2pselected");
 
-    Loader::get()->queueInMainThread([this, p2Selected] {
-        CCArrayExt<SimplePlayer*> array = CCArrayExt<SimplePlayer*>(m_playerObjects);
+    Loader::get()->queueInMainThread([self = Ref(this), p2Selected] {
+        CCArrayExt<SimplePlayer*> array = CCArrayExt<SimplePlayer*>(self->m_playerObjects);
 
         for (int i = 0; i < array.size(); i++) {
             IconType type =  static_cast<IconType>(i);
             
             if (type == IconType::Ship)
-                if (!m_fields->m_isShip)
+                if (!self->m_fields->m_isShip)
                     type = IconType::Jetpack;
 
             Gradient gradient = Utils::getGradient(type, p2Selected);
-            
-            Utils::applyGradient(array[i], gradient.main, ColorType::Main, true);
-            Utils::applyGradient(array[i], gradient.secondary, ColorType::Secondary, true);
-            Utils::applyGradient(array[i], gradient.glow, ColorType::Glow, true);
+            Utils::applyGradient(array[i], gradient, false, false, 372);
         }
     });
 }

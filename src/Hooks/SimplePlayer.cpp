@@ -7,28 +7,27 @@ void ProSimplePlayer::updatePlayerFrame(int p0, IconType type) {
 
 	m_fields->m_type = type;
 
-	if (!Loader::get()->isModLoaded("ninkaz.colorful-icons") || GJBaseGameLayer::get()) return;
+	if (
+	    !Loader::get()->isModLoaded("ninkaz.colorful-icons")
+		|| GJBaseGameLayer::get()
+		|| Utils::isSettingEnabled(MOD_DISABLED)
+	) {
+    	return;
+	}
 
-	retain();
-
-	bool useP2Gradient = false;
+	bool p2 = false;
 	if (Mod* sdiMod = Loader::get()->getLoadedMod("weebify.separate_dual_icons"))
 		if (CCDirector::sharedDirector()->getRunningScene()->getChildByType<GJGarageLayer>(0))
-			useP2Gradient = sdiMod->getSavedValue<bool>("2pselected");
+			p2 = sdiMod->getSavedValue<bool>("2pselected");
 
-	Loader::get()->queueInMainThread([this, type, useP2Gradient] {
-		if (!getParent()) return;
-		if (!typeinfo_cast<GJItemIcon*>(getParent())) return;
+	Loader::get()->queueInMainThread([self = Ref(this), type, p2] {
+		if (!self->getParent()) return;
+		if (!typeinfo_cast<GJItemIcon*>(self->getParent())) return;
 
-		if (CCSprite* spr = getChildByType<CCSprite>(0))
+		if (CCSprite* spr = self->getChildByType<CCSprite>(0))
 			if (spr->getOpacity() <= 120) return;
 
-		Gradient gradient = Utils::getGradient(type, useP2Gradient);
-
-		Utils::applyGradient(this, gradient.main, ColorType::Main, true);
-		Utils::applyGradient(this, gradient.secondary, ColorType::Secondary, true);
-		Utils::applyGradient(this, gradient.glow, ColorType::Glow, true);
-
-		autorelease();
+		Gradient gradient = Utils::getGradient(type, p2);
+		Utils::applyGradient(self, gradient, false, false, 66);
 	});
 }

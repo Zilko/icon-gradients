@@ -139,11 +139,11 @@ bool LoadLayer::setup() {
 
     m_mainLayer->addChild(m_scrollLayer);
 
-    cocos2d::CCSize size = {30, 30};
+    CCSize size = {30, 30};
     float scale = 1.1f;
 
     for (int i = 0; i < gradients.size(); i++) {
-        ColorToggle* toggle = ColorToggle::create(this, menu_selector(LoadLayer::onSelect), ColorType::Main, false, scale);
+        ColorToggle* toggle = ColorToggle::create(this, menu_selector(LoadLayer::onSelect), ColorType::Main, m_layer, false, scale, false);
         toggle->setPosition(size * scale * 0.5f);
 
         if (i < 100)

@@ -14,12 +14,7 @@ $execute {
 
     listenForSettingChanges("disabled", +[](bool value) {
         if (layer)
-            layer->updateGarage(false);
-    });
-
-    listenForSettingChanges("point-opacity", +[](int64_t value) {
-        if (layer)
-            layer->updatePointOpacity(value);
+            layer->updateGarage();
     });
 
     listenForSettingChanges("point-scale", +[](double value) {
@@ -33,6 +28,7 @@ $execute {
                 layer->updatePlayer(false);
 
             layer->updatePlayerToggle();
+            layer->updateGarage();
         }
     });
 
@@ -42,6 +38,7 @@ $execute {
                 layer->updatePlayer(false);
 
             layer->updatePlayerToggle();
+            layer->updateGarage();
         }
     });
 
@@ -71,7 +68,7 @@ class $modify(CCEGLView) {
 #endif
 
 GradientLayer::~GradientLayer() {
-    updateGarage(false);
+    updateGarage();
 
     layer = nullptr;
 }
@@ -88,18 +85,9 @@ void GradientLayer::updatePointScale(float value) {
     m_pointsLayer->updatePointScale(value);
 }
 
-void GradientLayer::updateGarage(bool quick, bool real) {
-    if (!m_garage) return;
-
-    IconType type = m_garage->getType();
-
-    // if (m_pointsLayer->getType() != type && quick)
-    //     return;
-
-    if ((type == IconType::Robot || type == IconType::Spider) && quick)
-        return; // this desnt work bup
-    
-    quick ? m_garage->updateQuickGradient() : m_garage->updateGradient();
+void GradientLayer::updateGarage() {
+    if (m_garage)
+        m_garage->updateGradient();
 }
 
 void GradientLayer::updatePlayer(bool secondPlayer) {
@@ -141,9 +129,9 @@ void GradientLayer::updateGlowToggle() {
 }
 
 void GradientLayer::updatePlayerToggle() {
-    Loader::get()->queueInMainThread([this] {
-        m_playerToggle->setVisible(Utils::isSettingEnabled(P2_SEPARATE));
-        m_playerToggle->toggle(false);
+    Loader::get()->queueInMainThread([self = Ref(this)] {
+        self->m_playerToggle->setVisible(Utils::isSettingEnabled(P2_SEPARATE));
+        self->m_playerToggle->toggle(false);
     });
 }
 
@@ -165,7 +153,7 @@ void GradientLayer::pointMoved() {
 }
 
 void GradientLayer::pointSelected(CCNode* point) {
-    cocos2d::ccColor3B color = static_cast<ColorNode*>(point)->getColor();
+    ccColor3B color = static_cast<ColorNode*>(point)->getColor();
     
     m_picker->setColor(color);
     m_colorSelector->setColor(color, 0.15f);
@@ -177,10 +165,10 @@ void GradientLayer::pointSelected(CCNode* point) {
 }
 
 void GradientLayer::pointReleased() {
-    updateGarage(true, true);
+    updateGarage();
 }
 
-void GradientLayer::colorSelected(const cocos2d::ccColor3B& color) {
+void GradientLayer::colorSelected(const ccColor3B& color) {
     m_rInput->setString(std::to_string(color.r).c_str());
     m_gInput->setString(std::to_string(color.g).c_str());
     m_bInput->setString(std::to_string(color.b).c_str());
@@ -204,7 +192,7 @@ GradientLayer* GradientLayer::create() {
 void GradientLayer::updateGradient(bool force, bool all, bool transition) {
     m_currentConfig = Utils::getSavedConfig(m_selectedButton->getType(), m_currentColor, m_isSecondPlayer);
 
-    updateGarage(true);
+    updateGarage();
 
     Gradient gradient = Utils::getGradient(m_selectedButton->getType(), m_isSecondPlayer);
 
@@ -285,20 +273,7 @@ void GradientLayer::onAddPoint(CCObject*) {
         m_hideToggle->toggle(false);
     }
 
-    int playerColor;
-    switch (m_currentColor) {
-        case ColorType::Main:
-            playerColor = gm->getPlayerColor();
-            break;
-        case ColorType::Secondary:
-            playerColor = gm->getPlayerColor2();
-            break;
-        case ColorType::Glow:
-            playerColor = gm->getPlayerGlowColor();
-            break;
-    }
-
-    cocos2d::ccColor3B color = gm->colorForIdx(playerColor);
+    ccColor3B color = Utils::getPlayerColor(m_currentColor, m_isSecondPlayer);
     
     m_pointsLayer->getSelectedPoint()->setColor(color);
     m_picker->setColor(color);
@@ -440,9 +415,9 @@ void GradientLayer::onTypeToggle(CCObject* sender) {
 
     m_currentConfig.isLinear = isLinear;
 
-    Loader::get()->queueInMainThread([this] {
-        m_linearToggle->toggle(m_currentConfig.isLinear);
-        m_radialToggle->toggle(!m_currentConfig.isLinear);
+    Loader::get()->queueInMainThread([self = Ref(this)] {
+        self->m_linearToggle->toggle(self->m_currentConfig.isLinear);
+        self->m_radialToggle->toggle(!self->m_currentConfig.isLinear);
     });
 
     save();
@@ -475,14 +450,16 @@ void GradientLayer::onLockToggle(CCObject* sender) {
 
         load(static_cast<IconType>(-1), m_currentColor, true, true, true);
 
-        Loader::get()->queueInMainThread([this, locked] {
-            m_dotToggle->toggle(locked);
+        Loader::get()->queueInMainThread([self = Ref(this), locked] {
+            self->m_dotToggle->toggle(locked);
         });
     }
 }
 
 void GradientLayer::onColorToggle(CCObject* sender) {
     ColorToggle* toggle = static_cast<ColorToggle*>(sender);
+    
+    if (!toggle->isEnabled()) return;
     
     if (toggle == m_mainColorToggle && m_mainColorToggle->isSelected()) return;
     if (toggle == m_secondaryColorToggle && m_secondaryColorToggle->isSelected()) return;
@@ -503,10 +480,8 @@ void GradientLayer::onColorSelector(CCObject*) {
     ColorSelectLayer::create(this)->show();
 }
 
-void GradientLayer::onPlayerToggle(CCObject* sender) {
-    CCMenuItemToggler* toggle = static_cast<CCMenuItemToggler*>(sender);
-
-    updatePlayer(!toggle->isToggled());
+void GradientLayer::onPlayerToggle(PlayerToggle* toggle) {
+    updatePlayer(toggle->isToggled());
 }
 
 void GradientLayer::onHideToggle(CCObject* sender) {
@@ -525,7 +500,7 @@ void GradientLayer::textChanged(CCTextInputNode* input) {
 
     m_ignoreColorChange = true;
     
-    cocos2d::ccColor3B color = ccc3(r, g, b);
+    ccColor3B color = ccc3(r, g, b);
     
     m_picker->setColor(color);
     m_colorSelector->setColor(color, 0.15f);
@@ -533,7 +508,7 @@ void GradientLayer::textChanged(CCTextInputNode* input) {
     m_ignoreColorChange = false;
 }
 
-void GradientLayer::colorValueChanged(cocos2d::ccColor3B color) {
+void GradientLayer::colorValueChanged(ccColor3B color) {
     if (!m_ignoreColorChange) {
         m_rInput->setString(std::to_string(color.r).c_str());
         m_gInput->setString(std::to_string(color.g).c_str());
@@ -549,55 +524,55 @@ void GradientLayer::colorValueChanged(cocos2d::ccColor3B color) {
     updateGradient();
 }
 
-void GradientLayer::keyDown(cocos2d::enumKeyCodes key) {
-	if (key == cocos2d::enumKeyCodes::KEY_Escape)
+void GradientLayer::keyDown(enumKeyCodes key) {
+	if (key == enumKeyCodes::KEY_Escape)
 		return onClose(nullptr);
 
     if (Mod::get()->getSettingValue<bool>("disable-keys")) return;
 
-    if (key == cocos2d::enumKeyCodes::KEY_Backspace)
+    if (key == enumKeyCodes::KEY_Backspace)
         return onRemovePoint(nullptr);
 
-    if (key == cocos2d::enumKeyCodes::KEY_Enter)
+    if (key == enumKeyCodes::KEY_Enter)
         return onAddPoint(nullptr);
 
-    if (key == cocos2d::enumKeyCodes::KEY_One)
+    if (key == enumKeyCodes::KEY_One)
         return onColorToggle(m_mainColorToggle);
 
-    if (key == cocos2d::enumKeyCodes::KEY_Two)
+    if (key == enumKeyCodes::KEY_Two)
         return onColorToggle(m_secondaryColorToggle);
 
-    if (key == cocos2d::enumKeyCodes::KEY_Three)
+    if (key == enumKeyCodes::KEY_Three)
         return onColorToggle(m_glowColorToggle);
 
-    if (key == cocos2d::enumKeyCodes::KEY_C)
+    if (key == enumKeyCodes::KEY_C)
         return onCopy(nullptr);
 
-    if (key == cocos2d::enumKeyCodes::KEY_V)
+    if (key == enumKeyCodes::KEY_V)
         return onPaste(nullptr);
 
-    if (key == cocos2d::enumKeyCodes::KEY_S)
+    if (key == enumKeyCodes::KEY_S)
         return onSave(nullptr);
 
-    if (key == cocos2d::enumKeyCodes::KEY_O)
+    if (key == enumKeyCodes::KEY_O)
         return onLoad(nullptr);
 
-    if (key == cocos2d::enumKeyCodes::KEY_L) {
-        Loader::get()->queueInMainThread([this] {
-            m_dotToggle->toggle(!m_dotToggle->isToggled());
+    if (key == enumKeyCodes::KEY_L) {
+        Loader::get()->queueInMainThread([self = Ref(this)] {
+            self->m_dotToggle->toggle(!self->m_dotToggle->isToggled());
         });
         
         return onLockToggle(nullptr);
     }
 
-    cocos2d::CCPoint move = {0, 0};
+    CCPoint move = {0, 0};
     float amount = Mod::get()->getSettingValue<float>("move-step");
 
     switch (key) {
-        case cocos2d::enumKeyCodes::KEY_Up: move = ccp(0, amount); break;
-        case cocos2d::enumKeyCodes::KEY_Down: move = ccp(0, -amount); break;
-        case cocos2d::enumKeyCodes::KEY_Right: move = ccp(amount, 0); break;
-        case cocos2d::enumKeyCodes::KEY_Left: move = ccp(-amount, 0); break;
+        case enumKeyCodes::KEY_Up: move = ccp(0, amount); break;
+        case enumKeyCodes::KEY_Down: move = ccp(0, -amount); break;
+        case enumKeyCodes::KEY_Right: move = ccp(amount, 0); break;
+        case enumKeyCodes::KEY_Left: move = ccp(-amount, 0); break;
         default: return;
     }
 
@@ -712,8 +687,8 @@ bool GradientLayer::setup() {
     m_pointsLayer = PointsLayer::create(m_size, this);
     m_mainLayer->addChild(m_pointsLayer, 100);
 
-    Loader::get()->queueInMainThread([this] {
-        if (CCTouchHandler* handler = CCTouchDispatcher::get()->findHandler(m_pointsLayer))
+    Loader::get()->queueInMainThread([self = Ref(this)] {
+        if (CCTouchHandler* handler = CCTouchDispatcher::get()->findHandler(self->m_pointsLayer))
             CCTouchDispatcher::get()->setPriority(-1000, handler->getDelegate());
     });
 
@@ -843,20 +818,12 @@ bool GradientLayer::setup() {
 
     m_buttonMenu->addChild(m_loadButton);
     
-    m_playerToggle = CCMenuItemToggler::create(
-        CCSprite::create("buton-p2.png"_spr),
-        CCSprite::create("buton-p1.png"_spr),
-        this,
-        menu_selector(GradientLayer::onPlayerToggle)
-    );
-    m_playerToggle->setPosition({211, 147});
-    m_playerToggle->setCascadeOpacityEnabled(true);
-    m_playerToggle->setScale(0.43f);
-    m_playerToggle->setOpacity(140);
+    m_playerToggle = PlayerToggle::create(this);
+    m_playerToggle->setPosition({78, 260.5f});
     m_playerToggle->setVisible(Utils::isSettingEnabled(P2_SEPARATE));
     m_playerToggle->toggle(m_isSecondPlayer);
-
-    m_buttonMenu->addChild(m_playerToggle);
+    
+    m_mainLayer->addChild(m_playerToggle);
 
     m_linearToggle = Utils::createTypeToggle(false, {245, 102}, this, menu_selector(GradientLayer::onTypeToggle));
     m_buttonMenu->addChild(m_linearToggle);
@@ -895,26 +862,26 @@ bool GradientLayer::setup() {
 
     m_buttonMenu->addChild(m_dotToggle);
 
-    m_mainColorToggle = ColorToggle::create(this, menu_selector(GradientLayer::onColorToggle), ColorType::Main);
+    m_mainColorToggle = ColorToggle::create(this, menu_selector(GradientLayer::onColorToggle), ColorType::Main, this);
     m_mainColorToggle->setPosition({265, 63});
 
     m_buttonMenu->addChild(m_mainColorToggle);
 
-    m_secondaryColorToggle = ColorToggle::create(this, menu_selector(GradientLayer::onColorToggle), ColorType::Secondary);
+    m_secondaryColorToggle = ColorToggle::create(this, menu_selector(GradientLayer::onColorToggle), ColorType::Secondary, this);
     m_secondaryColorToggle->setPosition({247, 33});
 
     m_buttonMenu->addChild(m_secondaryColorToggle);
 
-    m_glowColorToggle = ColorToggle::create(this, menu_selector(GradientLayer::onColorToggle), ColorType::Glow);
+    m_glowColorToggle = ColorToggle::create(this, menu_selector(GradientLayer::onColorToggle), ColorType::Glow, this);
     m_glowColorToggle->setPosition({282, 33});
 
     m_buttonMenu->addChild(m_glowColorToggle);
 
-    m_mainColorToggle->applyGradient(Utils::getDefaultConfig(ColorType::Main), true, true);
-    m_secondaryColorToggle->applyGradient(Utils::getDefaultConfig(ColorType::Secondary), true, true);
-    m_glowColorToggle->applyGradient(Utils::getDefaultConfig(ColorType::Glow), true, true);
+    m_mainColorToggle->applyGradient(Utils::getDefaultConfig(ColorType::Main, m_isSecondPlayer), true, false);
+    m_secondaryColorToggle->applyGradient(Utils::getDefaultConfig(ColorType::Secondary, m_isSecondPlayer), true, false);
+    m_glowColorToggle->applyGradient(Utils::getDefaultConfig(ColorType::Glow, m_isSecondPlayer), true, false);
 
-    m_colorSelector = ColorToggle::create(this, menu_selector(GradientLayer::onColorSelector), ColorType::Main, false);
+    m_colorSelector = ColorToggle::create(this, menu_selector(GradientLayer::onColorSelector), ColorType::Main, this, false);
     m_colorSelector->setPosition({65, 28});
 
     m_buttonMenu->addChild(m_colorSelector);
@@ -932,19 +899,19 @@ bool GradientLayer::setup() {
     load(IconType::Cube, ColorType::Main, true, true);
 
     if (Cache::getLastSelected() != IconType::Cube)
-        Loader::get()->queueInMainThread([this] {
-            for (IconButton* button : m_buttons)
+        Loader::get()->queueInMainThread([self = Ref(this)] {
+            for (IconButton* button : self->m_buttons)
                 if (button->getType() == Cache::getLastSelected())
-                    onIconButton(button);
+                    self->onIconButton(button);
         });
     
-    Loader::get()->queueInMainThread([this] {
-        m_pointsLayer->selectLast();
+    Loader::get()->queueInMainThread([self = Ref(this)] {
+        self->m_pointsLayer->selectLast();
         
         if (!Mod::get()->getSavedValue<bool>("moved-point")) {
-            m_firstPoint = m_pointsLayer->getSelectedPoint();
-            if (m_firstPoint)
-                m_firstPosition = m_firstPoint->getPosition();
+            self->m_firstPoint = self->m_pointsLayer->getSelectedPoint();
+            if (self->m_firstPoint)
+                self->m_firstPosition = self->m_firstPoint->getPosition();
         }
     });
     

@@ -8,8 +8,8 @@ void ProProfilePage::onSwap(CCObject* sender) {
 
     m_fields->m_isSecondPlayer = !m_fields->m_isSecondPlayer;
 
-    Loader::get()->queueInMainThread([this] {
-        updateGradient();
+    Loader::get()->queueInMainThread([self = Ref(this)] {
+        self->updateGradient();
     });
 }
 
@@ -35,9 +35,7 @@ void ProProfilePage::updateGradient() {
 
         Gradient gradient = Utils::getGradient(type, m_fields->m_isSecondPlayer);
         
-        Utils::applyGradient(child, gradient.main, ColorType::Main, true);
-        Utils::applyGradient(child, gradient.secondary, ColorType::Secondary, true);
-        Utils::applyGradient(child, gradient.glow, ColorType::Glow, true);
+        Utils::applyGradient(child, gradient, false, false, 99);
     }
 }
 
@@ -46,13 +44,13 @@ void ProProfilePage::getUserInfoFinished(GJUserScore* p0) {
 
     updateGradient();
 
-    Loader::get()->queueInMainThread([this] {
+    Loader::get()->queueInMainThread([self = Ref(this)] {
         if (Loader::get()->isModLoaded("weebify.separate_dual_icons"))
-            if (CCNode* menu = m_mainLayer->getChildByID("left-menu")) {
+            if (CCNode* menu = self->m_mainLayer->getChildByID("left-menu")) {
                 if (CCNode* toggleNode = menu->getChildByID("2p-toggler")) {
                     CCMenuItemToggler* toggle = static_cast<CCMenuItemToggler*>(toggleNode);
 
-                    m_fields->m_originalCallback = toggle->m_pfnSelector;
+                    self->m_fields->m_originalCallback = toggle->m_pfnSelector;
                     toggle->m_pfnSelector = menu_selector(ProProfilePage::onSwap);
                 }
             }

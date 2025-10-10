@@ -1,6 +1,8 @@
 # 1.2.0
 
 * Added Separate Second Player Gradient thanks to Kevadroz.
+* Added cache so some places lag less
+* Improved colorful icons support
 
 # 1.1.0
 

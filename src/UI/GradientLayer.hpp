@@ -7,6 +7,7 @@
 #include "ColorToggle.hpp"
 #include "IconButton.hpp"
 #include "ColorNode.hpp"
+#include "PlayerToggle.hpp"
 
 class GradientLayer : public geode::Popup<>, public ColorPickerDelegate, public TextInputDelegate {
 
@@ -30,7 +31,6 @@ private:
     CCMenuItemToggler* m_radialToggle = nullptr;
     CCMenuItemToggler* m_dotToggle = nullptr;
     CCMenuItemToggler* m_hideToggle = nullptr;
-    CCMenuItemToggler* m_playerToggle = nullptr;
 
     CCLabelBMFont* m_countLabel = nullptr;
 
@@ -42,6 +42,8 @@ private:
     ColorToggle* m_secondaryColorToggle = nullptr;
     ColorToggle* m_glowColorToggle = nullptr;
     ColorToggle* m_colorSelector = nullptr;
+    
+    PlayerToggle* m_playerToggle = nullptr;
 
     PointsLayer* m_pointsLayer = nullptr;
     
@@ -51,9 +53,9 @@ private:
 
     std::vector<IconButton*> m_buttons;
 
-    std::unordered_map<IconType, std::vector<cocos2d::CCPoint>> m_iconPoints;
+    std::unordered_map<IconType, std::vector<CCPoint>> m_iconPoints;
 
-    cocos2d::CCPoint m_firstPosition = ccp(0, 0);
+    CCPoint m_firstPosition = ccp(0, 0);
 
     GradientConfig m_currentConfig;
 
@@ -76,8 +78,7 @@ private:
     void onColorToggle(CCObject*);
     void onHideToggle(CCObject*);
     void onColorSelector(CCObject*);
-    void onPlayerToggle(CCObject*);
-
+    
     void onIconButton(CCObject*);
     void onAddPoint(CCObject*);
     void onRemovePoint(CCObject*);
@@ -95,9 +96,9 @@ private:
     void updateCountLabel();
     void updateUI();
 
-    void colorValueChanged(cocos2d::ccColor3B) override;
+    void colorValueChanged(ccColor3B) override;
     void textChanged(CCTextInputNode*) override;
-    void keyDown(cocos2d::enumKeyCodes) override;
+    void keyDown(enumKeyCodes) override;
     void scrollWheel(float, float) override;
 
 public:
@@ -109,7 +110,7 @@ public:
     void updateHover();
     void updatePointOpacity(int);
     void updatePointScale(float);
-    void updateGarage(bool, bool = false);
+    void updateGarage();
     void updatePlayer(bool);
     void updatePlayerToggle();
     void updateGlowToggle();
@@ -119,8 +120,10 @@ public:
     void pointMoved();
     void pointSelected(CCNode*);
     void pointReleased();
-    void colorSelected(const cocos2d::ccColor3B&);
+    void colorSelected(const ccColor3B&);
     
     void load(GradientConfig);
 
+    void onPlayerToggle(PlayerToggle*);
+    
 };

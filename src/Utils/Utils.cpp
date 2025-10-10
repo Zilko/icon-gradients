@@ -12,7 +12,7 @@ SimplePlayer* Utils::createIcon(IconType type, bool secondPlayer) {
     return icon;
 }
 
-CCMenuItemToggler* Utils::createTypeToggle(bool radial, cocos2d::CCPoint pos, CCObject* target, cocos2d::SEL_MenuHandler callback) {
+CCMenuItemToggler* Utils::createTypeToggle(bool radial, CCPoint pos, CCObject* target, SEL_MenuHandler callback) {
     CCSprite* spr = CCSprite::create("GJ_button_04.png");
 
     CCSprite* spr2 = CCSprite::createWithSpriteFrameName(radial ? "edit_areaModeBtn04_001.png" : "edit_areaModeBtn03_001.png");
@@ -34,6 +34,42 @@ CCMenuItemToggler* Utils::createTypeToggle(bool radial, cocos2d::CCPoint pos, CC
     toggle->setPosition(pos);
 
     return toggle;
+}
+
+ccColor3B Utils::getPlayerColor(ColorType colorType, bool secondPlayer) {
+    GameManager* gm = GameManager::get();
+    Mod* sdiMod = Loader::get()->getLoadedMod("weebify.separate_dual_icons");
+    int color;
+    
+    if (secondPlayer && sdiMod && Utils::isSettingEnabled(P2_SEPARATE)) {
+        switch (colorType) {
+            case ColorType::Glow:
+                color = sdiMod->getSavedValue<int>("colorglow", 14);
+                break;
+            case ColorType::Secondary:
+                color = sdiMod->getSavedValue<int>("color2", 14);
+                break;
+            case ColorType::Main:
+            default:
+                color = sdiMod->getSavedValue<int>("color1", 13);
+        }
+        
+        return gm->colorForIdx(color);
+    }
+    
+    switch (colorType) {
+        case ColorType::Glow:
+            color = gm->getPlayerGlowColor();
+            break;
+        case ColorType::Secondary:
+            color = gm->getPlayerColor2();
+            break;
+        case ColorType::Main:
+        default:
+            color = gm->getPlayerColor();
+    }
+    
+    return gm->colorForIdx(color);
 }
 
 int Utils::getIconID(IconType type, bool secondPlayer) {
@@ -89,28 +125,13 @@ bool Utils::isSettingEnabled(int setting) {
     return false;
 }
 
-GradientConfig Utils::getDefaultConfig(ColorType colorType) {
-    GameManager* gm = GameManager::get();
-    int color;
-    switch (colorType) {
-        case ColorType::Main:
-            color = gm->getPlayerColor();
-            break;
-        case ColorType::Secondary:
-            color = gm->getPlayerColor2();
-            break;
-        case ColorType::Glow:
-            color = gm->getPlayerGlowColor();
-            break;
-        default:
-            color = gm->getPlayerColor();
-            break;
-    }
+GradientConfig Utils::getDefaultConfig(ColorType colorType, bool secondPlayer) {
+    ccColor3B color = getPlayerColor(colorType, secondPlayer);
 
-    return {
+    return GradientConfig{
         {
-            {{0.5f, 1.1f}, gm->colorForIdx(color)},
-            {{0.5f, -0.1f}, gm->colorForIdx(color)}
+            {{0.5f, 1.1f}, color},
+            {{0.5f, -0.1f}, color}
         },
         true
     };
@@ -200,7 +221,7 @@ GradientConfig Utils::getSavedConfig(IconType type, ColorType colorType, bool se
         std::string globalKey = secondPlayer ? "global-p2" : "global";
 
         if (!Mod::get()->hasSavedValue(globalKey)) {
-            return getDefaultConfig(colorType);
+            return getDefaultConfig(colorType, secondPlayer);
         } else
             id = globalKey;
     }
@@ -208,7 +229,7 @@ GradientConfig Utils::getSavedConfig(IconType type, ColorType colorType, bool se
     matjson::Value jsonConfig = Mod::get()->getSavedValue<matjson::Value>(id);
 
     if (!jsonConfig.contains(color)) {
-        return getDefaultConfig(colorType);
+        return getDefaultConfig(colorType, secondPlayer);
     }
 
     config = configFromObject(jsonConfig[color]);
@@ -223,8 +244,11 @@ Gradient Utils::getGradient(IconType type, bool secondPlayer) {
         getSavedConfig(type, ColorType::Glow, secondPlayer)
     };
 
-    if (secondPlayer && Utils::isSettingEnabled(P2_FLIP)
-            && !Utils::isSettingEnabled(P2_SEPARATE)) {
+    if (
+        secondPlayer
+        && Utils::isSettingEnabled(P2_FLIP)
+        && !Utils::isSettingEnabled(P2_SEPARATE)
+    ) {
         GradientConfig tempConfig = gradient.main;
         gradient.main = gradient.secondary;
         gradient.secondary = tempConfig;
@@ -235,28 +259,26 @@ Gradient Utils::getGradient(IconType type, bool secondPlayer) {
 
 void Utils::setIconColors(SimplePlayer* icon, ColorType colorType, bool white, bool secondPlayer) {
     GameManager* gm = GameManager::get();
+    Mod* sdiMod = Loader::get()->getLoadedMod("weebify.separate_dual_icons");
 
-    cocos2d::ccColor3B color1 = white ? ccc3(255, 255, 255)
-        : gm->colorForIdx(gm->getPlayerColor());
+    ccColor3B color1 = white ? ccc3(255, 255, 255)
+        : Utils::getPlayerColor(ColorType::Main, secondPlayer);
 
-    cocos2d::ccColor3B color2 = white ? ccc3(255, 255, 255)
-        : gm->colorForIdx(gm->getPlayerColor2());
+    ccColor3B color2 = white ? ccc3(255, 255, 255)
+        : Utils::getPlayerColor(ColorType::Secondary, secondPlayer);
     
     bool hasGlowOutline = gm->getPlayerGlow();
-    cocos2d::ccColor3B colorGlow = white ? ccc3(255, 255, 255)
-        : gm->colorForIdx(gm->getPlayerGlowColor());
     
-    if (secondPlayer) {
-        if (Mod* sdiMod = Loader::get()->getLoadedMod("weebify.separate_dual_icons")) {
-            color1 = gm->colorForIdx(sdiMod->getSavedValue<int>("color1", 0));
-            color2 = gm->colorForIdx(sdiMod->getSavedValue<int>("color2", 0));
-            hasGlowOutline = sdiMod->getSavedValue<bool>("glow", false);
-            colorGlow = gm->colorForIdx(sdiMod->getSavedValue<int>("colorglow", 0));
-        } else {
-            cocos2d::ccColor3B tmpColor = color1;
-            color1 = color2;
-            color2 = tmpColor;
-        }
+    if (secondPlayer && sdiMod && Utils::isSettingEnabled(P2_SEPARATE))
+        hasGlowOutline = sdiMod->getSavedValue<bool>("glow", false);
+            
+    ccColor3B colorGlow = white ? ccc3(255, 255, 255)
+        : Utils::getPlayerColor(ColorType::Glow, secondPlayer);
+    
+    if (!secondPlayer && !sdiMod) {
+        ccColor3B tmpColor = color1;
+        color1 = color2;
+        color2 = tmpColor;
     }
 
     icon->setColor(color1);
@@ -309,65 +331,106 @@ std::vector<GradientConfig> Utils::getSavedGradients() {
     return ret;
 }
 
-void Utils::applyGradient(SimplePlayer* icon, GradientConfig config, ColorType colorType, bool force, bool blend) {
+void Utils::applyGradient(SimplePlayer* icon, Gradient gradient, bool blend, bool secondPlayer, int extra) {
+    applyGradient(icon, gradient.main, ColorType::Main, blend, secondPlayer, extra);
+    applyGradient(icon, gradient.secondary, ColorType::Secondary, blend, secondPlayer, extra);
+    applyGradient(icon, gradient.glow, ColorType::Glow, blend, secondPlayer, extra);
+}
+    
+void Utils::applyGradient(SimplePlayer* icon, GradientConfig config, ColorType colorType, bool blend, bool secondPlayer, int extra) {
     GJRobotSprite* otherSprite = nullptr;
+    IconType iconType = getIconType(icon);
 
     if (icon->m_robotSprite) if (icon->m_robotSprite->isVisible()) otherSprite = icon->m_robotSprite;
     if (icon->m_spiderSprite) if (icon->m_spiderSprite->isVisible()) otherSprite = icon->m_spiderSprite;
 
     if (otherSprite) {
         switch (colorType) {
-            case ColorType::Main:
+            case ColorType::Main: {
+                int id = 100;
+                
                 for (CCSpritePart* spr : CCArrayExt<CCSpritePart*>(otherSprite->m_headSprite->getParent()->getChildren())) {
                     if (!typeinfo_cast<CCSpritePart*>(spr)) continue;
-                    applyGradient(spr, config, force, blend);
+                    
+                    id++;
+                    
+                    applyGradient(spr, config, iconType, id, blend, secondPlayer, false, extra);
                 }
-            break;
-            case ColorType::Secondary:
+                
+                break;
+            }
+            case ColorType::Secondary: {
+                int id = 200;
+            
                 for (CCSprite* spr : CCArrayExt<CCSprite*>(otherSprite->m_secondArray)) {
                     if (!typeinfo_cast<CCSprite*>(spr) || spr == otherSprite->m_headSprite) continue;
 
-                    applyGradient(spr, config, force, blend);
+                    id++;
+                    
+                    applyGradient(spr, config, iconType, id, blend, secondPlayer, false, extra);
                 }
-            break;
-            case ColorType::Glow:
+                
+                break;
+            }
+            case ColorType::Glow: {
+                int id = 300;
+                
                 for (CCSprite* spr : CCArrayExt<CCSprite*>(otherSprite->m_glowSprite->getChildren())) {
-                    // if (!typeinfo_cast<CCSprite*>(spr) || spr == otherSprite->m_headSprite) continue;
-
-                    applyGradient(spr, config, force, blend);
+                    id++;
+                    
+                    applyGradient(spr, config, iconType, id, blend, secondPlayer, false, extra);
                 }
-            break;
+                    
+                break;
+            }
         }
     } else {
         CCSprite* sprite = nullptr;
+        int id = 0;
 
         switch (colorType) {
             case ColorType::Main:
+                id = 100;
                 sprite = icon->m_firstLayer;
                 break;
             case ColorType::Secondary:
+                id = 200;
                 sprite = icon->m_secondLayer;
                 break;
             case ColorType::Glow:
+                id = 300;
                 sprite = icon->m_outlineSprite;
                 break;
         }
 
-        applyGradient(sprite, config, force);
+        applyGradient(sprite, config, iconType, id, blend, secondPlayer, false, extra);
     }
 }
 
-void Utils::applyGradient(CCSprite* sprite, GradientConfig config, bool force, bool blend) {
+void Utils::applyGradient(CCSprite* sprite, GradientConfig config, IconType iconType, int id, bool blend, bool secondPlayer, bool playerObject, int extra) {
     if (!sprite) return;
     
-    CCGLProgram* defaultProgram = CCShaderCache::sharedShaderCache()->programForKey(kCCShader_PositionTextureColor);
-
     if (config.points.empty())
-        return sprite->setShaderProgram(defaultProgram);
-
-    CCGLProgram* program = sprite->getShaderProgram();
+        return sprite->setShaderProgram(
+            CCShaderCache::sharedShaderCache()->programForKey(kCCShader_PositionTextureColor)
+        );
+    
+    std::string key = fmt::format(
+        "{}-{}-{}-{}-{}-{}-{}",
+        config.isLinear,
+        static_cast<int>(iconType),
+        id,
+        blend,
+        secondPlayer,
+        playerObject,
+        extra
+    );
+    
+    CCShaderCache* cache = CCShaderCache::sharedShaderCache();
+    
+    CCGLProgram* program = cache->programForKey(key.c_str());
      
-    if (program == defaultProgram || force || blend) {
+    if (!program || extra == -4732) {
         std::string vertPath = (Mod::get()->getResourcesDir() / "position.vert").string();
         std::string shaderPath = (Mod::get()->getResourcesDir() / fmt::format("{}_gradient{}.fsh", config.isLinear ? "linear" : "radial", blend ? "_blend" : "")).string();
 
@@ -375,7 +438,11 @@ void Utils::applyGradient(CCSprite* sprite, GradientConfig config, bool force, b
             return;
 
         program = new CCGLProgram();
-        program->autorelease();
+        
+        if (extra != -4732)
+            program->retain();
+        else    
+            program->autorelease();
 
         program->initWithVertexShaderFilename(vertPath.c_str(), shaderPath.c_str());
 
@@ -386,8 +453,11 @@ void Utils::applyGradient(CCSprite* sprite, GradientConfig config, bool force, b
         program->link();
         program->updateUniforms();
 
-        sprite->setShaderProgram(program);
+        if (extra != -4732)
+            cache->addProgram(program, key.c_str());
     }
+    
+    sprite->setShaderProgram(program);
 
     program->use();
     program->setUniformsForBuiltins();
@@ -410,14 +480,14 @@ void Utils::applyGradient(CCSprite* sprite, GradientConfig config, bool force, b
 
     int stopAt = config.points.size();
 
-    std::vector<cocos2d::ccColor4F> colors;
+    std::vector<ccColor4F> colors;
 
     for (const SimplePoint& point : config.points)
         colors.push_back(ccc4FFromccc3B(point.color));
 
     if (config.isLinear) {
-        cocos2d::CCPoint startPoint = ccp(0, 0);
-        cocos2d::CCPoint endPoint = ccp(0, 0);
+        CCPoint startPoint = ccp(0, 0);
+        CCPoint endPoint = ccp(0, 0);
 
         float distance = 0.f;
 
@@ -481,7 +551,7 @@ void Utils::applyGradient(CCSprite* sprite, GradientConfig config, bool force, b
     glUniform1i(stopAtLoc, stopAt);
 
     std::vector<GLfloat> colorsData;
-    for (const cocos2d::ccColor4F& color : colors) {
+    for (const ccColor4F& color : colors) {
         colorsData.push_back(color.r);
         colorsData.push_back(color.g);
         colorsData.push_back(color.b);

@@ -21,10 +21,10 @@ private:
 
     std::vector<ColorNode*> m_removingPoints;
     std::vector<ColorNode*> m_points;
-    std::unordered_map<IconType, std::vector<cocos2d::CCPoint>> m_dotedIcons;
+    std::unordered_map<IconType, std::vector<CCPoint>> m_dotedIcons;
 
-    cocos2d::CCPoint m_moveOffset = ccp(0, 0);
-    cocos2d::CCPoint m_pointOffset = ccp(0, 0);
+    CCPoint m_moveOffset = ccp(0, 0);
+    CCPoint m_pointOffset = ccp(0, 0);
 
     IconType m_type = IconType::Cube;
     GradientConfig m_currentConfig;
@@ -36,16 +36,16 @@ private:
     bool m_ignoreColorChange = false;
     bool m_pointsHidden = false;
 
-    bool init(cocos2d::CCSize);
+    bool init(CCSize);
 
-    cocos2d::CCPoint getRelativePos(ColorNode*);
+    CCPoint getRelativePos(ColorNode*);
 
     bool ccTouchBegan(CCTouch*, CCEvent*) override;
     void ccTouchMoved(CCTouch*, CCEvent*) override;
     void ccTouchEnded(CCTouch*, CCEvent*) override;
     
     void addRealPoints();
-    void addPoint(const cocos2d::CCPoint&, bool = false);
+    void addPoint(const CCPoint&, bool = false);
     void selectPoint(ColorNode*);
 
     void updateCenter();
@@ -54,16 +54,16 @@ private:
 
 public:
 
-    static PointsLayer* create(const cocos2d::CCSize&, GradientLayer*);
+    static PointsLayer* create(const CCSize&, GradientLayer*);
 
-    ColorNode* getNodeForPos(cocos2d::CCPoint);
+    ColorNode* getNodeForPos(CCPoint);
     ColorNode* getSelectedPoint();
 
     std::vector<SimplePoint> getPoints();
 
     IconType getType();
 
-    void updateHover(const cocos2d::CCPoint&);
+    void updateHover(const CCPoint&);
     void updatePointOpacity(int);
     void updatePointScale(float);
     void updateGradient(GradientConfig, ColorType, bool = false);
@@ -75,7 +75,7 @@ public:
     void selectFirst();
     void selectLast();
     void removeSelected();
-    void moveSelected(const cocos2d::CCPoint&);
+    void moveSelected(const CCPoint&);
     
     void addPoint();
     void loadPoints(GradientConfig, bool = true);

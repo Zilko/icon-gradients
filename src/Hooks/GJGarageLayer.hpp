@@ -13,21 +13,26 @@ class $modify(ProGJGarageLayer, GJGarageLayer) {
 	struct Fields {
 		SEL_MenuHandler m_originalCallback = nullptr;
 
-		std::vector<SimplePlayer*> m_allIcons;
-		std::vector<SimplePlayer*> m_visibleIcons;
+		Ref<SimplePlayer> m_pageIcon = nullptr;
+		
+		bool m_isDisabled = false;
+		bool m_isP2Disabled = false;
+		bool m_isP2Separate = false;
 	};
 
 	bool init();
 
 	IconType getType();
+	
+	void updatePageIcons();
 
 	void onGradient(CCObject*);
 
 	void onSwap(CCObject*);
+	
+	std::vector<SimplePlayer*> getPageIcons();
 
-	void updateGradient(bool = true);
-
-	void updateQuickGradient();
+	void updateGradient();
 
 	void onSelect(CCObject*);
 

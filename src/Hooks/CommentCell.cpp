@@ -14,8 +14,6 @@ void ProCommentCell::loadFromComment(GJComment* comment) {
 
                 Gradient gradient = Utils::getGradient(type, false);
 
-                Utils::applyGradient(icon, gradient.main, ColorType::Main, true);
-                Utils::applyGradient(icon, gradient.secondary, ColorType::Secondary, true);
-                Utils::applyGradient(icon, gradient.glow, ColorType::Glow, true);
+                Utils::applyGradient(icon, gradient, false, false, 2);
             }
 }

@@ -4,7 +4,7 @@
 
 #include <hiimjustin000.more_icons/include/MoreIcons.hpp>
 
-IconButton* IconButton::create(CCObject* target, cocos2d::SEL_MenuHandler callback, IconType type, bool secondPlayer) {
+IconButton* IconButton::create(CCObject* target, SEL_MenuHandler callback, IconType type, bool secondPlayer) {
     IconButton* ret = new IconButton();
 
     ret->m_type = type;
@@ -19,22 +19,17 @@ IconButton* IconButton::create(CCObject* target, cocos2d::SEL_MenuHandler callba
     return nullptr;
 };
 
-bool IconButton::init(CCObject* target, cocos2d::SEL_MenuHandler callback) {
+bool IconButton::init(CCObject* target, SEL_MenuHandler callback) {
     m_icon = Utils::createIcon(m_type, m_isSecondPlayer);
 
     if (Loader::get()->isModLoaded("hiimjustin000.more_icons"))
-        MoreIcons::updateSimplePlayer(m_icon, m_type);
+        MoreIcons::updateSimplePlayer(m_icon, m_type, m_isSecondPlayer);
 
-    cocos2d::CCSize buttonSize = m_icon->getChildByType<CCSprite>(0)->getContentSize() * 0.63f;
+    CCSize buttonSize = m_icon->getChildByType<CCSprite>(0)->getContentSize() * 0.63f;
+    buttonSize.width = std::min(buttonSize.width, 21.f);
+    buttonSize.height = std::min(buttonSize.height, 21.f);
 
-    if (m_type == IconType::Robot || m_type == IconType::Spider)
-        m_icon->setScale(0.474f);
-    else {
-        cocos2d::CCSize size = m_icon->m_firstLayer->getContentSize();
-        float max = size.width > size.height ? size.width : size.height;
-
-        m_icon->setScale(max > 19.21f ? 19.21f / max : 0.63f);
-    }
+    updatePlayerScale();
 
     if (m_type == IconType::Wave)
         m_icon->setScale(m_icon->getScale() - 0.1f);
@@ -97,7 +92,7 @@ void IconButton::setLocked(bool locked, bool instant) {
 
         float time = instant ? 0.f : 0.1f;
 
-        Utils::applyGradient(m_dot->getSprite(), m_currentConfig, true, true);
+        Utils::applyGradient(m_dot->getSprite(), m_currentConfig, m_type, 1, true, false, false, 121);
 
         m_dot->setHidden(true, time);
 
@@ -120,40 +115,25 @@ void IconButton::applyGradient(bool force, ColorType colorType, bool transition,
 
     if (all) {
         Gradient gradient = Utils::getGradient(m_type, secondPlayer);
-
-        Utils::applyGradient(m_icon, gradient.main, ColorType::Main, force);
-        Utils::applyGradient(m_icon, gradient.secondary, ColorType::Secondary, force);
-        Utils::applyGradient(m_icon, gradient.glow, ColorType::Glow, force);
+        Utils::applyGradient(m_icon, gradient, false, false, 121);
     } else
-        Utils::applyGradient(m_icon, m_currentConfig, colorType, force);
+        Utils::applyGradient(m_icon, m_currentConfig, colorType, false, false, secondPlayer);
 
-    int playerColor;
-    switch (colorType) {
-        case ColorType::Main:
-            playerColor = gm->getPlayerColor();
-            break;
-        case ColorType::Secondary:
-            playerColor = gm->getPlayerColor2();
-            break;
-        case ColorType::Glow:
-            playerColor = gm->getPlayerGlowColor();
-            break;
-        break;
-    }
+    ccColor3B color = Utils::getPlayerColor(colorType, secondPlayer);
 
     m_dot->setColor(m_currentConfig.points.empty()
-        ? gm->colorForIdx(playerColor)
+        ? color
         : ccc3(255, 255, 255));
 
     m_secondDot->setColor(m_currentConfig.points.empty()
-        ? gm->colorForIdx(playerColor)
+        ? color
         : ccc3(255, 255, 255));
 
     if (!transition || !isLocked() || previousConfig == m_currentConfig)
-       return Utils::applyGradient(m_dot->getSprite(), m_currentConfig, force);
+       return Utils::applyGradient(m_dot->getSprite(), m_currentConfig, m_type, static_cast<int>(-1), false, false, false, 123);
 
-    Utils::applyGradient(m_dot->getSprite(), m_currentConfig, force, true);
-    Utils::applyGradient(m_secondDot->getSprite(), previousConfig, force, true);
+    Utils::applyGradient(m_dot->getSprite(), m_currentConfig, m_type, static_cast<int>(-1), true, false, false, 123);
+    Utils::applyGradient(m_secondDot->getSprite(), previousConfig, m_type, static_cast<int>(-1), true, false, false, 124);
 
     m_secondDot->setHidden(false, 0.f);
     m_secondDot->setHidden(true, 0.1f);
@@ -169,11 +149,28 @@ void IconButton::applyGradient(bool force, ColorType colorType, bool transition,
 
 void IconButton::updateSprite(bool secondPlayer) {
     m_isSecondPlayer = secondPlayer;
+    
     m_icon->updatePlayerFrame(Utils::getIconID(m_type, secondPlayer), m_type);
+
+    if (Loader::get()->isModLoaded("hiimjustin000.more_icons"))
+        MoreIcons::updateSimplePlayer(m_icon, m_type, m_isSecondPlayer);
+    
+    updatePlayerScale();
+}
+
+void IconButton::updatePlayerScale() {
+    if (m_type == IconType::Robot || m_type == IconType::Spider)
+        m_icon->setScale(0.474f);
+    else {
+        CCSize size = m_icon->m_firstLayer->getContentSize();
+        float max = size.width > size.height ? size.width : size.height;
+
+        m_icon->setScale(max > 19.21f ? 19.21f / max : 0.63f);
+    }
 }
 
 void IconButton::onAnimationEnded() {
-    Utils::applyGradient(m_dot->getSprite(), m_currentConfig, m_didForce);
+    Utils::applyGradient(m_dot->getSprite(), m_currentConfig, m_type, static_cast<int>(-1), false, false, false, 123);
 
     m_dot->setHidden(!m_isLocked, 0.f, true);
     m_secondDot->setHidden(true, 0.f, true);

@@ -69,6 +69,6 @@ class $modify(ProPlayerObject, PlayerObject) {
 
 	void createSpider(int);
 
-	bool init(int, int, GJBaseGameLayer*, cocos2d::CCLayer*, bool);
+	bool init(int, int, GJBaseGameLayer*, CCLayer*, bool);
 
 };

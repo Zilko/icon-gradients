@@ -10,7 +10,7 @@ private:
 
     bool setup() override;
 
-    void createButton(int, const cocos2d::CCPoint&);
+    void createButton(int, const CCPoint&);
 
     void onColor(CCObject*);
 

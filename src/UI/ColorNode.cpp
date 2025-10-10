@@ -90,7 +90,7 @@ void ColorNode::setHidden(bool hidden, float time, bool useAction) {
     }
 }
 
-void ColorNode::setColor(const cocos2d::ccColor3B& color, float time) {
+void ColorNode::setColor(const ccColor3B& color, float time) {
     if (time <= 0.f)
         m_dot->setColor(color);
     else
@@ -108,7 +108,7 @@ void ColorNode::setOpacity(int opacity) {
     m_select->setOpacity(m_isHidden || !m_isSelected ? 0 : opacity);
 }
 
-cocos2d::ccColor3B ColorNode::getColor() {
+ccColor3B ColorNode::getColor() {
     return m_color;
 }
 

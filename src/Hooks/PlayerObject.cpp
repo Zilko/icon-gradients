@@ -82,17 +82,17 @@ void ProPlayerObject::updateIconSprite(Gradient gradient, auto f) {
         updateSprite(m_iconGlow, f->m_iconGlow, SpriteType::Icon, ColorType::Glow);
 
     if (f->m_iconSprite) {
-        Utils::applyGradient(f->m_iconSprite, gradient.main, true);
+        Utils::applyGradient(f->m_iconSprite, gradient.main, getIconType(), 100, false, m_isSecondPlayer, true, 1);
         f->m_iconSprite->setVisible(!gradient.main.points.empty());
     }
 
     if (f->m_iconSpriteSecondary) {
-        Utils::applyGradient(f->m_iconSpriteSecondary, gradient.secondary, true);
+        Utils::applyGradient(f->m_iconSpriteSecondary, gradient.secondary, getIconType(), 200, false, m_isSecondPlayer, true, 1);
         f->m_iconSpriteSecondary->setVisible(!gradient.secondary.points.empty());
     }
     
     if (f->m_iconGlow) {
-        Utils::applyGradient(f->m_iconGlow, gradient.glow, true);
+        Utils::applyGradient(f->m_iconGlow, gradient.glow, getIconType(), 300, false, m_isSecondPlayer, true, 1);
         f->m_iconGlow->setVisible(!gradient.glow.points.empty());
     }
 }
@@ -108,17 +108,17 @@ void ProPlayerObject::updateVehicleSprite(Gradient gradient, auto f) {
         updateSprite(m_vehicleGlow, f->m_vehicleGlow, SpriteType::Vehicle, ColorType::Glow);
 
     if (f->m_vehicleSprite) {
-        Utils::applyGradient(f->m_vehicleSprite, gradient.main, true);
+        Utils::applyGradient(f->m_vehicleSprite, gradient.main, getIconType(), 100, false, m_isSecondPlayer, true, 1);
         f->m_vehicleSprite->setVisible(!gradient.main.points.empty());
     }
 
     if (f->m_vehicleSpriteSecondary) {
-        Utils::applyGradient(f->m_vehicleSpriteSecondary, gradient.secondary, true);
+        Utils::applyGradient(f->m_vehicleSpriteSecondary, gradient.secondary, getIconType(), 200, false, m_isSecondPlayer, true, 1);
         f->m_vehicleSpriteSecondary->setVisible(!gradient.secondary.points.empty());
     }
 
     if (f->m_vehicleGlow) {
-        Utils::applyGradient(f->m_vehicleGlow, gradient.glow, true);
+        Utils::applyGradient(f->m_vehicleGlow, gradient.glow, getIconType(), 300, false, m_isSecondPlayer, true, 1);
         f->m_vehicleGlow->setVisible(!gradient.glow.points.empty());
     }
 
@@ -147,7 +147,7 @@ void ProPlayerObject::updateAnimSprite(IconType type, Gradient gradient, auto f)
 
         f->m_animSprites.push_back(sprite);
 
-        Utils::applyGradient(sprite, gradient.main, true);
+        Utils::applyGradient(sprite, gradient.main, type, 100 + count, false, m_isSecondPlayer, true, 1);
 
         count++;
     }
@@ -165,7 +165,7 @@ void ProPlayerObject::updateAnimSprite(IconType type, Gradient gradient, auto f)
 
         f->m_animSprites.push_back(sprite);
 
-        Utils::applyGradient(sprite, gradient.secondary, true);
+        Utils::applyGradient(sprite, gradient.secondary, type, 200 + count, false, m_isSecondPlayer, true, 1);
 
         count++;
     }
@@ -183,7 +183,7 @@ void ProPlayerObject::updateAnimSprite(IconType type, Gradient gradient, auto f)
 
         f->m_animSprites.push_back(sprite);
 
-        Utils::applyGradient(sprite, gradient.glow, true);
+        Utils::applyGradient(sprite, gradient.glow, type, 300 + count, false, m_isSecondPlayer, true, 1);
 
         count++;
     }
@@ -280,13 +280,13 @@ void ProPlayerObject::createRobot(int p0) {
 
     if (getTag() == 0xCb04) return;
 
-    Loader::get()->queueInMainThread([this] {
-        if (shouldReturn(GJBaseGameLayer::get())) return;
+    Loader::get()->queueInMainThread([self = Ref(this)] {
+        if (self->shouldReturn(GJBaseGameLayer::get())) return;
 
-        updateAnimSprite(
+        self->updateAnimSprite(
             IconType::Robot,
-            Utils::getGradient(IconType::Robot, this == m_gameLayer->m_player2),
-            m_fields.self()
+            Utils::getGradient(IconType::Robot, self == self->m_gameLayer->m_player2),
+            self->m_fields.self()
         );
     });
 }
@@ -296,24 +296,24 @@ void ProPlayerObject::createSpider(int p0) {
 
     if (getTag() == 0xCb04) return;
 
-    Loader::get()->queueInMainThread([this] {
-        if (shouldReturn(GJBaseGameLayer::get())) return;
+    Loader::get()->queueInMainThread([self = Ref(this)] {
+        if (self->shouldReturn(GJBaseGameLayer::get())) return;
 
-        updateAnimSprite(
+        self->updateAnimSprite(
             IconType::Spider,
-            Utils::getGradient(IconType::Spider, this == m_gameLayer->m_player2),
-            m_fields.self()
+            Utils::getGradient(IconType::Spider, self == self->m_gameLayer->m_player2),
+            self->m_fields.self()
         );
     });
 }
 
-bool ProPlayerObject::init(int p0, int p1, GJBaseGameLayer* p2, cocos2d::CCLayer* p3, bool p4) {
+bool ProPlayerObject::init(int p0, int p1, GJBaseGameLayer* p2, CCLayer* p3, bool p4) {
     if (!PlayerObject::init(p0, p1, p2, p3, p4)) return false;
 
     m_fields->m_thatOneUfoShipAndCubeModIsLoaded = Loader::get()->isModLoaded("yellowcat98.custom_ufo_n_ship_cube");
 
-    Loader::get()->queueInMainThread([this] {
-        updateGradient();
+    Loader::get()->queueInMainThread([self = Ref(this)] {
+        self->updateGradient();
     });
 
     return true;

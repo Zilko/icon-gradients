@@ -16,111 +16,138 @@ void ProGJGarageLayer::onSwap(CCObject* sender) {
 	updateGradient();
 }
 
+std::vector<SimplePlayer*> ProGJGarageLayer::getPageIcons() {
+    std::vector<SimplePlayer*> ret;
+    
+    if (!Loader::get()->isModLoaded("ninkaz.colorful-icons")) return ret;
+    
+    if (CCMenu* menu = static_cast<CCNode*>(m_iconSelection->m_pages->firstObject())->getChildByType<CCMenu>(0))
+			for (CCNode* node : CCArrayExt<CCNode*>(menu->getChildren()))
+				if (GJItemIcon* item = node->getChildByType<GJItemIcon>(0))
+					if (SimplePlayer* icon = item->getChildByType<SimplePlayer>(0))
+    					ret.push_back(icon);
+    
+    return ret;
+}
+
 IconType ProGJGarageLayer::getType() {
 	auto f = m_fields.self();
 
-	if (f->m_allIcons.empty()) return IconType::Cube;
-
-	return Utils::getIconType(f->m_allIcons.front());
+	if (!f->m_pageIcon) return IconType::Cube;
+	
+	return Utils::getIconType(f->m_pageIcon);
 }
 
-void ProGJGarageLayer::updateGradient(bool colorful) {	
+void ProGJGarageLayer::updatePageIcons() {
+    bool p2 = false;
+    
+    if (Mod* sdiMod = Loader::get()->getLoadedMod("weebify.separate_dual_icons"))
+        p2 = sdiMod->getSavedValue<bool>("2pselected");
+    
+    if (!p2 || !Utils::isSettingEnabled(P2_DISABLED)) {
+        IconType type = getPageIcons().empty() ? IconType::Cube : Utils::getIconType(getPageIcons().front());
+       	Gradient gradient = Utils::getGradient(type, p2);
+				
+  		for (SimplePlayer* icon : getPageIcons())
+      		Utils::applyGradient(icon, gradient, false, false, 66);
+    }
+}
+
+void ProGJGarageLayer::updateGradient() {
+    auto f = m_fields.self();
+    
 	if (Utils::isSettingEnabled(MOD_DISABLED)) {
-		if (!m_playerObject) return;
+		if (!m_playerObject || f->m_isDisabled) return;
+		
+		f->m_isDisabled = true;
+		
+		Gradient emptyGradient = { {{}, true}, {{}, true}, {{}, true} };
 
-		Utils::applyGradient(m_playerObject, {{}, true}, ColorType::Main, true);
-		Utils::applyGradient(m_playerObject, {{}, true}, ColorType::Secondary, true);
-		Utils::applyGradient(m_playerObject, {{}, true}, ColorType::Glow, true);
-
+		Utils::applyGradient(m_playerObject, emptyGradient, false, false, 0);
+		
 		if (Loader::get()->isModLoaded("weebify.separate_dual_icons"))
-			if (SimplePlayer* icon = typeinfo_cast<SimplePlayer*>(getChildByID("player2-icon"))) {
-				Utils::applyGradient(icon, {{}, true}, ColorType::Main, true);
-				Utils::applyGradient(icon, {{}, true}, ColorType::Secondary, true);
-				Utils::applyGradient(icon, {{}, true}, ColorType::Glow, true);
-			}
+			if (SimplePlayer* icon = typeinfo_cast<SimplePlayer*>(getChildByID("player2-icon")))
+    			Utils::applyGradient(icon, emptyGradient, false, false, 0);
+		
+		for (SimplePlayer* icon : getPageIcons())
+    		Utils::applyGradient(icon, emptyGradient, false, false, 0);
 		
 		return;
 	}
+	
+	if (f->m_isP2Separate != Utils::isSettingEnabled(P2_SEPARATE)) {
+        f->m_isP2Separate = Utils::isSettingEnabled(P2_SEPARATE);
+        
+        updatePageIcons();
+	}
+	
+   	if (Utils::isSettingEnabled(P2_DISABLED)) {
+        f->m_isP2Disabled = true;
+                
+    	if (Mod* sdiMod = Loader::get()->getLoadedMod("weebify.separate_dual_icons")) {
+            Gradient emptyGradient = { {{}, true}, {{}, true}, {{}, true} };
+         
+            if (Loader::get()->isModLoaded("weebify.separate_dual_icons"))
+    			if (SimplePlayer* icon = typeinfo_cast<SimplePlayer*>(getChildByID("player2-icon")))
+             			Utils::applyGradient(icon, emptyGradient, false, false, 0);
+         
+    	    if (sdiMod->getSavedValue<bool>("2pselected"))
+                for (SimplePlayer* icon : getPageIcons())
+              		Utils::applyGradient(icon, emptyGradient, false, false, 0);
+        }
+   	}
+    
+    if (f->m_isP2Disabled && !Utils::isSettingEnabled(P2_DISABLED)) {
+	    f->m_isP2Disabled = false;
+					
+		if (Mod* sdiMod = Loader::get()->getLoadedMod("weebify.separate_dual_icons"))
+    	    if (sdiMod->getSavedValue<bool>("2pselected")) {
+               	IconType type = getPageIcons().empty() ? IconType::Cube : Utils::getIconType(getPageIcons().front());
+                Gradient gradient = Utils::getGradient(type, true);
+       					
+          		for (SimplePlayer* icon : getPageIcons())
+              		Utils::applyGradient(icon, gradient, false, false, 66);
+            }
+    }
+	
+	if (f->m_isDisabled) {
+	    f->m_isDisabled = false;
 
-	Loader::get()->queueInMainThread([this] {
-		if (!m_playerObject) return;
+		updatePageIcons();
+	}
+	
+	Loader::get()->queueInMainThread([self = Ref(this)] {
+		if (!self->m_playerObject) return;
 		
-		IconType type = Utils::getIconType(m_playerObject);
-
-		Gradient gradient = Utils::getGradient(type, false);
-
-		Utils::applyGradient(m_playerObject, gradient.main, ColorType::Main, true);
-		Utils::applyGradient(m_playerObject, gradient.secondary, ColorType::Secondary, true);
-		Utils::applyGradient(m_playerObject, gradient.glow, ColorType::Glow, true);
-
-		if (Loader::get()->isModLoaded("weebify.separate_dual_icons"))
-			if (SimplePlayer* icon = typeinfo_cast<SimplePlayer*>(getChildByID("player2-icon"))) {
-				Gradient gradient = Utils::getGradient( Utils::getIconType(icon), true);
-
-				Utils::applyGradient(icon, gradient.main, ColorType::Main, true);
-				Utils::applyGradient(icon, gradient.secondary, ColorType::Secondary, true);
-				Utils::applyGradient(icon, gradient.glow, ColorType::Glow, true);
+		Mod* sdiMod = Loader::get()->getLoadedMod("weebify.separate_dual_icons");
+		bool p2 = false;
+		
+		if (sdiMod)
+    		p2 = sdiMod->getSavedValue<bool>("2pselected");
+		
+		Utils::applyGradient(self->m_playerObject, Utils::getGradient(Utils::getIconType(self->m_playerObject), false), false, false, 201);
+		
+		if (sdiMod && !Utils::isSettingEnabled(P2_DISABLED))
+			if (SimplePlayer* icon = typeinfo_cast<SimplePlayer*>(self->getChildByID("player2-icon"))) {
+				Gradient gradient = Utils::getGradient(Utils::getIconType(icon), true);
+				Utils::applyGradient(icon, gradient, false, true, 202);
 			}
 	});
-
-	if (!Loader::get()->isModLoaded("ninkaz.colorful-icons") || !colorful) return;
-
-	auto f = m_fields.self();
-	bool loadedGradient = false;
-	Gradient gradient;
-	bool p2Selected = false;
-	if (Mod* sdiMod = Loader::get()->getLoadedMod("weebify.separate_dual_icons"))
-		p2Selected = sdiMod->getSavedValue<bool>("2pselected");
-
-	for (SimplePlayer* icon : f->m_allIcons) {
-		IconType type = Utils::getIconType(icon);
-
-		if (!loadedGradient) {
-			gradient = Utils::getGradient(type, p2Selected);
-			loadedGradient = true;
-		}
-
-		Utils::applyGradient(icon, gradient.main, ColorType::Main, true);
-		Utils::applyGradient(icon, gradient.secondary, ColorType::Secondary, true);
-		Utils::applyGradient(icon, gradient.glow, ColorType::Glow, true);
-	}
-}
-
-void ProGJGarageLayer::updateQuickGradient() {
-	// still lags randomly idk
-
-	// if (!Loader::get()->isModLoaded("ninkaz.colorful-icons")) return;
-
-	// auto f = m_fields.self();
-	// bool loadedGradient = false;
-	// Gradient gradient;
-
-	// // log::debug("{}", f->m_visibleIcons.size());
-
-	// for (SimplePlayer* icon : f->m_visibleIcons) {
-	// 	IconType type = Utils::getIconType(icon);
-
-	// 	if (!loadedGradient) {
-	// 		gradient = Utils::getGradient(type, false);
-	// 		loadedGradient = true;
-	// 	}
-
-	// 	Utils::applyGradient(icon, gradient.main, false, true);
-	// 	Utils::applyGradient(icon, gradient.secondary, true, true);
-	// }
 }
 
 bool ProGJGarageLayer::init() {
 	if (!GJGarageLayer::init()) return false;
+	
+	m_fields->m_isP2Separate = Utils::isSettingEnabled(P2_SEPARATE);
 
-	updateGradient(false);
+	updateGradient();
 
-	Loader::get()->queueInMainThread([this] {
-		if (CCNode* menu = getChildByID("shards-menu")) {
+	Loader::get()->queueInMainThread([self = Ref(this)] {
+		if (CCNode* menu = self->getChildByID("shards-menu")) {
 			CircleButtonSprite* spr = CircleButtonSprite::createWithSprite("buton.png"_spr, 0.87f, CircleBaseColor::Gray, CircleBaseSize::Small);
 			spr->getTopNode()->setRotation(8);
 			
-			CCMenuItemSpriteExtra* btn = CCMenuItemSpriteExtra::create(spr, this, menu_selector(ProGJGarageLayer::onGradient));
+			CCMenuItemSpriteExtra* btn = CCMenuItemSpriteExtra::create(spr, self, menu_selector(ProGJGarageLayer::onGradient));
 			btn->setID("gradient-button"_spr);
 
 			menu->addChild(btn);
@@ -130,7 +157,7 @@ bool ProGJGarageLayer::init() {
 				if (CCNode* buttonNode = menu->getChildByID("swap-2p-button")) {
 					CCMenuItemSpriteExtra* button = static_cast<CCMenuItemSpriteExtra*>(buttonNode);
 
-					m_fields->m_originalCallback = button->m_pfnSelector;
+					self->m_fields->m_originalCallback = button->m_pfnSelector;
 					button->m_pfnSelector = menu_selector(ProGJGarageLayer::onSwap);
 				}
 		}
@@ -146,45 +173,13 @@ void ProGJGarageLayer::onSelect(CCObject* sender) {
 
 void ProGJGarageLayer::setupPage(int p0, IconType p1) {
 	GJGarageLayer::setupPage(p0, p1);
-
-	if (!Loader::get()->isModLoaded("ninkaz.colorful-icons")) return;
-
-	auto f = m_fields.self();
-
-	f->m_visibleIcons.clear();
-	f->m_allIcons.clear();
-
-	if (!m_iconSelection) return;
-	if (!m_iconSelection->m_pages) return;
-	if (m_iconSelection->m_pages->count() <= 0) return;
-	if (!m_iconSelection->m_pages->firstObject()) return;
-
-	std::vector<SimplePlayer*> icons;
-
-	if (CCMenu* menu = static_cast<CCNode*>(m_iconSelection->m_pages->firstObject())->getChildByType<CCMenu>(0))
-		for (CCNode* node : CCArrayExt<CCNode*>(menu->getChildren()))
-			if (GJItemIcon* item = node->getChildByType<GJItemIcon>(0))
-				if (SimplePlayer* icon = item->getChildByType<SimplePlayer>(0))
-					icons.push_back(icon);
-
-	f->m_allIcons = icons;
 	
-	if (icons.empty()) return;
-
-	f->m_visibleIcons.push_back(icons[0]);
-
-	if (icons.size() >= 12)
-		f->m_visibleIcons.push_back(icons[11]);
-
-	if (icons.size() >= 13)
-		f->m_visibleIcons.push_back(icons[12]);
-
-	if (icons.size() >= 24)
-		f->m_visibleIcons.push_back(icons[23]);
-
-	if (icons.size() >= 25)
-		f->m_visibleIcons.push_back(icons[24]);
-
-	if (icons.size() >= 36)
-		f->m_visibleIcons.push_back(icons[35]);
+	Loader::get()->queueInMainThread([self = Ref(this)] {
+	    const std::vector<SimplePlayer*> icons = self->getPageIcons();
+					
+		if (!icons.empty())
+           	self->m_fields->m_pageIcon = icons.front();
+		
+		self->updateGradient();
+	});
 }

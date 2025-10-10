@@ -40,11 +40,11 @@ void ColorPicker::setDelegate(ColorPickerDelegate* delegate) {
     m_picker->setDelegate(delegate);
 }
 
-void ColorPicker::setColor(const cocos2d::ccColor3B& color) {
+void ColorPicker::setColor(const ccColor3B& color) {
     m_picker->setColorValue(color);
 }
 
-const cocos2d::ccColor3B ColorPicker::getColor() {
+const ccColor3B ColorPicker::getColor() {
     return m_picker->m_rgb;
 }
 

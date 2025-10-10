@@ -6,7 +6,9 @@ public:
 
     static SimplePlayer* createIcon(IconType, bool = false);
 
-    static CCMenuItemToggler* createTypeToggle(bool, cocos2d::CCPoint, CCObject*, cocos2d::SEL_MenuHandler);
+    static CCMenuItemToggler* createTypeToggle(bool, CCPoint, CCObject*, SEL_MenuHandler);
+    
+    static ccColor3B getPlayerColor(ColorType, bool);
 
     static int getIconID(IconType, bool = false);
     static bool isGradientSaved(GradientConfig);
@@ -20,7 +22,7 @@ public:
 
     static GradientConfig configFromObject(const matjson::Value&);
     static GradientConfig getSavedConfig(IconType, ColorType, bool = false);
-    static GradientConfig getDefaultConfig(ColorType);
+    static GradientConfig getDefaultConfig(ColorType, bool);
     static matjson::Value getSaveObject(GradientConfig);
 
     static Gradient getGradient(IconType, bool);
@@ -28,8 +30,9 @@ public:
     static void removeSavedGradient(GradientConfig);
     static void saveConfig(GradientConfig, const std::string&, const std::string&);
     static void setIconColors(SimplePlayer*, ColorType, bool, bool = false);
-    static void applyGradient(SimplePlayer*, GradientConfig, ColorType, bool, bool = false);
-    static void applyGradient(CCSprite*, GradientConfig, bool, bool = false);
+    static void applyGradient(SimplePlayer*, Gradient, bool, bool, int);
+    static void applyGradient(SimplePlayer*, GradientConfig, ColorType, bool, bool, int);
+    static void applyGradient(CCSprite*, GradientConfig, IconType, int, bool, bool, bool, int);
     static void patchBatchNode(CCSpriteBatchNode*);
 
 };
