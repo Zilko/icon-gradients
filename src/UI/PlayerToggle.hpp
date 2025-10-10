@@ -4,7 +4,7 @@
 
 class GradientLayer;
 
-class PlayerToggle : public CCNode {
+class PlayerToggle : public CCMenu {
 
 private:
 

@@ -50,7 +50,7 @@ bool PlayerToggle::isToggled() {
 }
 
 bool PlayerToggle::init() {
-    CCNode::init();
+    CCMenu::init();
     
     CCScale9Sprite* bg = CCScale9Sprite::create("square02b_001.png");
     bg->setColor({0, 0, 0});
@@ -69,11 +69,6 @@ bool PlayerToggle::init() {
     
     addChild(m_select);
     
-    CCMenu* menu = CCMenu::create();
-    menu->setPosition({0, 0});
-    
-    addChild(menu);
-    
     CCNode* container = CCNode::create();
     container->setContentSize(ccp(26.39f, 13.74f) * 1.5f);
     
@@ -85,9 +80,9 @@ bool PlayerToggle::init() {
     container->addChild(m_p1Lbl);
     
     m_p1Btn = CCMenuItemSpriteExtra::create(container, this, menu_selector(PlayerToggle::onP1));
-    m_p1Btn->setPositionX(-12);
+    m_p1Btn->setPosition({-12, 0.5f});
     
-    menu->addChild(m_p1Btn);
+    addChild(m_p1Btn);
     
     container = CCNode::create();
     container->setContentSize(ccp(26.39f, 13.74f) * 1.5f);
@@ -100,9 +95,9 @@ bool PlayerToggle::init() {
     container->addChild(m_p2Lbl);
     
     m_p2Btn = CCMenuItemSpriteExtra::create(container, this, menu_selector(PlayerToggle::onP2));
-    m_p2Btn->setPositionX(14.5f);
+    m_p2Btn->setPosition({14.5f, 0.5f});
     
-    menu->addChild(m_p2Btn);
+    addChild(m_p2Btn);
     
     toggle(false);
     
