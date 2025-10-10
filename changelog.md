@@ -1,3 +1,7 @@
+# 1.2.1
+
+* Fix crash
+
 # 1.2.0
 
 * Added Separate Second Player Gradient thanks to Kevadroz.

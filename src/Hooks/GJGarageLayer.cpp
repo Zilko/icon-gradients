@@ -133,9 +133,11 @@ void ProGJGarageLayer::updateGradient() {
 				Utils::applyGradient(icon, gradient, false, true, 202);
 			}
 		
-        if (!p2 || !Utils::isSettingEnabled(P2_DISABLED)) {
+        if ((!p2 || !Utils::isSettingEnabled(P2_DISABLED)) && Loader::get()->isModLoaded("ninkaz.colorful-icons")) {
             auto f = self->m_fields.self();
-      		Utils::applyGradient(f->m_pageIcon, Utils::getGradient(Utils::getIconType(f->m_pageIcon), p2), false, false, 66);
+            
+            if (f->m_pageIcon)
+                Utils::applyGradient(f->m_pageIcon, Utils::getGradient(Utils::getIconType(f->m_pageIcon), p2), false, false, 66);
         }
 	});
 }
@@ -180,11 +182,14 @@ void ProGJGarageLayer::setupPage(int p0, IconType p1) {
 	GJGarageLayer::setupPage(p0, p1);
 	
 	Loader::get()->queueInMainThread([self = Ref(this)] {
-	    const std::vector<SimplePlayer*> icons = self->getPageIcons();
-					
-		if (!icons.empty())
-           	self->m_fields->m_pageIcon = icons.front();
-		
+    	if (CCMenu* menu = static_cast<CCNode*>(self->m_iconSelection->m_pages->firstObject())->getChildByType<CCMenu>(0))
+            for (CCNode* node : CCArrayExt<CCNode*>(menu->getChildren()))
+               	if (GJItemIcon* item = node->getChildByType<GJItemIcon>(0))
+              		if (SimplePlayer* icon = item->getChildByType<SimplePlayer>(0)) {
+                       	self->m_fields->m_pageIcon = icon;
+                        break;
+                    }
+                   					
 		self->updateGradient();
 	});
 }
