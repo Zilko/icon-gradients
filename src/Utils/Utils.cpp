@@ -41,6 +41,8 @@ ccColor3B Utils::getPlayerColor(ColorType colorType, bool secondPlayer) {
 
     if (colorType == ColorType::White)
         return ccWHITE;
+    else if (colorType == ColorType::Line)
+        return ccBLACK;
 
     Mod* sdiMod = Loader::get()->getLoadedMod("weebify.separate_dual_icons");
     int color;
@@ -342,6 +344,7 @@ void Utils::applyGradient(SimplePlayer* icon, Gradient gradient, bool blend, boo
     applyGradient(icon, gradient.secondary, ColorType::Secondary, blend, secondPlayer, extra);
     applyGradient(icon, gradient.glow, ColorType::Glow, blend, secondPlayer, extra);
     applyGradient(icon, gradient.white, ColorType::White, blend, secondPlayer, extra);
+    applyGradient(icon, gradient.line, ColorType::Line, blend, secondPlayer, extra);
 }
     
 void Utils::applyGradient(SimplePlayer* icon, GradientConfig config, ColorType colorType, bool blend, bool secondPlayer, int extra) {
@@ -394,7 +397,7 @@ void Utils::applyGradient(SimplePlayer* icon, GradientConfig config, ColorType c
                 applyGradient(otherSprite->m_extraSprite, config, iconType, 400, blend, secondPlayer, false, extra);
                 break;
             }
-            case ColorType::Line:
+            case ColorType::Line: {
                 int id = 500;
                 for (CCSpritePart* spr : CCArrayExt<CCSpritePart*>(otherSprite->m_headSprite->getParent()->getChildren())) {
                     if (!typeinfo_cast<CCSpritePart*>(spr)) continue;
@@ -409,8 +412,6 @@ void Utils::applyGradient(SimplePlayer* icon, GradientConfig config, ColorType c
                         lineSprite->setID("gradient-line"_spr);
 
                         spr->addChild(lineSprite);
-
-                        force = true;
                     }
 
                     lineSprite->setContentSize(spr->getContentSize());
@@ -420,7 +421,8 @@ void Utils::applyGradient(SimplePlayer* icon, GradientConfig config, ColorType c
 
                     applyGradient(lineSprite, config, iconType, id, blend, secondPlayer, false, extra, true);
                 }
-            break;
+                break;
+            }
         }
     } else {
         CCSprite* sprite = nullptr;
@@ -451,8 +453,6 @@ void Utils::applyGradient(SimplePlayer* icon, GradientConfig config, ColorType c
                     sprite->setID("gradient-line"_spr);
 
                     icon->m_firstLayer->addChild(sprite);
-
-                    force = true;
                 }
 
                 sprite->setContentSize(icon->m_firstLayer->getContentSize());
@@ -468,7 +468,7 @@ void Utils::applyGradient(SimplePlayer* icon, GradientConfig config, ColorType c
     }
 }
 
-void Utils::applyGradient(CCSprite* sprite, GradientConfig config, bool force, bool blend, bool line) {
+void Utils::applyGradient(CCSprite* sprite, GradientConfig config, IconType iconType, int id, bool blend, bool secondPlayer, bool playerObject, int extra, bool line) {
     if (!sprite) return;
     
     if (config.points.empty())
@@ -481,7 +481,7 @@ void Utils::applyGradient(CCSprite* sprite, GradientConfig config, bool force, b
         config.isLinear,
         static_cast<int>(iconType),
         id,
-        blend,
+        1 * blend + 2 * line,
         secondPlayer,
         playerObject,
         extra
