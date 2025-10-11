@@ -269,6 +269,7 @@ void ProPlayerObject::updateAnimSprite(IconType type, Gradient gradient, auto f)
         sprite->m_extraSprite->addChild(spr);
 
         f->m_animSprites.push_back(spr);
+        f->m_animSpriteParents[sprite] = spr;
 
         Utils::applyGradient(spr, gradient.white, type, 400, false, m_isSecondPlayer, true, 55);
     }
@@ -285,6 +286,7 @@ void ProPlayerObject::updateAnimSprite(IconType type, Gradient gradient, auto f)
         spr->addChild(sprite);
 
         f->m_animSprites.push_back(sprite);
+        f->m_animSpriteParents[sprite] = spr;
 
         Utils::applyGradient(sprite, gradient.line, type, 500 + count, false, m_isSecondPlayer, true, 55, true);
 
@@ -303,6 +305,7 @@ void ProPlayerObject::updateAnimSprite(IconType type, Gradient gradient, auto f)
         spr->addChild(sprite);
 
         f->m_animSprites.push_back(sprite);
+        f->m_animSpriteParents[sprite] = spr;
 
         Utils::applyGradient(sprite, gradient.line, type, 600 + count, false, m_isSecondPlayer, true, 55, true);
 
@@ -317,6 +320,7 @@ void ProPlayerObject::updateAnimSprite(IconType type, Gradient gradient, auto f)
         sprite->m_extraSprite->addChild(spr);
 
         f->m_animSprites.push_back(spr);
+        f->m_animSpriteParents[sprite] = spr;
 
         Utils::applyGradient(spr, gradient.line, type, 700, false, m_isSecondPlayer, true, 55, true);
     }
@@ -360,13 +364,9 @@ void ProPlayerObject::updateGradient() {
         m_iconSpriteSecondary->setVisible(true);
         m_iconGlow->setVisible(m_hasGlow);
         m_iconSpriteWhitener->setVisible(true);
-        m_iconGlow->setVisible(m_hasGlow);
-        m_iconSpriteWhitener->setVisible(true);
 
         m_iconSprite->setOpacity(255);
         m_iconSpriteSecondary->setOpacity(255);
-        m_iconGlow->setOpacity(255);
-        m_iconSpriteWhitener->setOpacity(255);
         m_iconGlow->setOpacity(255);
         m_iconSpriteWhitener->setOpacity(255);
     }
