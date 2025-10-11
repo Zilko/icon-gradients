@@ -93,8 +93,6 @@ void GradientLayer::updateGarage() {
 void GradientLayer::updatePlayer(bool secondPlayer) {
     m_isSecondPlayer = secondPlayer;
 
-    updateColorToggles();
-
     m_pointsLayer->setPlayerFrame(m_selectedButton->getType());
 
     for (IconButton* button : m_buttons) {
@@ -260,30 +258,6 @@ void GradientLayer::updateUI() {
     m_bInput->setEnabled(hasPoints);
 
     m_pointsLayer->setPointsHidden(m_pointsHidden, 0.f);
-}
-
-void GradientLayer::updateColorToggles() {
-    bool isGlowActive = GameManager::get()->getPlayerGlow();
-    if (m_isSecondPlayer)
-        if (Mod* sdiMod = Loader::get()->getLoadedMod("weebify.separate_dual_icons"))
-            isGlowActive = sdiMod->getSavedValue<bool>("glow", false);
-
-    std::vector<float> colorTogglePos;
-    if (isGlowActive)
-        colorTogglePos = {174, 201, 228, 255, 282};
-    else
-        colorTogglePos = {175, 211, 0, 247, 282};
-
-    m_mainColorToggle->setPosition({colorTogglePos[0], 36});
-    m_secondaryColorToggle->setPosition({colorTogglePos[1], 36});
-    m_glowColorToggle->setPosition({colorTogglePos[2], 36});
-    m_whiteColorToggle->setPosition({colorTogglePos[3], 36});
-    m_lineColorToggle->setPosition({colorTogglePos[4], 36});
-
-    if (m_glowColorToggle->isSelected() && !isGlowActive)
-        onColorToggle(m_mainColorToggle);
-
-    m_glowColorToggle->setVisible(isGlowActive);
 }
 
 void GradientLayer::onAddPoint(CCObject*) {
