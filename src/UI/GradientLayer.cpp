@@ -823,7 +823,7 @@ bool GradientLayer::setup() {
     m_playerToggle->setVisible(Utils::isSettingEnabled(P2_SEPARATE));
     m_playerToggle->toggle(m_isSecondPlayer);
     
-    m_mainLayer->addChild(m_playerToggle);
+    m_buttonMenu->addChild(m_playerToggle);
 
     m_linearToggle = Utils::createTypeToggle(false, {245, 102}, this, menu_selector(GradientLayer::onTypeToggle));
     m_buttonMenu->addChild(m_linearToggle);
