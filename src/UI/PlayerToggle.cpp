@@ -15,8 +15,8 @@ void PlayerToggle::toggle(bool toggled) {
     
     m_select->runAction(CCEaseSineOut::create(CCMoveTo::create(0.1f, {toggled ? 12.f : -12.f, 0})));
     
-    m_p1Btn->runAction(CCEaseSineOut::create(CCMoveTo::create(0.1f, {toggled ? -14.5f : -12.f, 0})));
-    m_p2Btn->runAction(CCEaseSineOut::create(CCMoveTo::create(0.1f, {toggled ? 12.f : 14.5f, 0})));
+    // m_p1Btn->runAction(CCEaseSineOut::create(CCMoveTo::create(0.1f, {toggled ? -14.5f : -12.f, 0})));
+    // m_p2Btn->runAction(CCEaseSineOut::create(CCMoveTo::create(0.1f, {toggled ? 12.f : 14.5f, 0})));
     
     m_p1Lbl->runAction(CCSpawn::create(
         CCEaseSineOut::create(CCFadeTo::create(0.1f, toggled ? 90 : 161)),
@@ -50,7 +50,12 @@ bool PlayerToggle::isToggled() {
 }
 
 bool PlayerToggle::init() {
-    CCMenu::init();
+    CCNode::init();
+    
+    CCMenu* menu = CCMenu::create();
+    menu->setPosition({0, 0});
+    
+    addChild(menu, 2);
     
     CCScale9Sprite* bg = CCScale9Sprite::create("square02b_001.png");
     bg->setColor({0, 0, 0});
@@ -82,7 +87,7 @@ bool PlayerToggle::init() {
     m_p1Btn = CCMenuItemSpriteExtra::create(container, this, menu_selector(PlayerToggle::onP1));
     m_p1Btn->setPosition({-12, 0.5f});
     
-    addChild(m_p1Btn);
+    menu->addChild(m_p1Btn);
     
     container = CCNode::create();
     container->setContentSize(ccp(26.39f, 13.74f) * 1.5f);
@@ -97,7 +102,7 @@ bool PlayerToggle::init() {
     m_p2Btn = CCMenuItemSpriteExtra::create(container, this, menu_selector(PlayerToggle::onP2));
     m_p2Btn->setPosition({14.5f, 0.5f});
     
-    addChild(m_p2Btn);
+    menu->addChild(m_p2Btn);
     
     toggle(false);
     
