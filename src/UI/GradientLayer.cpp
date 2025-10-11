@@ -200,6 +200,8 @@ void GradientLayer::updateGradient(bool force, bool all, bool transition) {
         m_pointsLayer->updateGradient(gradient.main, ColorType::Main, force);
         m_pointsLayer->updateGradient(gradient.secondary, ColorType::Secondary, force);
         m_pointsLayer->updateGradient(gradient.glow, ColorType::Glow, force);
+        m_pointsLayer->updateGradient(gradient.white, ColorType::White, force);
+        m_pointsLayer->updateGradient(gradient.line, ColorType::Line, force);
     } else
         m_pointsLayer->updateGradient(m_currentConfig, m_currentColor, force);
 
@@ -211,6 +213,8 @@ void GradientLayer::updateGradient(bool force, bool all, bool transition) {
     m_mainColorToggle->applyGradient(gradient.main, force, transition);
     m_secondaryColorToggle->applyGradient(gradient.secondary, force, transition);
     m_glowColorToggle->applyGradient(gradient.glow, force, transition);
+    m_whiteColorToggle->applyGradient(gradient.white, force, transition);
+    m_lineColorToggle->applyGradient(gradient.line, force, transition);
 }
 
 void GradientLayer::updateCountLabel() {
@@ -433,6 +437,8 @@ void GradientLayer::onLockToggle(CCObject* sender) {
         save(Utils::getSavedConfig(static_cast<IconType>(-1), ColorType::Main, m_isSecondPlayer), ColorType::Main);
         save(Utils::getSavedConfig(static_cast<IconType>(-1), ColorType::Secondary, m_isSecondPlayer), ColorType::Secondary);
         save(Utils::getSavedConfig(static_cast<IconType>(-1), ColorType::Glow, m_isSecondPlayer), ColorType::Glow);
+        save(Utils::getSavedConfig(static_cast<IconType>(-1), ColorType::White, m_isSecondPlayer), ColorType::White);
+        save(Utils::getSavedConfig(static_cast<IconType>(-1), ColorType::Line, m_isSecondPlayer), ColorType::Line);
     } else {
         std::string id = Utils::getTypeID(m_selectedButton->getType());
 
@@ -464,10 +470,14 @@ void GradientLayer::onColorToggle(CCObject* sender) {
     if (toggle == m_mainColorToggle && m_mainColorToggle->isSelected()) return;
     if (toggle == m_secondaryColorToggle && m_secondaryColorToggle->isSelected()) return;
     if (toggle == m_glowColorToggle && m_glowColorToggle->isSelected()) return;
+    if (toggle == m_whiteColorToggle && m_whiteColorToggle->isSelected()) return;
+    if (toggle == m_lineColorToggle && m_lineColorToggle->isSelected()) return;
 
     m_mainColorToggle->setSelected(false);
     m_secondaryColorToggle->setSelected(false);
     m_glowColorToggle->setSelected(false);
+    m_whiteColorToggle->setSelected(false);
+    m_lineColorToggle->setSelected(false);
 
     toggle->setSelected(true);
 
@@ -544,6 +554,12 @@ void GradientLayer::keyDown(enumKeyCodes key) {
 
     if (key == enumKeyCodes::KEY_Three)
         return onColorToggle(m_glowColorToggle);
+
+    if (key == enumKeyCodes::KEY_Four)
+        return onColorToggle(m_whiteColorToggle);
+
+    if (key == cocos2d::enumKeyCodes::KEY_Five)
+        return onColorToggle(m_lineColorToggle);
 
     if (key == enumKeyCodes::KEY_C)
         return onCopy(nullptr);
@@ -863,23 +879,35 @@ bool GradientLayer::setup() {
     m_buttonMenu->addChild(m_dotToggle);
 
     m_mainColorToggle = ColorToggle::create(this, menu_selector(GradientLayer::onColorToggle), ColorType::Main, this);
-    m_mainColorToggle->setPosition({265, 63});
+    m_mainColorToggle->setPosition({247, 63});
 
     m_buttonMenu->addChild(m_mainColorToggle);
 
     m_secondaryColorToggle = ColorToggle::create(this, menu_selector(GradientLayer::onColorToggle), ColorType::Secondary, this);
-    m_secondaryColorToggle->setPosition({247, 33});
+    m_secondaryColorToggle->setPosition({282, 63});
 
     m_buttonMenu->addChild(m_secondaryColorToggle);
 
     m_glowColorToggle = ColorToggle::create(this, menu_selector(GradientLayer::onColorToggle), ColorType::Glow, this);
-    m_glowColorToggle->setPosition({282, 33});
+    m_glowColorToggle->setPosition({247, 33});
 
     m_buttonMenu->addChild(m_glowColorToggle);
+
+    m_whiteColorToggle = ColorToggle::create(this, menu_selector(GradientLayer::onColorToggle), ColorType::White, this);
+    m_whiteColorToggle->setPosition({282, 33});
+    
+    m_buttonMenu->addChild(m_whiteColorToggle);
+
+    m_lineColorToggle = ColorToggle::create(this, menu_selector(GradientLayer::onColorToggle), ColorType::Line, this);
+    m_lineColorToggle->setPosition(298, 33);
+
+    m_buttonMenu->addChild(m_lineColorToggle);
 
     m_mainColorToggle->applyGradient(Utils::getDefaultConfig(ColorType::Main, m_isSecondPlayer), true, false);
     m_secondaryColorToggle->applyGradient(Utils::getDefaultConfig(ColorType::Secondary, m_isSecondPlayer), true, false);
     m_glowColorToggle->applyGradient(Utils::getDefaultConfig(ColorType::Glow, m_isSecondPlayer), true, false);
+    m_whiteColorToggle->applyGradient(Utils::getDefaultConfig(ColorType::White, m_isSecondPlayer), true, false);
+    m_lineColorToggle->applyGradient(Utils::getDefaultConfig(ColorType::Line, m_isSecondPlayer), true, false);
 
     m_colorSelector = ColorToggle::create(this, menu_selector(GradientLayer::onColorSelector), ColorType::Main, this, false);
     m_colorSelector->setPosition({65, 28});
