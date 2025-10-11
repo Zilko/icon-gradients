@@ -921,7 +921,7 @@ bool GradientLayer::setup() {
        CCDelayTime::create(0.1f),
        CallFuncExt::create([this] {
            if (CCTouchHandler* handler = CCTouchDispatcher::get()->findHandler(m_pointsLayer))
-               CCTouchDispatcher::get()->setPriority(-1000, handler->getDelegate()); 
+               CCTouchDispatcher::get()->setPriority(-1001, handler->getDelegate()); 
        }),
        nullptr
     ));
