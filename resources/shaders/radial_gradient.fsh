@@ -13,6 +13,8 @@ uniform vec4 colors[24];
 uniform vec2 uvMin;
 uniform vec2 uvMax;
 
+uniform vec2 pixelSize;
+
 void main()
 {
     vec4 texColor = texture2D(u_texture, v_texCoord);

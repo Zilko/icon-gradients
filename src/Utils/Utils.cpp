@@ -421,12 +421,55 @@ void Utils::applyGradient(SimplePlayer* icon, GradientConfig config, ColorType c
 
                     applyGradient(lineSprite, config, iconType, id, blend, secondPlayer, false, extra, true);
                 }
+                for (CCSprite* spr : CCArrayExt<CCSprite*>(otherSprite->m_secondArray)) {
+                    if (!typeinfo_cast<CCSprite*>(spr) || spr == otherSprite->m_headSprite) continue;
+
+                    id++;
+
+                    CCSprite* lineSprite;
+                    if ((lineSprite = typeinfo_cast<CCSprite*>(spr->getChildByID("gradient-line2"_spr)))) {
+                        lineSprite->setDisplayFrame(spr->displayFrame());
+                    } else {
+                        lineSprite = CCSprite::createWithSpriteFrame(spr->displayFrame());
+                        lineSprite->setID("gradient-line2"_spr);
+
+                        spr->addChild(lineSprite);
+                    }
+
+                    lineSprite->setContentSize(spr->getContentSize());
+                    lineSprite->setPosition(spr->getContentSize()/2);
+
+                    lineSprite->setVisible(!config.points.empty());
+
+                    applyGradient(lineSprite, config, iconType, id, blend, secondPlayer, false, extra, true);
+                }
+                CCSprite* lineSprite;
+                if ((lineSprite = typeinfo_cast<CCSprite*>(otherSprite->m_extraSprite->getChildByID("gradient-line"_spr)))) {
+                    lineSprite->setDisplayFrame(otherSprite->m_extraSprite->displayFrame());
+                } else {
+                    lineSprite = CCSprite::createWithSpriteFrame(otherSprite->m_extraSprite->displayFrame());
+                    lineSprite->setID("gradient-line"_spr);
+
+                    otherSprite->m_extraSprite->addChild(lineSprite);
+                }
+
+                lineSprite->setContentSize(otherSprite->m_extraSprite->getContentSize());
+                lineSprite->setPosition(otherSprite->m_extraSprite->getContentSize()/2);
+
+                lineSprite->setVisible(!config.points.empty());
+
+                applyGradient(lineSprite, config, iconType, id, blend, secondPlayer, false, extra, true);
+
                 break;
             }
         }
     } else {
         CCSprite* sprite = nullptr;
+        CCSprite* sprite2 = nullptr;
+        CCSprite* sprite3 = nullptr;
         int id = 0;
+        int id2 = 0;
+        int id3 = 0;
 
         switch (colorType) {
             case ColorType::Main:
@@ -442,9 +485,13 @@ void Utils::applyGradient(SimplePlayer* icon, GradientConfig config, ColorType c
                 sprite = icon->m_outlineSprite;
                 break;
             case ColorType::White:
+                id = 400;
                 sprite = icon->m_detailSprite;
                 break;
             case ColorType::Line: {
+                id = 500;
+                id2 = 600;
+                id3 = 700;
                 if (CCSprite* lineSprite = typeinfo_cast<CCSprite*>(icon->m_firstLayer->getChildByID("gradient-line"_spr))) {
                     lineSprite->setDisplayFrame(icon->m_firstLayer->displayFrame());
                     sprite = lineSprite;
@@ -454,17 +501,45 @@ void Utils::applyGradient(SimplePlayer* icon, GradientConfig config, ColorType c
 
                     icon->m_firstLayer->addChild(sprite);
                 }
+                if (CCSprite* lineSprite = typeinfo_cast<CCSprite*>(icon->m_secondLayer->getChildByID("gradient-line"_spr))) {
+                    lineSprite->setDisplayFrame(icon->m_secondLayer->displayFrame());
+                    sprite2 = lineSprite;
+                } else {
+                    sprite2 = CCSprite::createWithSpriteFrame(icon->m_secondLayer->displayFrame());
+                    sprite2->setID("gradient-line"_spr);
+
+                    icon->m_secondLayer->addChild(sprite2);
+                }
+                if (CCSprite* lineSprite = typeinfo_cast<CCSprite*>(icon->m_detailSprite->getChildByID("gradient-line"_spr))) {
+                    lineSprite->setDisplayFrame(icon->m_detailSprite->displayFrame());
+                    sprite3 = lineSprite;
+                } else {
+                    sprite3 = CCSprite::createWithSpriteFrame(icon->m_detailSprite->displayFrame());
+                    sprite3->setID("gradient-line"_spr);
+
+                    icon->m_detailSprite->addChild(sprite3);
+                }
 
                 sprite->setContentSize(icon->m_firstLayer->getContentSize());
+                sprite2->setContentSize(icon->m_secondLayer->getContentSize());
+                sprite3->setContentSize(icon->m_detailSprite->getContentSize());
                 sprite->setPosition(icon->m_firstLayer->getContentSize()/2);
+                sprite2->setPosition(icon->m_secondLayer->getContentSize()/2);
+                sprite3->setPosition(icon->m_detailSprite->getContentSize()/2);
 
                 sprite->setVisible(!config.points.empty());
+                sprite2->setVisible(!config.points.empty());
+                sprite3->setVisible(!config.points.empty());
 
                 break;
             }
         }
 
         applyGradient(sprite, config, iconType, id, blend, secondPlayer, false, extra, colorType == ColorType::Line);
+        if (sprite2 != nullptr)
+            applyGradient(sprite2, config, iconType, id2, blend, secondPlayer, false, extra, colorType == ColorType::Line);
+        if (sprite3 != nullptr)
+            applyGradient(sprite3, config, iconType, id3, blend, secondPlayer, false, extra, colorType == ColorType::Line);
     }
 }
 
@@ -538,6 +613,9 @@ void Utils::applyGradient(CCSprite* sprite, GradientConfig config, IconType icon
     GLint locMax = glGetUniformLocation(program->getProgram(), "uvMax");
     glUniform2f(locMin, uMin, vMin);
     glUniform2f(locMax, uMax, vMax);
+
+    GLint locPixelSize = glGetUniformLocation(program->getProgram(), "pixelSize");
+    glUniform2f(locPixelSize, 1. / texSize.width, 1. / texSize.height);
 
     int stopAt = config.points.size();
 

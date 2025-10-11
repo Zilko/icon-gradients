@@ -26,11 +26,15 @@ class $modify(ProPlayerObject, PlayerObject) {
 		CCSprite* m_iconGlow = nullptr;
 		CCSprite* m_iconSpriteWhitener = nullptr;
 		CCSprite* m_iconSpriteLine = nullptr;
+		CCSprite* m_iconSpriteLine2 = nullptr;
+		CCSprite* m_iconSpriteLine3 = nullptr;
 		CCSprite* m_vehicleSprite = nullptr;
 		CCSprite* m_vehicleSpriteSecondary = nullptr;
 		CCSprite* m_vehicleGlow = nullptr;
 		CCSprite* m_vehicleSpriteWhitener = nullptr;
 		CCSprite* m_vehicleSpriteLine = nullptr;
+		CCSprite* m_vehicleSpriteLine2 = nullptr;
+		CCSprite* m_vehicleSpriteLine3 = nullptr;
 
 		std::vector<Ref<CCSprite>> m_animSprites;
 		std::unordered_map<CCSprite*, Ref<CCSprite>> m_animSpriteParents;
