@@ -50,6 +50,12 @@ bool ColorToggle::init(CCObject* target, SEL_MenuHandler callback, bool number, 
         case ColorType::Glow:
             numberStr = "3";
             break;
+        case ColorType::White:
+            numberStr = "4";
+            break;
+        case ColorType::Line:
+            numberStr = "5";
+            break;
     }
 
     m_numberLabel = CCLabelBMFont::create(numberStr.c_str(), "bigFont.fnt");

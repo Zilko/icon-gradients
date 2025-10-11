@@ -62,5 +62,7 @@ void ProProfilePage::toggleShip(CCObject* p0) {
 
     m_fields->m_isShip = !m_fields->m_isShip;
 
-    updateGradient();
+    Loader::get()->queueInMainThread([this] {
+        updateGradient();
+    });
 }
