@@ -15,8 +15,8 @@ void PlayerToggle::toggle(bool toggled) {
     
     m_select->runAction(CCEaseSineOut::create(CCMoveTo::create(0.1f, {toggled ? 12.f : -12.f, 0})));
     
-    m_p1Btn->runAction(CCEaseSineOut::create(CCMoveTo::create(0.1f, {toggled ? -14.5f : -12.f, 0})));
-    m_p2Btn->runAction(CCEaseSineOut::create(CCMoveTo::create(0.1f, {toggled ? 12.f : 14.5f, 0})));
+    m_p1Btn->runAction(CCEaseSineOut::create(CCMoveTo::create(0.1f, {toggled ? -14.5f : -12.f, 0.5f})));
+    m_p2Btn->runAction(CCEaseSineOut::create(CCMoveTo::create(0.1f, {toggled ? 12.f : 14.5f, 0.5f})));
     
     m_p1Lbl->runAction(CCSpawn::create(
         CCEaseSineOut::create(CCFadeTo::create(0.1f, toggled ? 90 : 161)),

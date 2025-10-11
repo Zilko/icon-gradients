@@ -1,3 +1,8 @@
+# 1.2.2
+
+* Fixed p2 toggle not worky in android for some reason
+* Fixed colorful icons bug
+
 # 1.2.1
 
 * Fix crash

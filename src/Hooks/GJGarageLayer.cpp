@@ -136,8 +136,11 @@ void ProGJGarageLayer::updateGradient() {
         if ((!p2 || !Utils::isSettingEnabled(P2_DISABLED)) && Loader::get()->isModLoaded("ninkaz.colorful-icons")) {
             auto f = self->m_fields.self();
             
-            if (f->m_pageIcon)
-                Utils::applyGradient(f->m_pageIcon, Utils::getGradient(Utils::getIconType(f->m_pageIcon), p2), false, false, 66);
+            if (f->m_pageIcon) {
+                if (CCSprite* spr = f->m_pageIcon->getChildByType<CCSprite>(0))
+         			if (spr->getOpacity() > 120)
+                        Utils::applyGradient(f->m_pageIcon, Utils::getGradient(Utils::getIconType(f->m_pageIcon), p2), false, false, 66);
+            }
         }
 	});
 }

@@ -689,7 +689,7 @@ bool GradientLayer::setup() {
 
     Loader::get()->queueInMainThread([self = Ref(this)] {
         if (CCTouchHandler* handler = CCTouchDispatcher::get()->findHandler(self->m_pointsLayer))
-            CCTouchDispatcher::get()->setPriority(-1000, handler->getDelegate());
+            CCTouchDispatcher::get()->setPriority(-1001, handler->getDelegate());
     });
 
     m_picker = ColorPicker::create();
