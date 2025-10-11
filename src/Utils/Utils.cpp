@@ -421,6 +421,7 @@ void Utils::applyGradient(SimplePlayer* icon, GradientConfig config, ColorType c
 
                     applyGradient(lineSprite, config, iconType, id, blend, secondPlayer, false, extra, true);
                 }
+                id = 600;
                 for (CCSprite* spr : CCArrayExt<CCSprite*>(otherSprite->m_secondArray)) {
                     if (!typeinfo_cast<CCSprite*>(spr) || spr == otherSprite->m_headSprite) continue;
 
@@ -443,6 +444,7 @@ void Utils::applyGradient(SimplePlayer* icon, GradientConfig config, ColorType c
 
                     applyGradient(lineSprite, config, iconType, id, blend, secondPlayer, false, extra, true);
                 }
+                id = 700;
                 CCSprite* lineSprite;
                 if ((lineSprite = typeinfo_cast<CCSprite*>(otherSprite->m_extraSprite->getChildByID("gradient-line"_spr)))) {
                     lineSprite->setDisplayFrame(otherSprite->m_extraSprite->displayFrame());
