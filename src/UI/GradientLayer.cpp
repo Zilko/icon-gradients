@@ -689,7 +689,7 @@ bool GradientLayer::setup() {
 
     Loader::get()->queueInMainThread([self = Ref(this)] {
         if (CCTouchHandler* handler = CCTouchDispatcher::get()->findHandler(self->m_pointsLayer))
-            CCTouchDispatcher::get()->setPriority(-1001, handler->getDelegate());
+            CCTouchDispatcher::get()->setPriority(-1000, handler->getDelegate());
     });
 
     m_picker = ColorPicker::create();
@@ -916,6 +916,15 @@ bool GradientLayer::setup() {
     });
     
     updateGlowToggle();
+    
+    runAction(CCSequence::create(
+       CCDelayTime::create(0.1f),
+       CallFuncExt::create([this] {
+           if (CCTouchHandler* handler = CCTouchDispatcher::get()->findHandler(m_pointsLayer))
+               CCTouchDispatcher::get()->setPriority(-1000, handler->getDelegate()); 
+       }),
+       nullptr
+    ));
     
     return true;
 }
