@@ -92,7 +92,7 @@ void IconButton::setLocked(bool locked, bool instant) {
 
         float time = instant ? 0.f : 0.1f;
 
-        Utils::applyGradient(m_dot->getSprite(), m_currentConfig, m_type, 1, true, false, false, 121);
+        Utils::applyGradient(m_dot->getSprite(), m_currentConfig, m_type, static_cast<ColorType>(-1), 1, true, false, false, 121);
 
         m_dot->setHidden(true, time);
 
@@ -109,8 +109,6 @@ void IconButton::applyGradient(bool force, ColorType colorType, bool transition,
 
     GradientConfig previousConfig = m_currentConfig;
 
-    // transition = false; // ignore
-
     m_currentConfig = Utils::getSavedConfig(m_type, colorType, secondPlayer);
 
     if (all) {
@@ -121,19 +119,19 @@ void IconButton::applyGradient(bool force, ColorType colorType, bool transition,
 
     ccColor3B color = Utils::getPlayerColor(colorType, secondPlayer);
 
-    m_dot->setColor(m_currentConfig.points.empty()
+    m_dot->setColor(m_currentConfig.isEmpty(colorType, secondPlayer)
         ? color
         : ccc3(255, 255, 255));
 
-    m_secondDot->setColor(m_currentConfig.points.empty()
+    m_secondDot->setColor(m_currentConfig.isEmpty(colorType, secondPlayer)
         ? color
         : ccc3(255, 255, 255));
 
     if (!transition || !isLocked() || previousConfig == m_currentConfig)
-       return Utils::applyGradient(m_dot->getSprite(), m_currentConfig, m_type, static_cast<int>(-1), false, false, false, 123);
+       return Utils::applyGradient(m_dot->getSprite(), m_currentConfig, m_type, static_cast<ColorType>(-1), -1, false, false, false, 123);
 
-    Utils::applyGradient(m_dot->getSprite(), m_currentConfig, m_type, static_cast<int>(-1), true, false, false, 123);
-    Utils::applyGradient(m_secondDot->getSprite(), previousConfig, m_type, static_cast<int>(-1), true, false, false, 124);
+    Utils::applyGradient(m_dot->getSprite(), m_currentConfig, m_type, static_cast<ColorType>(-1), -1, true, false, false, 123);
+    Utils::applyGradient(m_secondDot->getSprite(), previousConfig, m_type, static_cast<ColorType>(-1), -1, true, false, false, 124);
 
     m_secondDot->setHidden(false, 0.f);
     m_secondDot->setHidden(true, 0.1f);
@@ -170,7 +168,7 @@ void IconButton::updatePlayerScale() {
 }
 
 void IconButton::onAnimationEnded() {
-    Utils::applyGradient(m_dot->getSprite(), m_currentConfig, m_type, static_cast<int>(-1), false, false, false, 123);
+    Utils::applyGradient(m_dot->getSprite(), m_currentConfig, m_type, static_cast<ColorType>(-1), -1, false, false, false, 123);
 
     m_dot->setHidden(!m_isLocked, 0.f, true);
     m_secondDot->setHidden(true, 0.f, true);

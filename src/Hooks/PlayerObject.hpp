@@ -7,15 +7,15 @@
 class $modify(ProPlayerObject, PlayerObject) {
 
 	static void onModify(auto& self) {
-		(void)self.setHookPriorityAfterPost("PlayerObject::updatePlayerFrame", "hiimjustin000.more_icons");
-		(void)self.setHookPriorityAfterPost("PlayerObject::updatePlayerShipFrame", "hiimjustin000.more_icons");
-		(void)self.setHookPriorityAfterPost("PlayerObject::updatePlayerRollFrame", "hiimjustin000.more_icons");
-		(void)self.setHookPriorityAfterPost("PlayerObject::updatePlayerBirdFrame", "hiimjustin000.more_icons");
-		(void)self.setHookPriorityAfterPost("PlayerObject::updatePlayerDartFrame", "hiimjustin000.more_icons");
-		(void)self.setHookPriorityAfterPost("PlayerObject::createRobot", "hiimjustin000.more_icons");
-		(void)self.setHookPriorityAfterPost("PlayerObject::createSpider", "hiimjustin000.more_icons");
-		(void)self.setHookPriorityAfterPost("PlayerObject::updatePlayerSwingFrame", "hiimjustin000.more_icons");
-		(void)self.setHookPriorityAfterPost("PlayerObject::updatePlayerJetpackFrame", "hiimjustin000.more_icons");
+		(void)self.setHookPriorityPost("PlayerObject::updatePlayerFrame", Priority::Last + 21903809);
+		(void)self.setHookPriorityPost("PlayerObject::updatePlayerShipFrame", Priority::Last + 21903809);
+		(void)self.setHookPriorityPost("PlayerObject::updatePlayerRollFrame", Priority::Last + 21903809);
+		(void)self.setHookPriorityPost("PlayerObject::updatePlayerBirdFrame", Priority::Last + 21903809);
+		(void)self.setHookPriorityPost("PlayerObject::updatePlayerDartFrame", Priority::Last + 21903809);
+		(void)self.setHookPriorityPost("PlayerObject::createRobot", Priority::Last + 21903809);
+		(void)self.setHookPriorityPost("PlayerObject::createSpider", Priority::Last + 21903809);
+		(void)self.setHookPriorityPost("PlayerObject::updatePlayerSwingFrame", Priority::Last + 21903809);
+		(void)self.setHookPriorityPost("PlayerObject::updatePlayerJetpackFrame", Priority::Last + 21903809);
 	}
 
 	struct Fields {

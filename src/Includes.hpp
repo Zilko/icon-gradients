@@ -49,11 +49,12 @@ struct GradientConfig {
 
     std::vector<SimplePoint> points;
     bool isLinear = true;
-    // bool isSecondary = false;
 
     bool operator==(const GradientConfig& other) const {
         return isLinear == other.isLinear && points == other.points/* && isSecondary == other.isSecondary*/;
     }
+    
+    bool isEmpty(ColorType, bool);
 
 };
 

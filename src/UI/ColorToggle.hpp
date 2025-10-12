@@ -34,6 +34,8 @@ public:
 
     static ColorToggle* create(CCObject*, SEL_MenuHandler, ColorType, GradientLayer*, bool = true, float = 1.f, bool = true);
 
+    CCSprite* getMainSprite();
+    
     ColorType getColorType();
 
     void setEnabled(bool) override;

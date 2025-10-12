@@ -61,7 +61,7 @@ void ProGJGarageLayer::updateGradient() {
 		
 		f->m_isDisabled = true;
 		
-		Gradient emptyGradient = { {{}, true}, {{}, true}, {{}, true} };
+		Gradient emptyGradient = {};
 
 		Utils::applyGradient(m_playerObject, emptyGradient, false, false, 0);
 		
@@ -85,7 +85,7 @@ void ProGJGarageLayer::updateGradient() {
         f->m_isP2Disabled = true;
                 
     	if (Mod* sdiMod = Loader::get()->getLoadedMod("weebify.separate_dual_icons")) {
-            Gradient emptyGradient = { {{}, true}, {{}, true}, {{}, true} };
+            Gradient emptyGradient = {};
          
             if (Loader::get()->isModLoaded("weebify.separate_dual_icons"))
     			if (SimplePlayer* icon = typeinfo_cast<SimplePlayer*>(getChildByID("player2-icon")))
@@ -137,9 +137,33 @@ void ProGJGarageLayer::updateGradient() {
             auto f = self->m_fields.self();
             
             if (f->m_pageIcon) {
+                Gradient gradient = Utils::getGradient(Utils::getIconType(f->m_pageIcon), p2);
+                GradientConfig emptyConfig = {};
+                
+                if (
+                    f->m_wasEmptied
+                    || gradient.main.isEmpty(ColorType::Main, p2)
+                    || gradient.secondary.isEmpty(ColorType::Secondary, p2)
+                    || gradient.glow.isEmpty(ColorType::Glow, p2)
+                    || gradient.white.isEmpty(ColorType::White, p2)
+                    || gradient.line.isEmpty(ColorType::Line, p2)
+                ) {
+                    
+                    f->m_wasEmptied = gradient.main.isEmpty(ColorType::Main, p2)
+                        || gradient.secondary.isEmpty(ColorType::Secondary, p2)
+                        || gradient.glow.isEmpty(ColorType::Glow, p2)
+                        || gradient.white.isEmpty(ColorType::White, p2)
+                        || gradient.line.isEmpty(ColorType::Line, p2);
+                        
+                    for (SimplePlayer* icon : self->getPageIcons())
+             			if (CCSprite* spr = icon->getChildByType<CCSprite>(0))
+                 			if (spr->getOpacity() > 120)
+                                Utils::applyGradient(icon, gradient, false, false, 66);
+                }
+                
                 if (CCSprite* spr = f->m_pageIcon->getChildByType<CCSprite>(0))
          			if (spr->getOpacity() > 120)
-                        Utils::applyGradient(f->m_pageIcon, Utils::getGradient(Utils::getIconType(f->m_pageIcon), p2), false, false, 66);
+                        Utils::applyGradient(f->m_pageIcon, gradient, false, false, 66);
             }
         }
 	});

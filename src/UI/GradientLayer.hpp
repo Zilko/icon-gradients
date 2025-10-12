@@ -116,6 +116,7 @@ public:
     void updatePlayer(bool);
     void updatePlayerToggle();
     void updateGlowToggle();
+    void updateWhiteToggle();
     
     bool isSecondPlayer();
 

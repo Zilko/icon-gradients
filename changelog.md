@@ -1,3 +1,9 @@
+# 1.3.0
+
+* Added Line and White gradients thanks to Kevadroz yet again...
+* Fixed some UI bugs.
+* Fix separate dual icons bug? idk vro
+
 # 1.2.2
 
 * Fixed p2 toggle not worky in android for some reason

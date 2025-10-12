@@ -107,6 +107,29 @@ void GradientLayer::updatePlayer(bool secondPlayer) {
     load(m_selectedButton->getType(), m_currentColor, true, true, true);
     
     updateGlowToggle();
+    updateWhiteToggle();
+}
+
+void GradientLayer::updateWhiteToggle() {
+    SimplePlayer* icon = m_pointsLayer->getIcon();
+    GJRobotSprite* otherSprite = nullptr;
+    
+    IconType iconType = m_selectedButton->getType();
+    
+    bool hasWhite = false;
+
+    if (iconType == IconType::Robot || iconType == IconType::Spider) {
+        if (icon->m_robotSprite) if (icon->m_robotSprite->isVisible()) otherSprite = icon->m_robotSprite;
+        if (icon->m_spiderSprite) if (icon->m_spiderSprite->isVisible()) otherSprite = icon->m_spiderSprite;
+        
+        if (otherSprite && otherSprite->m_extraSprite)
+            hasWhite = otherSprite->m_extraSprite->isVisible();
+    } else {
+        if (icon->m_detailSprite)
+            hasWhite = icon->m_detailSprite->isVisible();
+    }
+
+    m_whiteColorToggle->setForceDisabled(!hasWhite);
 }
 
 void GradientLayer::updateGlowToggle() {
@@ -258,6 +281,8 @@ void GradientLayer::updateUI() {
     m_bInput->setEnabled(hasPoints);
 
     m_pointsLayer->setPointsHidden(m_pointsHidden, 0.f);
+    
+    updateWhiteToggle();
 }
 
 void GradientLayer::onAddPoint(CCObject*) {
@@ -524,7 +549,7 @@ void GradientLayer::colorValueChanged(ccColor3B color) {
         m_gInput->setString(std::to_string(color.g).c_str());
         m_bInput->setString(std::to_string(color.b).c_str());
         
-        m_colorSelector->setColor(color);
+        m_colorSelector->getMainSprite()->setColor(color);
     }
 
     if (ColorNode* point = m_pointsLayer->getSelectedPoint())
@@ -718,27 +743,27 @@ bool GradientLayer::setup() {
     CCLabelBMFont* lbl = CCLabelBMFont::create("R", "bigFont.fnt");
     lbl->setOpacity(140);
     lbl->setScale(0.425f);
-    lbl->setPosition({175, 100});
+    lbl->setPosition({171, 100});
 
     m_mainLayer->addChild(lbl);
 
     lbl = CCLabelBMFont::create("G", "bigFont.fnt");
     lbl->setOpacity(140);
     lbl->setScale(0.425f);
-    lbl->setPosition({175, 75});
+    lbl->setPosition({171, 75});
 
     m_mainLayer->addChild(lbl);
 
     lbl = CCLabelBMFont::create("B", "bigFont.fnt");
     lbl->setOpacity(140);
     lbl->setScale(0.425f);
-    lbl->setPosition({175, 50});
+    lbl->setPosition({171, 50});
 
     m_mainLayer->addChild(lbl);
 
     m_rInput = TextInput::create(50, "R");
     m_rInput->setScale(0.625f);
-    m_rInput->setPosition({205, 100});
+    m_rInput->setPosition({201, 100});
     m_rInput->setString("255");
     m_rInput->getInputNode()->setDelegate(this);
     m_rInput->getInputNode()->setAllowedChars("0123456789");
@@ -747,7 +772,7 @@ bool GradientLayer::setup() {
 
     m_gInput = TextInput::create(50, "G");
     m_gInput->setScale(0.625f);
-    m_gInput->setPosition({205, 75});
+    m_gInput->setPosition({201, 75});
     m_gInput->setString("255");
     m_gInput->getInputNode()->setDelegate(this);
     m_gInput->getInputNode()->setAllowedChars("0123456789");
@@ -756,7 +781,7 @@ bool GradientLayer::setup() {
 
     m_bInput = TextInput::create(50, "B");
     m_bInput->setScale(0.625f);
-    m_bInput->setPosition({205, 50});
+    m_bInput->setPosition({201, 50});
     m_bInput->setString("255");
     m_bInput->getInputNode()->setDelegate(this);
     m_bInput->getInputNode()->setAllowedChars("0123456789");
@@ -841,21 +866,21 @@ bool GradientLayer::setup() {
     
     m_buttonMenu->addChild(m_playerToggle);
 
-    m_linearToggle = Utils::createTypeToggle(false, {245, 102}, this, menu_selector(GradientLayer::onTypeToggle));
+    m_linearToggle = Utils::createTypeToggle(false, {241.31f, 102}, this, menu_selector(GradientLayer::onTypeToggle));
     m_buttonMenu->addChild(m_linearToggle);
 
-    m_radialToggle = Utils::createTypeToggle(true, {285, 102}, this, menu_selector(GradientLayer::onTypeToggle));
+    m_radialToggle = Utils::createTypeToggle(true, {283.31f, 102}, this, menu_selector(GradientLayer::onTypeToggle));
     m_buttonMenu->addChild(m_radialToggle);
 
-    lbl = CCLabelBMFont::create("Linear", "bigFont.fnt");
+    lbl = CCLabelBMFont::create("linear", "bigFont.fnt");
     lbl->setScale(0.255f);
-    lbl->setPosition({245, 86});
+    lbl->setPosition({241.31f, 86});
 
     m_mainLayer->addChild(lbl);
 
-    lbl = CCLabelBMFont::create("Radial", "bigFont.fnt");
+    lbl = CCLabelBMFont::create("radial", "bigFont.fnt");
     lbl->setScale(0.255f);
-    lbl->setPosition({285, 86});
+    lbl->setPosition({283.31f, 86});
 
     m_mainLayer->addChild(lbl);
 
@@ -879,27 +904,27 @@ bool GradientLayer::setup() {
     m_buttonMenu->addChild(m_dotToggle);
 
     m_mainColorToggle = ColorToggle::create(this, menu_selector(GradientLayer::onColorToggle), ColorType::Main, this);
-    m_mainColorToggle->setPosition({247, 63});
+    m_mainColorToggle->setPosition({246.31f, 63});
 
     m_buttonMenu->addChild(m_mainColorToggle);
 
     m_secondaryColorToggle = ColorToggle::create(this, menu_selector(GradientLayer::onColorToggle), ColorType::Secondary, this);
-    m_secondaryColorToggle->setPosition({282, 63});
+    m_secondaryColorToggle->setPosition({278.31f, 63});
 
     m_buttonMenu->addChild(m_secondaryColorToggle);
 
     m_glowColorToggle = ColorToggle::create(this, menu_selector(GradientLayer::onColorToggle), ColorType::Glow, this);
-    m_glowColorToggle->setPosition({247, 33});
+    m_glowColorToggle->setPosition({235.31f, 33});
 
     m_buttonMenu->addChild(m_glowColorToggle);
 
     m_whiteColorToggle = ColorToggle::create(this, menu_selector(GradientLayer::onColorToggle), ColorType::White, this);
-    m_whiteColorToggle->setPosition({282, 33});
+    m_whiteColorToggle->setPosition({289.31f, 33});
     
     m_buttonMenu->addChild(m_whiteColorToggle);
 
     m_lineColorToggle = ColorToggle::create(this, menu_selector(GradientLayer::onColorToggle), ColorType::Line, this);
-    m_lineColorToggle->setPosition(298, 33);
+    m_lineColorToggle->setPosition(262.31f, 33);
 
     m_buttonMenu->addChild(m_lineColorToggle);
 

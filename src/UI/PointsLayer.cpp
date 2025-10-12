@@ -299,6 +299,10 @@ ColorNode* PointsLayer::getSelectedPoint() {
     return m_selectedPoint;
 }
 
+SimplePlayer* PointsLayer::getIcon() {
+    return m_icon;
+}
+
 void PointsLayer::setPlayerFrame(IconType type) {
     m_type = type;
     

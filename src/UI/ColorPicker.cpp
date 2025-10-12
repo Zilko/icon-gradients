@@ -42,6 +42,13 @@ void ColorPicker::setDelegate(ColorPickerDelegate* delegate) {
 
 void ColorPicker::setColor(const ccColor3B& color) {
     m_picker->setColorValue(color);
+    
+    if (color.r == color.g && color.r == color.b && color.g == color.b) {
+        m_picker->m_hsv.h = 0.f;
+        m_picker->m_huePicker->setHue(m_picker->m_hsv.h);
+        m_picker->m_colourPicker->updateWithHSV(m_picker->m_hsv);
+        m_picker->m_colourPicker->updateDraggerWithHSV(m_picker->m_hsv);
+    }
 }
 
 const ccColor3B ColorPicker::getColor() {
@@ -49,9 +56,9 @@ const ccColor3B ColorPicker::getColor() {
 }
 
 void ColorPicker::setEnabled(bool enabled) {
-    m_picker->getChildByType<CCControlHuePicker>(0)->setEnabled(enabled);
-    m_picker->getChildByType<CCControlSaturationBrightnessPicker>(0)->setEnabled(enabled);
-    
+    m_picker->m_huePicker->setEnabled(enabled);
+    m_picker->m_colourPicker->setEnabled(enabled);
+
     for (CCSprite* spr : CCArrayExt<CCSprite*>(m_picker->getChildByType<CCSpriteBatchNode>(0)->getChildren()))
         spr->setOpacity(enabled ? 255 : 100);
 }

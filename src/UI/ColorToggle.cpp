@@ -39,24 +39,12 @@ bool ColorToggle::init(CCObject* target, SEL_MenuHandler callback, bool number, 
         return CCMenuItemSpriteExtra::init(m_sprite, nullptr, target, callback);
     }
 
-    std::string numberStr;
-    switch (m_colorType) {
-        case ColorType::Main:
-            numberStr = "1";
-            break;
-        case ColorType::Secondary:
-            numberStr = "2";
-            break;
-        case ColorType::Glow:
-            numberStr = "3";
-            break;
-        case ColorType::White:
-            numberStr = "4";
-            break;
-        case ColorType::Line:
-            numberStr = "5";
-            break;
-    }
+    std::string numberStr = std::to_string(static_cast<int>(m_colorType));
+    
+    if (numberStr == "4")
+        numberStr = "5";
+    else if (numberStr == "5")
+        numberStr = "4";
 
     m_numberLabel = CCLabelBMFont::create(numberStr.c_str(), "bigFont.fnt");
     m_numberLabel->setScale(0.315f * scale);
@@ -89,6 +77,10 @@ bool ColorToggle::init(CCObject* target, SEL_MenuHandler callback, bool number, 
     return true;
 }
 
+CCSprite* ColorToggle::getMainSprite() {
+    return m_sprite;
+}
+
 ColorType ColorToggle::getColorType() {
     return m_colorType;
 }
@@ -117,19 +109,19 @@ bool ColorToggle::isSelected() {
 }
 
 void ColorToggle::applyGradient(GradientConfig config, bool force, bool transition) {    
-    if (config == m_currentConfig) return;
+    if (config == m_currentConfig && m_secondSprite) return;
     
-    if (config.points.empty())
+    if (config.isEmpty(m_colorType, m_layer->isSecondPlayer()))
         config.points.push_back(SimplePoint{ {0, 0}, Utils::getPlayerColor(m_colorType, m_layer->isSecondPlayer()) });
     
-    ccColor3B targetColor = config.points.empty() ? Utils::getPlayerColor(m_colorType, m_layer->isSecondPlayer()) : ccc3(255, 255, 255);
+    ccColor3B targetColor = config.isEmpty(m_colorType, m_layer->isSecondPlayer()) ? Utils::getPlayerColor(m_colorType, m_layer->isSecondPlayer()) : ccc3(255, 255, 255);
     
-    if (transition && !m_currentConfig.points.empty() && m_secondSprite)
+    if (transition && !m_currentConfig.isEmpty(m_colorType, m_layer->isSecondPlayer()) && m_secondSprite)
         m_secondSprite->setColor({255, 255, 255});
     
-    if (transition && !config.points.empty()) {
+    if (transition && !config.isEmpty(m_colorType, m_layer->isSecondPlayer())) {
         if (m_secondSprite)
-            Utils::applyGradient(m_secondSprite, m_currentConfig, static_cast<IconType>(-1), static_cast<int>(m_colorType), true, false, false, m_shouldCache ? 120 : -4732);
+            Utils::applyGradient(m_secondSprite, m_currentConfig, static_cast<IconType>(-1), m_colorType, static_cast<int>(m_colorType), true, false, false, m_shouldCache ? 120 : -4732);
         
         m_sprite->setColor(targetColor);
     } else {
@@ -144,7 +136,7 @@ void ColorToggle::applyGradient(GradientConfig config, bool force, bool transiti
 
     if (!transition || !m_secondSprite) {
         m_sprite->setOpacity(255);
-        return Utils::applyGradient(m_sprite, m_currentConfig, static_cast<IconType>(-1), static_cast<int>(m_colorType), false, false, false, m_shouldCache ? 120 : -4732);
+        return Utils::applyGradient(m_sprite, m_currentConfig, static_cast<IconType>(-1), m_colorType, static_cast<int>(m_colorType), false, false, false, m_shouldCache ? 120 : -4732);
     }
     
     m_sprite->setOpacity(255);
@@ -153,7 +145,7 @@ void ColorToggle::applyGradient(GradientConfig config, bool force, bool transiti
     m_sprite->stopAllActions();
     m_secondSprite->stopAllActions();
 
-    Utils::applyGradient(m_sprite, m_currentConfig, static_cast<IconType>(-1), static_cast<int>(m_colorType), true, false, false, m_shouldCache ? 120 : -4732);
+    Utils::applyGradient(m_sprite, m_currentConfig, static_cast<IconType>(-1), m_colorType, static_cast<int>(m_colorType), true, false, false, m_shouldCache ? 120 : -4732);
 
     m_secondSprite->setOpacity(255);
     m_secondSprite->runAction(CCSequence::create(
@@ -164,11 +156,11 @@ void ColorToggle::applyGradient(GradientConfig config, bool force, bool transiti
 }
 
 void ColorToggle::onAnimationEnded() {
-    ccColor3B targetColor = m_currentConfig.points.empty() ? Utils::getPlayerColor(m_colorType, m_layer->isSecondPlayer()) : ccColor3B{255, 255, 255};
+    ccColor3B targetColor = m_currentConfig.isEmpty(m_colorType, m_layer->isSecondPlayer()) ? Utils::getPlayerColor(m_colorType, m_layer->isSecondPlayer()) : ccColor3B{255, 255, 255};
     
     m_secondSprite->setColor(targetColor);
     
-    Utils::applyGradient(m_secondSprite, m_currentConfig, static_cast<IconType>(-1), static_cast<int>(m_colorType), true, false, false, m_shouldCache ? 120 : -4732);
+    Utils::applyGradient(m_secondSprite, m_currentConfig, static_cast<IconType>(-1), m_colorType, static_cast<int>(m_colorType), true, false, false, m_shouldCache ? 120 : -4732);
 
     m_sprite->setOpacity(255);
     m_secondSprite->setOpacity(0);

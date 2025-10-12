@@ -18,6 +18,7 @@ class $modify(ProGJGarageLayer, GJGarageLayer) {
 		bool m_isDisabled = false;
 		bool m_isP2Disabled = false;
 		bool m_isP2Separate = false;
+		bool m_wasEmptied = false;
 	};
 
 	bool init();

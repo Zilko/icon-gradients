@@ -58,6 +58,7 @@ public:
 
     ColorNode* getNodeForPos(CCPoint);
     ColorNode* getSelectedPoint();
+    SimplePlayer* getIcon();
 
     std::vector<SimplePoint> getPoints();
 
