@@ -581,10 +581,10 @@ void GradientLayer::keyDown(enumKeyCodes key) {
         return onColorToggle(m_glowColorToggle);
 
     if (key == enumKeyCodes::KEY_Four)
-        return onColorToggle(m_whiteColorToggle);
+        return onColorToggle(m_lineColorToggle);
 
     if (key == cocos2d::enumKeyCodes::KEY_Five)
-        return onColorToggle(m_lineColorToggle);
+        return onColorToggle(m_whiteColorToggle);
 
     if (key == enumKeyCodes::KEY_C)
         return onCopy(nullptr);

@@ -2,7 +2,9 @@
 
 * Added Line and White gradients thanks to Kevadroz yet again...
 * Fixed some UI bugs.
-* Fix separate dual icons bug? idk vro
+* Fixed separate dual icons bug? idk vro
+* Fixed bug with icons that already had gradients.
+* Preload shaders to reduce lagspikes
 
 # 1.2.2
 

@@ -122,6 +122,16 @@
 			"max": 50.0,
 			"min": 0.001,
 			"platforms": ["win", "mac"]
+		},
+		"misc-title": {
+			"name": "Miscellaneous",
+			"type": "title"
+		},
+		"preload-shaders": {
+			"name": "Preload Shaders",
+			"description": "Preloads shaders on game open to prevent lagspikes mid gameplay.",
+			"type": "bool",
+			"default": true
 		}
 	}
 }

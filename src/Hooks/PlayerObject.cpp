@@ -36,34 +36,34 @@ void ProPlayerObject::updateVisibility() {
         
     auto f = m_fields.self();
     
-    if (f->m_iconSprite && f->m_iconSprite->getOpacity() != m_iconSprite->getOpacity())
+    if (f->m_iconSprite)
         f->m_iconSprite->setOpacity(m_iconSprite->getOpacity());
 
-    if (f->m_iconSpriteSecondary && f->m_iconSpriteSecondary->getOpacity() != m_iconSpriteSecondary->getOpacity())
+    if (f->m_iconSpriteSecondary)
         f->m_iconSpriteSecondary->setOpacity(m_iconSpriteSecondary->getOpacity());
 
-    if (f->m_iconGlow && f->m_iconGlow->getOpacity() != m_iconGlow->getOpacity())
+    if (f->m_iconGlow)
         f->m_iconGlow->setOpacity(m_iconGlow->getOpacity());
 
-    if (f->m_iconSpriteWhitener && f->m_iconSpriteWhitener->getOpacity() != m_iconSpriteWhitener->getOpacity())
+    if (f->m_iconSpriteWhitener)
         f->m_iconSpriteWhitener->setOpacity(m_iconSpriteWhitener->getOpacity());
 
-    if (f->m_iconSpriteLine && f->m_iconSpriteLine->getOpacity() != m_iconSprite->getOpacity())
+    if (f->m_iconSpriteLine)
         f->m_iconSpriteLine->setOpacity(m_iconSprite->getOpacity());
 
-    if (f->m_vehicleSprite && f->m_vehicleSprite->getOpacity() != m_vehicleSprite->getOpacity())
+    if (f->m_vehicleSprite)
         f->m_vehicleSprite->setOpacity(m_vehicleSprite->getOpacity());
 
-    if (f->m_vehicleSpriteSecondary && f->m_vehicleSpriteSecondary->getOpacity() != m_vehicleSpriteSecondary->getOpacity())
+    if (f->m_vehicleSpriteSecondary)
         f->m_vehicleSpriteSecondary->setOpacity(m_vehicleSpriteSecondary->getOpacity());
 
-    if (f->m_vehicleGlow && f->m_vehicleGlow->getOpacity() != m_vehicleGlow->getOpacity())
+    if (f->m_vehicleGlow)
         f->m_vehicleGlow->setOpacity(m_vehicleGlow->getOpacity());
 
-    if (f->m_vehicleSpriteWhitener && f->m_vehicleSpriteWhitener->getOpacity() != m_vehicleSpriteWhitener->getOpacity())
+    if (f->m_vehicleSpriteWhitener)
         f->m_vehicleSpriteWhitener->setOpacity(m_vehicleSpriteWhitener->getOpacity());
 
-    if (f->m_vehicleSpriteLine && f->m_vehicleSpriteLine->getOpacity() != m_vehicleSprite->getOpacity())
+    if (f->m_vehicleSpriteLine)
         f->m_vehicleSpriteLine->setOpacity(m_vehicleSprite->getOpacity());
 
     for (CCSprite* sprite : f->m_animSprites)
@@ -81,13 +81,13 @@ void ProPlayerObject::updateSprite(CCSprite* realSprite, CCSprite*& sprite, Spri
                 dad->addChild(child, 10);
             });
         } else
-            realSprite->addChild(sprite);
+            realSprite->addChild(sprite);        
     } else
         sprite->setDisplayFrame(realSprite->displayFrame());
-
+    
     sprite->setAnchorPoint({0, 0});
-
-    realSprite->setCascadeOpacityEnabled(true);
+    
+    Utils::hideSprite(realSprite);
 }
 
 void ProPlayerObject::updateIconSprite(Gradient gradient, auto f) {
@@ -112,21 +112,41 @@ void ProPlayerObject::updateIconSprite(Gradient gradient, auto f) {
     if (f->m_iconSprite) {
         Utils::applyGradient(f->m_iconSprite, gradient.main, getIconType(), ColorType::Main, 105, false, m_isSecondPlayer, true, 2);
         f->m_iconSprite->setVisible(!gradient.main.isEmpty(ColorType::Main, m_isSecondPlayer));
+        
+        if (!f->m_iconSprite->isVisible())
+            m_iconSprite->setShaderProgram(
+                CCShaderCache::sharedShaderCache()->programForKey(kCCShader_PositionTextureColor)
+            );
     }
 
     if (f->m_iconSpriteSecondary) {
         Utils::applyGradient(f->m_iconSpriteSecondary, gradient.secondary, getIconType(), ColorType::Secondary, 205, false, m_isSecondPlayer, true, 2);
         f->m_iconSpriteSecondary->setVisible(!gradient.secondary.isEmpty(ColorType::Secondary, m_isSecondPlayer));
+        
+        if (!f->m_iconSpriteSecondary->isVisible())
+            m_iconSpriteSecondary->setShaderProgram(
+                CCShaderCache::sharedShaderCache()->programForKey(kCCShader_PositionTextureColor)
+            );
     }
     
     if (f->m_iconGlow) {
         Utils::applyGradient(f->m_iconGlow, gradient.glow, getIconType(), ColorType::Glow, 305, false, m_isSecondPlayer, true, 2);
         f->m_iconGlow->setVisible(!gradient.glow.isEmpty(ColorType::Glow, m_isSecondPlayer));
+        
+        if (!f->m_iconGlow->isVisible())
+            m_iconGlow->setShaderProgram(
+                CCShaderCache::sharedShaderCache()->programForKey(kCCShader_PositionTextureColor)
+            );
     }
     
     if (f->m_iconSpriteWhitener) {
         Utils::applyGradient(f->m_iconSpriteWhitener, gradient.white, getIconType(), ColorType::White, 405, false, m_isSecondPlayer, true, 2);
         f->m_iconSpriteWhitener->setVisible(!gradient.white.isEmpty(ColorType::White, m_isSecondPlayer));
+        
+        if (!f->m_iconSpriteWhitener->isVisible())
+            m_iconSpriteWhitener->setShaderProgram(
+                CCShaderCache::sharedShaderCache()->programForKey(kCCShader_PositionTextureColor)
+            );
     }
     
     if (f->m_iconSpriteLine) {
@@ -218,6 +238,8 @@ void ProPlayerObject::updateAnimSprite(IconType type, Gradient gradient, auto f)
 
         spr->addChild(sprite);
 
+        Utils::hideSprite(spr);
+        
         f->m_animSprites.push_back(sprite);
         f->m_animSpriteParents[sprite] = spr;
 
@@ -237,6 +259,8 @@ void ProPlayerObject::updateAnimSprite(IconType type, Gradient gradient, auto f)
 
         spr->addChild(sprite);
 
+        Utils::hideSprite(spr);
+        
         f->m_animSprites.push_back(sprite);
         f->m_animSpriteParents[sprite] = spr;
 
@@ -256,6 +280,8 @@ void ProPlayerObject::updateAnimSprite(IconType type, Gradient gradient, auto f)
 
         spr->addChild(sprite);
 
+        Utils::hideSprite(spr);
+        
         f->m_animSprites.push_back(sprite);
         f->m_animSpriteParents[sprite] = spr;
 
@@ -276,6 +302,8 @@ void ProPlayerObject::updateAnimSprite(IconType type, Gradient gradient, auto f)
         } else
             sprite->m_extraSprite->addChild(spr);
 
+        Utils::hideSprite(sprite->m_extraSprite);
+        
         f->m_animSprites.push_back(spr);
         f->m_animSpriteParents[sprite] = spr;
 
@@ -297,6 +325,8 @@ void ProPlayerObject::updateAnimSprite(IconType type, Gradient gradient, auto f)
             });
         } else
             spr->addChild(sprite);
+
+        Utils::hideSprite(spr);
 
         f->m_animSprites.push_back(sprite);
         f->m_animSpriteParents[sprite] = spr;
@@ -322,6 +352,8 @@ void ProPlayerObject::updateAnimSprite(IconType type, Gradient gradient, auto f)
         } else
             spr->addChild(sprite);
         
+        Utils::hideSprite(spr);
+
         f->m_animSprites.push_back(sprite);
         f->m_animSpriteParents[sprite] = spr;
 
@@ -341,6 +373,8 @@ void ProPlayerObject::updateAnimSprite(IconType type, Gradient gradient, auto f)
             });
         } else
             sprite->m_extraSprite->addChild(spr);
+
+        Utils::hideSprite(sprite->m_extraSprite);
 
         f->m_animSprites.push_back(spr);
         f->m_animSpriteParents[sprite] = spr;

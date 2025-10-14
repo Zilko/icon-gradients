@@ -5,9 +5,9 @@ class Cache {
 protected:
 
     IconType m_lastSelected = IconType::Cube;
-
+    
     GradientConfig m_copiedConfig;
-
+    
     bool m_disabled = false;
     bool m_p2disabled = false;
     bool m_p2separate = false;
@@ -15,6 +15,8 @@ protected:
     bool m_menuGradients = false;
 
 public:
+
+    bool m_preloadedShaders = false;
 
     static Cache& get();
 

@@ -30,9 +30,14 @@ public:
     static void removeSavedGradient(GradientConfig);
     static void saveConfig(GradientConfig, const std::string&, const std::string&);
     static void setIconColors(SimplePlayer*, ColorType, bool, bool = false);
+    
     static void applyGradient(SimplePlayer*, Gradient, bool, bool, int);
     static void applyGradient(SimplePlayer*, GradientConfig, ColorType, bool, bool, int);
     static void applyGradient(CCSprite*, GradientConfig, IconType, ColorType, int, bool, bool, bool, int, bool = false);
+    
+    static CCGLProgram* createShader(const std::string&, bool, bool, bool);
+    
     static void patchBatchNode(CCSpriteBatchNode*);
+    static void hideSprite(CCSprite*);
 
 };

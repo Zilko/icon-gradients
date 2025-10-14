@@ -1,4 +1,5 @@
 #include "../Utils/Utils.hpp"
+#include "../Utils/Cache.hpp"
 
 #include "PlayLayer.hpp"
 #include "PlayerObject.hpp"

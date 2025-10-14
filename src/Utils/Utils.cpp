@@ -584,45 +584,28 @@ void Utils::applyGradient(SimplePlayer* icon, GradientConfig config, ColorType c
         applyGradient(sprite3, config, iconType, colorType, id3, blend, secondPlayer, false, extra, colorType == ColorType::Line);
 }
 
-void Utils::applyGradient(CCSprite* sprite, GradientConfig config, IconType iconType, ColorType colorType, int id, bool blend, bool secondPlayer, bool playerObject, int extra, bool line) {
-    if (!sprite) return;
-    
-    if (config.isEmpty(colorType, secondPlayer))
-        return sprite->setShaderProgram(
-            CCShaderCache::sharedShaderCache()->programForKey(kCCShader_PositionTextureColor)
-        );
-    
-    std::string key = fmt::format(
-        "{}-{}-{}-{}-{}-{}-{}-{}",
-        config.isLinear,
-        static_cast<int>(iconType),
-        id,
-        blend,
-        line,
-        secondPlayer,
-        playerObject,
-        extra
-    );
-    
+CCGLProgram* Utils::createShader(const std::string& key, bool linear, bool blend, bool line) {
     CCShaderCache* cache = CCShaderCache::sharedShaderCache();
-    
     CCGLProgram* program = cache->programForKey(key.c_str());
      
-    if (!program || extra == -4732) {
-        std::string vertPath = (Mod::get()->getResourcesDir() / "position.vert").string();
-        std::string shaderPath = (Mod::get()->getResourcesDir() / fmt::format("{}_gradient{}.fsh", config.isLinear ? "linear" : "radial", line ? "_line" : blend ? "_blend" : "")).string();
+    if (!program || key.empty()) {
+        static std::filesystem::path vertPath = Mod::get()->getResourcesDir() / "position.vert";
+        std::filesystem::path shaderPath = Mod::get()->getResourcesDir() / fmt::format("{}_gradient{}.fsh", linear ? "linear" : "radial", line ? "_line" : blend ? "_blend" : "");
 
         if (!std::filesystem::exists(vertPath) || !std::filesystem::exists(shaderPath))
-            return;
+            return nullptr;
 
         program = new CCGLProgram();
         
-        if (extra != -4732)
+        if (!key.empty())
             program->retain();
         else    
             program->autorelease();
 
-        program->initWithVertexShaderFilename(vertPath.c_str(), shaderPath.c_str());
+        program->initWithVertexShaderFilename(
+            string::pathToString(vertPath).c_str(),
+            string::pathToString(shaderPath).c_str()
+        );
 
         program->addAttribute(kCCAttributeNamePosition, kCCVertexAttrib_Position);
         program->addAttribute(kCCAttributeNameColor, kCCVertexAttrib_Color);
@@ -631,9 +614,42 @@ void Utils::applyGradient(CCSprite* sprite, GradientConfig config, IconType icon
         program->link();
         program->updateUniforms();
 
-        if (extra != -4732)
+        if (!key.empty())
             cache->addProgram(program, key.c_str());
     }
+    
+    return program;
+}
+
+void Utils::applyGradient(CCSprite* sprite, GradientConfig config, IconType iconType, ColorType colorType, int id, bool blend, bool secondPlayer, bool playerObject, int extra, bool line) {
+    if (!sprite) return;
+    
+    if (config.isEmpty(colorType, secondPlayer))
+        return sprite->setShaderProgram(
+            CCShaderCache::sharedShaderCache()->programForKey(kCCShader_PositionTextureColor)
+        );
+    
+    CCGLProgram* program = nullptr;
+    
+    if (extra != -4732) {
+        std::string key = fmt::format(
+            "{}-{}-{}-{}-{}-{}-{}-{}"_spr,
+            config.isLinear,
+            static_cast<int>(iconType),
+            id,
+            blend,
+            line,
+            secondPlayer,
+            playerObject,
+            extra
+        );
+        
+        program = createShader(key, config.isLinear, blend, line);
+    } else {
+        program = createShader("", config.isLinear, blend, line);
+    }
+    
+    if (!program) return;
     
     sprite->setShaderProgram(program);
 
@@ -752,4 +768,54 @@ void Utils::patchBatchNode(CCSpriteBatchNode* node) {
     }();
 
     *(void**)node = vtable;
+}
+
+void Utils::hideSprite(CCSprite* sprite) {
+    CCGLProgram* shader = CCShaderCache::sharedShaderCache()->programForKey("invis-shader"_spr);
+    
+    if (shader)
+        return sprite->setShaderProgram(shader);
+    
+    shader = new CCGLProgram();
+    shader->initWithVertexShaderByteArray(
+        R"(
+            attribute vec4 a_position;
+            attribute vec2 a_texCoord;
+            attribute vec4 a_color;
+            
+            #ifdef GL_ES
+            varying lowp vec4 v_fragmentColor;
+            varying mediump vec2 v_texCoord;
+            #else
+            varying vec4 v_fragmentColor;
+            varying vec2 v_texCoord;
+            #endif
+            
+            void main()
+            {
+                gl_Position = CC_MVPMatrix * a_position;
+                v_fragmentColor = a_color;
+                v_texCoord = a_texCoord;
+            }
+        )",
+        R"(
+            #ifdef GL_ES
+            precision mediump float;
+            #endif
+    
+            void main() {
+                gl_FragColor = vec4(0.0);
+            }
+        )"
+    );
+    shader->addAttribute(kCCAttributeNamePosition, kCCVertexAttrib_Position);
+    shader->addAttribute(kCCAttributeNameColor, kCCVertexAttrib_Color);
+    shader->addAttribute(kCCAttributeNameTexCoord, kCCVertexAttrib_TexCoords);
+    shader->link();
+    shader->updateUniforms();
+    shader->retain();
+    
+    CCShaderCache::sharedShaderCache()->addProgram(shader, "invis-shader"_spr);
+    
+    sprite->setShaderProgram(shader);
 }
