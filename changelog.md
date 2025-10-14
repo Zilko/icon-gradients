@@ -4,7 +4,8 @@
 * Fixed some UI bugs.
 * Fixed separate dual icons bug? idk vro
 * Fixed bug with icons that already had gradients.
-* Preload shaders to reduce lagspikes
+* Preload shaders to reduce lagspikes.
+* Removed menu gradients cus it wasn't worky.
 
 # 1.2.2
 

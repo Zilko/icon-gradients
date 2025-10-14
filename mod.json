@@ -76,12 +76,6 @@
 			"type": "bool",
 			"default": false
 		},
-		"menu-gradients":{
-			"name": "Gradients in Menu",
-			"description": "Makes players in the main menu have your gradients.",
-			"type": "bool",
-			"default": false
-		},
 		"interface-title": {
 			"name": "Interface",
 			"type": "title"
