@@ -236,13 +236,10 @@ void ProPlayerObject::updateVehicleSprite(Gradient gradient, auto f) {
 
 void ProPlayerObject::updateAnimSprite(IconType type, Gradient gradient, auto f) {
     GJRobotSprite* sprite = type == IconType::Robot ? m_robotSprite : m_spiderSprite;
-    log::debug("1");
 
     if (!sprite) return;
     if (!sprite->m_paSprite) return;
     
-    log::debug("2");
-
     Utils::patchBatchNode(type == IconType::Robot ? m_robotBatchNode : m_spiderBatchNode);
 
     int count = 1;
