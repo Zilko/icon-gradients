@@ -1,11 +1,12 @@
 # 1.3.0
 
 * Added Line and White gradients thanks to Kevadroz yet again...
+* Added shader preloading to reduce lagspikes.
 * Fixed some UI bugs.
 * Fixed separate dual icons bug? idk vro
 * Fixed bug with icons that already had gradients.
-* Preload shaders to reduce lagspikes.
-* Removed menu gradients cus it wasn't worky.
+* Fixed menu gradients not working.
+* Fixed profile icon not disabling if mod was disabled in settings.
 
 # 1.2.2
 

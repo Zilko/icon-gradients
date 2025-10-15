@@ -676,19 +676,23 @@ void Utils::applyGradient(CCSprite* sprite, GradientConfig config, IconType icon
         GLint locPixelSize = glGetUniformLocation(program->getProgram(), "u_pixelSize");
         glUniform2f(locPixelSize, 1.f / texSize.width, 1.f / texSize.height);
         
-        float threshold = -10.f;
-    
-        switch (GameManager::get()->m_texQuality) {
-            case 1: threshold = -1.25f; break;
-            case 2: threshold = -2.5f; break;
-        };
-    
-        #ifdef GEODE_IS_MOBILE
-    
-        if (!Loader::get()->isModLoaded("weebify.high-graphics-android"))
-            threshold = -2.5f;
-    
-        #endif
+        float threshold = 1.f;
+        
+        if (!Cache::get().m_increaseLineTolerance) {
+            threshold = -10.f;
+            
+            switch (GameManager::get()->m_texQuality) {
+                case 1: threshold = -1.25f; break;
+                case 2: threshold = -2.5f; break;
+            };
+        
+            #ifdef GEODE_IS_MOBILE
+        
+            if (!Loader::get()->isModLoaded("weebify.high-graphics-android"))
+                threshold = -2.5f;
+        
+            #endif
+        }
         
         GLint locThreshold = glGetUniformLocation(program->getProgram(), "u_threshold");
         glUniform1f(locThreshold, threshold);

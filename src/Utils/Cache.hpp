@@ -16,7 +16,7 @@ protected:
 
 public:
 
-    bool m_preloadedShaders = false;
+    bool m_increaseLineTolerance = false;
 
     static Cache& get();
 

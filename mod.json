@@ -76,6 +76,12 @@
 			"type": "bool",
 			"default": false
 		},
+		"menu-gradients":{
+			"name": "Gradients in Menu",
+			"description": "Makes players in the main menu have your gradients.",
+			"type": "bool",
+			"default": false
+		},
 		"interface-title": {
 			"name": "Interface",
 			"type": "title"
@@ -126,6 +132,11 @@
 			"description": "Preloads shaders on game open to prevent lagspikes mid gameplay.",
 			"type": "bool",
 			"default": true
+		},
+		"increase-tolerance": {
+			"name": "Increase Line Shader Tolerance",
+			"type": "bool",
+			"default": false
 		}
 	}
 }

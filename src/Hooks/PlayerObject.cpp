@@ -72,22 +72,24 @@ void ProPlayerObject::updateVisibility() {
 }
 
 void ProPlayerObject::updateSprite(CCSprite* realSprite, CCSprite*& sprite, SpriteType type, ColorType color) {
-    if (!sprite) {
-        sprite = CCSprite::createWithSpriteFrame(realSprite->displayFrame());
-        sprite->setID(fmt::format("{}-gradient-{}"_spr, Utils::getTypeID(type), std::to_string(color)).c_str());
-        
-        if ((color == ColorType::Line || color == ColorType::White) && Loader::get()->isModLoaded("alphalaneous.fine_outline")) {
-            Loader::get()->queueInMainThread([child = Ref(sprite), dad = Ref(realSprite)] {
-                dad->addChild(child, 10);
-            });
-        } else
-            realSprite->addChild(sprite);        
-    } else
-        sprite->setDisplayFrame(realSprite->displayFrame());
-    
-    sprite->setAnchorPoint({0, 0});
+    if (sprite) {
+        Utils::hideSprite(realSprite);
+        return sprite->setDisplayFrame(realSprite->displayFrame());
+    }
     
     Utils::hideSprite(realSprite);
+    
+    sprite = CCSprite::createWithSpriteFrame(realSprite->displayFrame());
+    sprite->setID(fmt::format("{}-gradient-{}"_spr, Utils::getTypeID(type), std::to_string(color)).c_str());
+    
+    if ((color == ColorType::Line || color == ColorType::White) && Loader::get()->isModLoaded("alphalaneous.fine_outline")) {
+        Loader::get()->queueInMainThread([child = Ref(sprite), dad = Ref(realSprite)] {
+            dad->addChild(child, 10);
+        });
+    } else
+        realSprite->addChild(sprite);   
+    
+    sprite->setAnchorPoint({0, 0});
 }
 
 void ProPlayerObject::updateIconSprite(Gradient gradient, auto f) {
@@ -107,6 +109,21 @@ void ProPlayerObject::updateIconSprite(Gradient gradient, auto f) {
         updateSprite(m_iconSprite, f->m_iconSpriteLine, SpriteType::Icon, ColorType::Line);
         updateSprite(m_iconSpriteSecondary, f->m_iconSpriteLineSecondary, SpriteType::Icon, ColorType::Line);
         updateSprite(m_iconSpriteWhitener, f->m_iconSpriteLineWhitener, SpriteType::Icon, ColorType::Line);
+        
+        if (!f->m_iconSprite || !f->m_iconSprite->isVisible())
+            m_iconSprite->setShaderProgram(
+                CCShaderCache::sharedShaderCache()->programForKey(kCCShader_PositionTextureColor)
+            );
+        
+        if (!f->m_iconSpriteSecondary || !f->m_iconSpriteSecondary->isVisible())
+            m_iconSpriteSecondary->setShaderProgram(
+                CCShaderCache::sharedShaderCache()->programForKey(kCCShader_PositionTextureColor)
+            );
+        
+        if (!f->m_iconSpriteWhitener || !f->m_iconSpriteWhitener->isVisible())
+            m_iconSpriteWhitener->setShaderProgram(
+                CCShaderCache::sharedShaderCache()->programForKey(kCCShader_PositionTextureColor)
+            );
     }
 
     if (f->m_iconSprite) {
@@ -218,12 +235,13 @@ void ProPlayerObject::updateVehicleSprite(Gradient gradient, auto f) {
 }
 
 void ProPlayerObject::updateAnimSprite(IconType type, Gradient gradient, auto f) {
-    if (shouldReturn(GJBaseGameLayer::get())) return;
-
     GJRobotSprite* sprite = type == IconType::Robot ? m_robotSprite : m_spiderSprite;
+    log::debug("1");
 
     if (!sprite) return;
     if (!sprite->m_paSprite) return;
+    
+    log::debug("2");
 
     Utils::patchBatchNode(type == IconType::Robot ? m_robotBatchNode : m_spiderBatchNode);
 

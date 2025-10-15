@@ -5,7 +5,12 @@
 bool ProMenuLayer::init() {
     if (!MenuLayer::init()) return false;
 
-    if (!Loader::get()->isModLoaded("capeling.icon_profile")) return true;
+    if (
+        Utils::isSettingEnabled(MOD_DISABLED)
+        || !Loader::get()->isModLoaded("capeling.icon_profile")
+    ) {
+        return true;
+    }
 
     if (CCNode* spr = getChildByIDRecursive("profile-icon"))
         if (SimplePlayer* icon = spr->getChildByType<SimplePlayer>(0)) {

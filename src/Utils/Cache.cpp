@@ -14,7 +14,13 @@ $on_mod(Loaded) {
     Cache::set2PSeparate(Mod::get()->getSettingValue<bool>("separate-2p"));
     Cache::set2PFlip(Mod::get()->getSettingValue<bool>("flip-2p"));
     Cache::setMenuGradientsEnabled(Mod::get()->getSettingValue<bool>("menu-gradients"));
+    
+    Cache::get().m_increaseLineTolerance = Mod::get()->getSettingValue<bool>("increase-tolerance");
 
+    listenForSettingChanges("increase-tolerance", +[](bool value) {
+        Cache::get().m_increaseLineTolerance = value;
+    });
+    
     listenForSettingChanges("disabled", +[](bool value) {
         Cache::setModDisabled(value);
     });

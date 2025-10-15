@@ -21,7 +21,7 @@ $execute {
         if (layer)
             layer->updatePointScale(value);
     });
-
+    
     listenForSettingChanges("disable-2p", +[](bool value) {
         if (layer) {
             if (value)
@@ -37,6 +37,14 @@ $execute {
             if (!value)
                 layer->updatePlayer(false);
 
+            layer->updatePlayerToggle();
+            layer->updateGarage();
+        }
+    });
+    
+    listenForSettingChanges("increase-tolerance", +[](bool value) {
+        if (layer) {
+            layer->updatePlayer(false);
             layer->updatePlayerToggle();
             layer->updateGarage();
         }
@@ -132,21 +140,31 @@ void GradientLayer::updateWhiteToggle() {
     m_whiteColorToggle->setForceDisabled(!hasWhite);
 }
 
+void GradientLayer::updateColorToggles() {
+    bool isGlowActive = GameManager::get()->getPlayerGlow();
+    if (m_isSecondPlayer)
+        if (Mod* sdiMod = Loader::get()->getLoadedMod("weebify.separate_dual_icons"))
+            isGlowActive = sdiMod->getSavedValue<bool>("glow", false);
+    
+    if (
+        (m_glowColorToggle->isSelected() && !isGlowActive)
+        || (m_whiteColorToggle->isSelected() && !m_whiteColorToggle->isEnabled())
+    ) {
+        onColorToggle(m_mainColorToggle);
+        
+        Loader::get()->queueInMainThread([self = Ref(this)] {
+            self->m_pointsLayer->selectFirst();
+        });
+    }
+}
+
 void GradientLayer::updateGlowToggle() {
     bool isGlowActive = GameManager::get()->getPlayerGlow();
     if (m_isSecondPlayer)
         if (Mod* sdiMod = Loader::get()->getLoadedMod("weebify.separate_dual_icons"))
             isGlowActive = sdiMod->getSavedValue<bool>("glow", false);
 
-    if (m_glowColorToggle->isSelected() && !isGlowActive) {
-        m_noTransition = true;
-        
-        onColorToggle(m_mainColorToggle);
-        
-        m_noTransition = false;
-        
-        m_pointsLayer->selectFirst();
-    }
+    updateColorToggles();
 
     m_glowColorToggle->setForceDisabled(!isGlowActive);
 }
@@ -379,7 +397,7 @@ void GradientLayer::load(IconType type, ColorType colorType, bool force, bool al
 
     m_currentConfig = Utils::getSavedConfig(type, colorType, m_isSecondPlayer);
 
-    m_pointsLayer->loadPoints(m_currentConfig, previousConfig != m_currentConfig && transition && !m_noTransition);
+    m_pointsLayer->loadPoints(m_currentConfig, previousConfig != m_currentConfig && transition);
 
     for (IconButton* button : m_buttons)
         if (type == button->getType()) {
@@ -429,6 +447,8 @@ void GradientLayer::onIconButton(CCObject* sender) {
     load(button->getType(), m_currentColor, true, true, true);
 
     Cache::setLastSelected(button->getType());
+    
+    updateColorToggles();
 }
 
 void GradientLayer::onTypeToggle(CCObject* sender) {

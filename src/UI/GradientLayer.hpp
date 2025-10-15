@@ -67,7 +67,6 @@ private:
     bool m_ignoreColorChange = false;
     bool m_pointsHidden = false;
     bool m_smoothScroll = false;
-    bool m_noTransition = false;
     
     float m_scroll = 0.f;
 
@@ -117,6 +116,7 @@ public:
     void updatePlayerToggle();
     void updateGlowToggle();
     void updateWhiteToggle();
+    void updateColorToggles();
     
     bool isSecondPlayer();
 
