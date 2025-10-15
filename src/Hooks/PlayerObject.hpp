@@ -41,6 +41,7 @@ class $modify(ProPlayerObject, PlayerObject) {
 
 		bool m_thatOneUfoShipAndCubeModIsLoaded = false;
 		bool m_separateDualIconsIsLoaded = false;
+		bool m_shouldFlip = false;
 	};
 	
 	bool shouldReturn(GJBaseGameLayer*, bool = false);

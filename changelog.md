@@ -1,3 +1,9 @@
+# 1.3.1
+
+* Fixed incompatibilty with swingcopter flip mod.
+* Fixed some gradients staying visible after death.
+* Fixed some visual bug that no one knows about.
+
 # 1.3.0
 
 * Added Line and White gradients thanks to Kevadroz yet again...
