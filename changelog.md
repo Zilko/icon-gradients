@@ -1,3 +1,7 @@
+# 1.3.2
+
+* Fix invisible sprites in ufo and ship
+
 # 1.3.1
 
 * Fixed incompatibilty with swingcopter flip mod.

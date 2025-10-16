@@ -251,21 +251,41 @@ void ProPlayerObject::updateVehicleSprite(Gradient gradient, auto f) {
     if (f->m_vehicleSprite) {
         Utils::applyGradient(f->m_vehicleSprite, gradient.main, getIconType(), ColorType::Main, 104, false, m_isSecondPlayer, true, 44);
         f->m_vehicleSprite->setVisible(!gradient.main.isEmpty(ColorType::Main, m_isSecondPlayer));
+        
+        if (!f->m_vehicleSprite->isVisible())
+            m_vehicleSprite->setShaderProgram(
+                CCShaderCache::sharedShaderCache()->programForKey(kCCShader_PositionTextureColor)
+            );
     }
 
     if (f->m_vehicleSpriteSecondary) {
         Utils::applyGradient(f->m_vehicleSpriteSecondary, gradient.secondary, getIconType(), ColorType::Secondary, 204, false, m_isSecondPlayer, true, 44);
         f->m_vehicleSpriteSecondary->setVisible(!gradient.secondary.isEmpty(ColorType::Secondary, m_isSecondPlayer));
+        
+        if (!f->m_vehicleSpriteSecondary->isVisible())
+            m_vehicleSpriteSecondary->setShaderProgram(
+                CCShaderCache::sharedShaderCache()->programForKey(kCCShader_PositionTextureColor)
+            );
     }
 
     if (f->m_vehicleGlow) {
         Utils::applyGradient(f->m_vehicleGlow, gradient.glow, getIconType(), ColorType::Glow, 304, false, m_isSecondPlayer, true, 44);
         f->m_vehicleGlow->setVisible(!gradient.glow.isEmpty(ColorType::Glow, m_isSecondPlayer));
+        
+        if (!f->m_vehicleGlow->isVisible())
+            m_vehicleGlow->setShaderProgram(
+                CCShaderCache::sharedShaderCache()->programForKey(kCCShader_PositionTextureColor)
+            );
     }
 
     if (f->m_vehicleSpriteWhitener) {
         Utils::applyGradient(f->m_vehicleSpriteWhitener, gradient.white, getIconType(), ColorType::White, 404, false, m_isSecondPlayer, true, 44);
         f->m_vehicleSpriteWhitener->setVisible(!gradient.white.isEmpty(ColorType::White, m_isSecondPlayer));
+        
+        if (!f->m_vehicleSpriteWhitener->isVisible())
+            m_vehicleSpriteWhitener->setShaderProgram(
+                CCShaderCache::sharedShaderCache()->programForKey(kCCShader_PositionTextureColor)
+            );
     }
 
     if (f->m_vehicleSpriteLine) {
@@ -280,6 +300,21 @@ void ProPlayerObject::updateVehicleSprite(Gradient gradient, auto f) {
         Utils::applyGradient(f->m_vehicleSpriteLineWhitener, gradient.line, getIconType(), ColorType::Line, 704, false, m_isSecondPlayer, true, 44, true);
         f->m_vehicleSpriteLineWhitener->setVisible(!gradient.line.isEmpty(ColorType::Line, m_isSecondPlayer));
     }
+    
+    if (!f->m_vehicleSprite || !f->m_vehicleSprite->isVisible())
+        m_vehicleSprite->setShaderProgram(
+            CCShaderCache::sharedShaderCache()->programForKey(kCCShader_PositionTextureColor)
+        );
+    
+    if (!f->m_vehicleSpriteSecondary || !f->m_vehicleSpriteSecondary->isVisible())
+        m_vehicleSpriteSecondary->setShaderProgram(
+            CCShaderCache::sharedShaderCache()->programForKey(kCCShader_PositionTextureColor)
+        );
+    
+    if (!f->m_vehicleSpriteWhitener || !f->m_vehicleSpriteWhitener->isVisible())
+        m_vehicleSpriteWhitener->setShaderProgram(
+            CCShaderCache::sharedShaderCache()->programForKey(kCCShader_PositionTextureColor)
+        );
 
 }
 
