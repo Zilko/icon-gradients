@@ -425,7 +425,7 @@ void ProPlayerObject::updateAnimSprite(IconType type, Gradient gradient, auto f)
         } else
             spr->addChild(sprite);
 
-        Utils::hideSprite(spr);
+        // Utils::hideSprite(spr);
 
         f->m_animSprites.push_back(sprite);
         f->m_animSpriteParents[sprite] = spr;
@@ -451,7 +451,7 @@ void ProPlayerObject::updateAnimSprite(IconType type, Gradient gradient, auto f)
         } else
             spr->addChild(sprite);
         
-        Utils::hideSprite(spr);
+        // Utils::hideSprite(spr);
 
         f->m_animSprites.push_back(sprite);
         f->m_animSpriteParents[sprite] = spr;
@@ -473,7 +473,7 @@ void ProPlayerObject::updateAnimSprite(IconType type, Gradient gradient, auto f)
         } else
             sprite->m_extraSprite->addChild(spr);
 
-        Utils::hideSprite(sprite->m_extraSprite);
+        // Utils::hideSprite(sprite->m_extraSprite);
 
         f->m_animSprites.push_back(spr);
         f->m_animSpriteParents[sprite] = spr;

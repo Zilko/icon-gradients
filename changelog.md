@@ -1,3 +1,7 @@
+# 1.3.3
+
+* Fix same thing but for robot and spider
+
 # 1.3.2
 
 * Fix invisible sprites in ufo and ship
