@@ -41,7 +41,6 @@ class $modify(ProPlayerObject, PlayerObject) {
 
 		bool m_thatOneUfoShipAndCubeModIsLoaded = false;
 		bool m_separateDualIconsIsLoaded = false;
-		bool m_shouldFlip = false;
 	};
 	
 	bool shouldReturn(GJBaseGameLayer*, bool = false);
@@ -50,7 +49,9 @@ class $modify(ProPlayerObject, PlayerObject) {
 	
 	void updateCube(float);
 
-	void updateVisibility();
+	void updateFlip(float);
+	
+	void updateVisibility(float);
 
 	void updateSprite(CCSprite*, CCSprite*&, SpriteType, ColorType);
 

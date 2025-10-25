@@ -31,27 +31,44 @@ void ProPlayerObject::updateCube(float) {
     }
 }
 
-void ProPlayerObject::updateVisibility() {
-    if (shouldReturn(GJBaseGameLayer::get())) return;
-        
+void ProPlayerObject::updateFlip(float) {
+    auto f = m_fields.self();
+    
+    if (f->m_iconSprite) {
+        f->m_iconSprite->setFlipX(m_iconSprite->isFlipX());
+        f->m_iconSprite->setFlipY(m_iconSprite->isFlipY());
+    }
+
+    if (f->m_iconSpriteSecondary) {
+        f->m_iconSpriteSecondary->setFlipX(m_iconSpriteSecondary->isFlipX());
+        f->m_iconSpriteSecondary->setFlipY(m_iconSpriteSecondary->isFlipY());
+    }
+
+    if (f->m_iconGlow) {
+        f->m_iconGlow->setFlipX(m_iconGlow->isFlipX());
+        f->m_iconGlow->setFlipY(m_iconGlow->isFlipY());
+    }
+    
+    if (f->m_iconSpriteWhitener) {
+        f->m_iconSpriteWhitener->setFlipX(m_iconSpriteWhitener->isFlipX());
+        f->m_iconSpriteWhitener->setFlipY(m_iconSpriteWhitener->isFlipY());
+    }
+
+    if (f->m_iconSpriteLine) {
+        f->m_iconSpriteLine->setFlipX(m_iconSprite->isFlipX());
+        f->m_iconSpriteLine->setFlipY(m_iconSprite->isFlipY());
+    }
+}
+
+void ProPlayerObject::updateVisibility(float) {
     auto f = m_fields.self();
     
     if (f->m_iconSprite) {
         f->m_iconSprite->setOpacity(m_iconSprite->getOpacity());
-        
-        if (f->m_shouldFlip) {
-            f->m_iconSprite->setFlipX(m_iconSprite->isFlipX());
-            f->m_iconSprite->setFlipY(m_iconSprite->isFlipY());
-        }
     }
 
     if (f->m_iconSpriteSecondary) {
         f->m_iconSpriteSecondary->setOpacity(m_iconSpriteSecondary->getOpacity());
-        
-        if (f->m_shouldFlip) {
-            f->m_iconSpriteSecondary->setFlipX(m_iconSpriteSecondary->isFlipX());
-            f->m_iconSpriteSecondary->setFlipY(m_iconSpriteSecondary->isFlipY());
-        }
     }
 
     if (f->m_iconGlow)
@@ -59,38 +76,18 @@ void ProPlayerObject::updateVisibility() {
 
     if (f->m_iconSpriteWhitener) {
         f->m_iconSpriteWhitener->setOpacity(m_iconSpriteWhitener->getOpacity());
-        
-        if (f->m_shouldFlip) {
-            f->m_iconSpriteWhitener->setFlipX(m_iconSpriteWhitener->isFlipX());
-            f->m_iconSpriteWhitener->setFlipY(m_iconSpriteWhitener->isFlipY());
-        }
     }
 
     if (f->m_iconSpriteLine) {
         f->m_iconSpriteLine->setOpacity(m_iconSprite->getOpacity());
-        
-        if (f->m_shouldFlip) {
-            f->m_iconSpriteLine->setFlipX(m_iconSprite->isFlipX());
-            f->m_iconSpriteLine->setFlipY(m_iconSprite->isFlipY());
-        }
     }
     
     if (f->m_iconSpriteLineSecondary) {
         f->m_iconSpriteLineSecondary->setOpacity(m_iconSpriteSecondary->getOpacity());
-        
-        if (f->m_shouldFlip) {
-            f->m_iconSpriteLineSecondary->setFlipX(m_iconSpriteSecondary->isFlipX());
-            f->m_iconSpriteLineSecondary->setFlipY(m_iconSpriteSecondary->isFlipY());
-        }
     }
     
     if (f->m_iconSpriteLineWhitener) {
         f->m_iconSpriteLineWhitener->setOpacity(m_iconSpriteWhitener->getOpacity());
-        
-        if (f->m_shouldFlip) {
-            f->m_iconSpriteLineWhitener->setFlipX(m_iconSpriteWhitener->isFlipX());
-            f->m_iconSpriteLineWhitener->setFlipY(m_iconSpriteWhitener->isFlipY());
-        }
     }
 
     if (f->m_vehicleSprite)
@@ -610,7 +607,12 @@ bool ProPlayerObject::init(int p0, int p1, GJBaseGameLayer* p2, CCLayer* p3, boo
     auto f = m_fields.self();
     
     f->m_thatOneUfoShipAndCubeModIsLoaded = Loader::get()->isModLoaded("yellowcat98.custom_ufo_n_ship_cube");
-    f->m_shouldFlip = Loader::get()->isModLoaded("rgc_exists.swingcopter_flip");
+    
+    if (PlayLayer::get())
+        schedule(schedule_selector(ProPlayerObject::updateVisibility));
+    
+    if (Loader::get()->isModLoaded("rgc_exists.swingcopter_flip"))
+        schedule(schedule_selector(ProPlayerObject::updateFlip));
     
     Loader::get()->queueInMainThread([self = Ref(this)] {
         if (

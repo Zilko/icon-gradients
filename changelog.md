@@ -1,3 +1,7 @@
+# 1.3.4
+
+* Fixed incompatibilty with swingcopter flip mod but in editor.
+
 # 1.3.3
 
 * Fix same thing but for robot and spider
