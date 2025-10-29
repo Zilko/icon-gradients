@@ -51,7 +51,7 @@ class $modify(ProPlayerObject, PlayerObject) {
 
 	void updateFlip(float);
 	
-	void updateVisibility(float);
+	void updateVisibility();
 
 	void updateSprite(CCSprite*, CCSprite*&, SpriteType, ColorType);
 

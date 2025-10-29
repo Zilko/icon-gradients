@@ -1,3 +1,7 @@
+# 1.3.5
+
+* Fixed dual visual bug on death
+
 # 1.3.4
 
 * Fixed incompatibilty with swingcopter flip mod but in editor.
