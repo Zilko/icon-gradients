@@ -481,9 +481,14 @@ void ProPlayerObject::updateAnimSprite(IconType type, Gradient gradient, auto f)
 
 void ProPlayerObject::updateGradient() {
     if (shouldReturn(GJBaseGameLayer::get())) return;
+    
 
     auto f = m_fields.self();
 
+    if (f->m_swingFlipLoaded) {
+        schedule(schedule_selector(ProPlayerObject::updateFlip));
+    }
+    
     IconType type = getIconType();
 
     if (type == f->m_previousType) return;
@@ -607,6 +612,7 @@ bool ProPlayerObject::init(int p0, int p1, GJBaseGameLayer* p2, CCLayer* p3, boo
     auto f = m_fields.self();
     
     f->m_thatOneUfoShipAndCubeModIsLoaded = Loader::get()->isModLoaded("yellowcat98.custom_ufo_n_ship_cube");
+    f->m_swingFlipLoaded = Loader::get()->isModLoaded("rgc_exists.swingcopter_flip");
     
     Loader::get()->queueInMainThread([self = Ref(this)] {
         if (

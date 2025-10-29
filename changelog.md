@@ -1,3 +1,7 @@
+# 1.3.6
+
+* Fixed incompatibilty with swingcopter flip mod again cus i removed it last time.
+
 # 1.3.5
 
 * Fixed dual visual bug on death
