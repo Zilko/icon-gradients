@@ -8,7 +8,7 @@ LoadLayer* LoadLayer::create(GradientLayer* layer) {
 
     ret->m_layer = layer;
 
-    if (ret->initAnchored(246, 233)) {
+    if (ret->init()) {
         ret->autorelease();
         return ret;
     }
@@ -81,12 +81,14 @@ void LoadLayer::onDelete(CCObject*) {
     }
 }
 
-bool LoadLayer::setup() {
+bool LoadLayer::init() {
+    Popup::init(246, 233);
+
     std::vector<GradientConfig> gradients = Utils::getSavedGradients();
 
     setTitle("Load Gradient");
 
-    CCScale9Sprite* bg = CCScale9Sprite::create("square02b_001.png");
+    NineSlice* bg = NineSlice::create("square02b_001.png");
 	bg->setColor({0, 0, 0});
 	bg->setOpacity(49);
 	bg->setContentSize({ 204, 159 });
@@ -106,7 +108,7 @@ bool LoadLayer::setup() {
     btn->setCascadeOpacityEnabled(true);
     btn->setEnabled(!gradients.empty());
 
-    m_buttonMenu->addChild(btn);
+    m_buttonMenu->addChild(btn);    
 
     btnSpr = ButtonSprite::create("Delete");
     btnSpr->setScale(0.625f);

@@ -14,7 +14,7 @@ private:
     CCLabelBMFont* m_p1Lbl = nullptr;
     CCLabelBMFont* m_p2Lbl = nullptr;
 
-    CCScale9Sprite* m_select = nullptr;
+    NineSlice* m_select = nullptr;
 
     GradientLayer* m_layer;
     

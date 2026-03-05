@@ -17,27 +17,27 @@ $on_mod(Loaded) {
     
     Cache::get().m_increaseLineTolerance = Mod::get()->getSettingValue<bool>("increase-tolerance");
 
-    listenForSettingChanges("increase-tolerance", +[](bool value) {
+    listenForSettingChanges<bool>("increase-tolerance", [](bool value) {
         Cache::get().m_increaseLineTolerance = value;
     });
     
-    listenForSettingChanges("disabled", +[](bool value) {
+    listenForSettingChanges<bool>("disabled", [](bool value) {
         Cache::setModDisabled(value);
     });
 
-    listenForSettingChanges("disable-2p", +[](bool value) {
+    listenForSettingChanges<bool>("disable-2p", [](bool value) {
         Cache::set2PDisabled(value);
     });
 
-    listenForSettingChanges("separate-2p", +[](bool value) {
+    listenForSettingChanges<bool>("separate-2p", [](bool value) {
         Cache::set2PSeparate(value);
     });
     
-    listenForSettingChanges("flip-2p", +[](bool value) {
+    listenForSettingChanges<bool>("flip-2p", [](bool value) {
         Cache::set2PFlip(value);
     });
 
-    listenForSettingChanges("menu-gradients", +[](bool value) {
+    listenForSettingChanges<bool>("menu-gradients", [](bool value) {
         Cache::setMenuGradientsEnabled(value);
     });
     

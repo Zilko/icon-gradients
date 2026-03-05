@@ -2,13 +2,13 @@
 
 class GradientLayer;
 
-class ColorSelectLayer : public Popup<> {
+class ColorSelectLayer : public Popup {
 
 private:
 
     GradientLayer* m_layer = nullptr;
 
-    bool setup() override;
+    bool init() override;
 
     void createButton(int, const CCPoint&);
 

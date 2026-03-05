@@ -57,7 +57,7 @@ bool PlayerToggle::init() {
     
     addChild(menu, 2);
     
-    CCScale9Sprite* bg = CCScale9Sprite::create("square02b_001.png");
+    NineSlice* bg = NineSlice::create("square02b_001.png");
     bg->setColor({0, 0, 0});
     bg->setOpacity(49);
     bg->setScale(0.275f);
@@ -65,7 +65,7 @@ bool PlayerToggle::init() {
     
     addChild(bg);
     
-    m_select = CCScale9Sprite::create("square02b_001.png");
+    m_select = NineSlice::create("square02b_001.png");
     m_select->setColor({0, 0, 0});
     m_select->setOpacity(49);
     m_select->setScale(0.2475f);

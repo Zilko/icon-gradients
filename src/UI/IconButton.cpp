@@ -2,7 +2,7 @@
 
 #include "IconButton.hpp"
 
-#include <hiimjustin000.more_icons/include/MoreIcons.hpp>
+// #include <hiimjustin000.more_icons/include/MoreIcons.hpp>
 
 IconButton* IconButton::create(CCObject* target, SEL_MenuHandler callback, IconType type, bool secondPlayer) {
     IconButton* ret = new IconButton();
@@ -22,8 +22,8 @@ IconButton* IconButton::create(CCObject* target, SEL_MenuHandler callback, IconT
 bool IconButton::init(CCObject* target, SEL_MenuHandler callback) {
     m_icon = Utils::createIcon(m_type, m_isSecondPlayer);
 
-    if (Loader::get()->isModLoaded("hiimjustin000.more_icons"))
-        MoreIcons::updateSimplePlayer(m_icon, m_type, m_isSecondPlayer);
+    // if (Loader::get()->isModLoaded("hiimjustin000.more_icons"))
+    //     MoreIcons::updateSimplePlayer(m_icon, m_type, m_isSecondPlayer);
 
     CCSize buttonSize = m_icon->getChildByType<CCSprite>(0)->getContentSize() * 0.63f;
     buttonSize.width = std::min(buttonSize.width, 21.f);
@@ -150,8 +150,8 @@ void IconButton::updateSprite(bool secondPlayer) {
     
     m_icon->updatePlayerFrame(Utils::getIconID(m_type, secondPlayer), m_type);
 
-    if (Loader::get()->isModLoaded("hiimjustin000.more_icons"))
-        MoreIcons::updateSimplePlayer(m_icon, m_type, m_isSecondPlayer);
+    // if (Loader::get()->isModLoaded("hiimjustin000.more_icons"))
+    //     MoreIcons::updateSimplePlayer(m_icon, m_type, m_isSecondPlayer);
     
     updatePlayerScale();
 }
