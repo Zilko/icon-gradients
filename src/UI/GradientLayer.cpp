@@ -8,21 +8,21 @@
 #include <Geode/ui/GeodeUI.hpp>
 #include <Geode/loader/Dispatch.hpp>
 
-GradientLayer* layer = nullptr;
+static GradientLayer* layer = nullptr;
 
-$execute {
+$on_mod(Loaded) {
 
-    listenForSettingChanges("disabled", +[](bool value) {
+    listenForSettingChanges<bool>("disabled", [](bool value) {
         if (layer)
             layer->updateGarage();
     });
 
-    listenForSettingChanges("point-scale", +[](double value) {
+    listenForSettingChanges<float>("point-scale", [](float value) {
         if (layer)
             layer->updatePointScale(value);
     });
     
-    listenForSettingChanges("disable-2p", +[](bool value) {
+    listenForSettingChanges<bool>("disable-2p", [](bool value) {
         if (layer) {
             if (value)
                 layer->updatePlayer(false);
@@ -32,7 +32,7 @@ $execute {
         }
     });
 
-    listenForSettingChanges("separate-2p", +[](bool value) {
+    listenForSettingChanges<bool>("separate-2p", [](bool value) {
         if (layer) {
             if (!value)
                 layer->updatePlayer(false);
@@ -42,7 +42,7 @@ $execute {
         }
     });
     
-    listenForSettingChanges("increase-tolerance", +[](bool value) {
+    listenForSettingChanges<bool>("increase-tolerance", [](bool value) {
         if (layer) {
             layer->updatePlayer(false);
             layer->updatePlayerToggle();
@@ -50,30 +50,12 @@ $execute {
         }
     });
 
+    MouseMoveEvent().listen([](int32_t, int32_t) {
+        if (layer)
+            layer->updateHover();
+    }).leak();
+
 }
-
-#ifdef GEODE_IS_WINDOWS
-
-#include <Geode/modify/CCEGLView.hpp>
-
-class $modify(CCEGLView) {
-
-    void onGLFWMouseMoveCallBack(GLFWwindow* v1, double v2, double v3) {
-        CCEGLView::onGLFWMouseMoveCallBack(v1, v2, v3);
-
-        if (!layer) {
-            CCScene* scene = CCDirector::get()->getRunningScene();
-            layer = scene->getChildByType<GradientLayer>(0);
-
-            if (!layer) return;
-        }
-
-        layer->updateHover();
-    }
-
-};
-
-#endif
 
 GradientLayer::~GradientLayer() {
     updateGarage();
@@ -220,7 +202,7 @@ void GradientLayer::colorSelected(const ccColor3B& color) {
 GradientLayer* GradientLayer::create() {
     GradientLayer* ret = new GradientLayer();
 
-    if (ret->initAnchored(320, 280)) {
+    if (ret->init()) {
         ret->autorelease();
         layer = ret;
         return ret;
@@ -579,7 +561,7 @@ void GradientLayer::colorValueChanged(ccColor3B color) {
     updateGradient();
 }
 
-void GradientLayer::keyDown(enumKeyCodes key) {
+void GradientLayer::keyDown(enumKeyCodes key, double timestamp) {
 	if (key == enumKeyCodes::KEY_Escape)
 		return onClose(nullptr);
 
@@ -639,7 +621,7 @@ void GradientLayer::keyDown(enumKeyCodes key) {
 
     m_pointsLayer->moveSelected(move);
 
-	return FLAlertLayer::keyDown(key);
+	return FLAlertLayer::keyDown(key, timestamp);
 }
 
 void GradientLayer::scrollWheel(float y, float) {
@@ -668,9 +650,11 @@ void GradientLayer::scrollWheel(float y, float) {
     onIconButton(m_buttons[index]);
 }
 
-bool GradientLayer::setup() {
-    DispatchEvent<CCNode*, CCRect>("timestepyt.gdneko/create-neko-rect", m_mainLayer, {178.5f, 75, 259, 126}).post();
-    
+bool GradientLayer::init() {
+    Popup::init(320, 280);
+
+    Dispatch<CCNode*, CCRect>("timestepyt.gdneko/create-neko-rect").send(m_mainLayer, {178.5f, 75, 259, 126});
+
     setMouseEnabled(true);
 
     m_smoothScroll = Loader::get()->isModLoaded("prevter.smooth-scroll");
@@ -712,7 +696,7 @@ bool GradientLayer::setup() {
     m_title->setPosition({178.5f, 262});
     m_title->setScale(0.675f);
 
-    CCScale9Sprite* bg = CCScale9Sprite::create("square02b_001.png");
+    NineSlice* bg = NineSlice::create("square02b_001.png");
 	bg->setColor({0, 0, 0});
 	bg->setOpacity(49);
 	bg->setContentSize({ 60, 518 });
@@ -722,7 +706,7 @@ bool GradientLayer::setup() {
 
     m_mainLayer->addChild(bg);
 
-    bg = CCScale9Sprite::create("square02b_001.png");
+    bg = NineSlice::create("square02b_001.png");
 	bg->setColor({0, 0, 0});
 	bg->setOpacity(49);
 	bg->setContentSize({ 259, 126 });

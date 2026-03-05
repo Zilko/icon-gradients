@@ -3,7 +3,7 @@
 #include "PointsLayer.hpp"
 #include "GradientLayer.hpp"
 
-#include <hiimjustin000.more_icons/include/MoreIcons.hpp>
+// #include <hiimjustin000.more_icons/include/MoreIcons.hpp>
 
 PointsLayer* PointsLayer::create(const CCSize& size, GradientLayer* layer) {
     PointsLayer* ret = new PointsLayer();
@@ -311,8 +311,8 @@ void PointsLayer::setPlayerFrame(IconType type) {
         type
     );
 
-    if (Loader::get()->isModLoaded("hiimjustin000.more_icons"))
-        MoreIcons::updateSimplePlayer(m_icon, m_type, m_layer->isSecondPlayer());
+    // if (Loader::get()->isModLoaded("hiimjustin000.more_icons"))
+    //     MoreIcons::updateSimplePlayer(m_icon, m_type, m_layer->isSecondPlayer());
 
     updateCenter();
 }

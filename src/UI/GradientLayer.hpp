@@ -9,7 +9,7 @@
 #include "ColorNode.hpp"
 #include "PlayerToggle.hpp"
 
-class GradientLayer : public geode::Popup<>, public ColorPickerDelegate, public TextInputDelegate {
+class GradientLayer : public Popup, public ColorPickerDelegate, public TextInputDelegate {
 
 private:
 
@@ -72,7 +72,7 @@ private:
 
     ~GradientLayer();
 
-    bool setup() override;
+    bool init() override;
 
     void onTypeToggle(CCObject*);
     void onLockToggle(CCObject*);
@@ -99,7 +99,7 @@ private:
 
     void colorValueChanged(ccColor3B) override;
     void textChanged(CCTextInputNode*) override;
-    void keyDown(enumKeyCodes) override;
+    void keyDown(enumKeyCodes, double) override;
     void scrollWheel(float, float) override;
 
 public:

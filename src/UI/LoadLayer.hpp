@@ -4,7 +4,7 @@
 
 class GradientLayer;
 
-class LoadLayer : public geode::Popup<> {
+class LoadLayer : public Popup {
 
 private:
 
@@ -19,7 +19,7 @@ private:
     
     int m_updatedIndex = 100;
 
-    bool setup() override;
+    bool init() override;
 
     void updateGradient(float);
     void updateUI();

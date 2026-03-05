@@ -6,7 +6,7 @@ ColorSelectLayer* ColorSelectLayer::create(GradientLayer* layer) {
 
     ret->m_layer = layer;
 
-    if (ret->initAnchored(450, 245, "GJ_square05.png")) {
+    if (ret->init()) {
         ret->autorelease();
         return ret;
     }
@@ -34,7 +34,9 @@ void ColorSelectLayer::createButton(int color, const CCPoint& pos) {
     m_buttonMenu->addChild(btn);
 }
 
-bool ColorSelectLayer::setup() {
+bool ColorSelectLayer::init() {
+    Popup::init(450, 245, "GJ_square05.png");
+    
     setTitle("Select Color");
 
     createButton(51, ccp(17, 217));

@@ -1,3 +1,7 @@
+# 1.3.7
+
+* Port to gode v5 gd 20..012728282
+
 # 1.3.6
 
 * Fixed incompatibilty with swingcopter flip mod again cus i removed it last time.
