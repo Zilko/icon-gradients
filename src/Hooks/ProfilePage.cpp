@@ -20,7 +20,7 @@ void ProProfilePage::updateGradient() {
 
     if (!menu) return;
 
-    CCArrayExt<CCNode*> array = CCArrayExt<CCNode*>(menu->getChildren());
+    CCArrayExt<CCNode*> array = menu->getChildrenExt();
 
     for (int i = 0; i < array.size(); i++) {
         SimplePlayer* child = array[i]->getChildByType<SimplePlayer>(0);

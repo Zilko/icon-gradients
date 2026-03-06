@@ -1,3 +1,8 @@
+# 1.3.8
+
+* Add separtee dual icons incompat
+* 
+
 # 1.3.7
 
 * Port to gode v5 gd 20..012728282

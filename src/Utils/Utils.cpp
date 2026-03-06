@@ -368,7 +368,7 @@ void Utils::applyGradient(SimplePlayer* icon, GradientConfig config, ColorType c
             case ColorType::Main: {
                 int id = 100;
                 
-                for (CCSpritePart* spr : CCArrayExt<CCSpritePart*>(otherSprite->m_headSprite->getParent()->getChildren())) {
+                for (CCSpritePart* spr : otherSprite->m_headSprite->getParent()->getChildrenExt<CCSpritePart*>()) {
                     if (!typeinfo_cast<CCSpritePart*>(spr)) continue;
                     
                     id++;
@@ -394,7 +394,7 @@ void Utils::applyGradient(SimplePlayer* icon, GradientConfig config, ColorType c
             case ColorType::Glow: {
                 int id = 300;
                 
-                for (CCSprite* spr : CCArrayExt<CCSprite*>(otherSprite->m_glowSprite->getChildren())) {
+                for (CCSprite* spr : otherSprite->m_glowSprite->getChildrenExt<CCSprite*>()) {
                     id++;
                     
                     applyGradient(spr, config, iconType, colorType, id, blend, secondPlayer, false, extra);
@@ -409,7 +409,7 @@ void Utils::applyGradient(SimplePlayer* icon, GradientConfig config, ColorType c
             }
             case ColorType::Line: {
                 int id = 500;
-                for (CCSpritePart* spr : CCArrayExt<CCSpritePart*>(otherSprite->m_headSprite->getParent()->getChildren())) {
+                for (CCSpritePart* spr : otherSprite->m_headSprite->getParent()->getChildrenExt<CCSpritePart*>()) {
                     if (!typeinfo_cast<CCSpritePart*>(spr)) continue;
 
                     id++;

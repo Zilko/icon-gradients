@@ -59,6 +59,6 @@ void ColorPicker::setEnabled(bool enabled) {
     m_picker->m_huePicker->setEnabled(enabled);
     m_picker->m_colourPicker->setEnabled(enabled);
 
-    for (CCSprite* spr : CCArrayExt<CCSprite*>(m_picker->getChildByType<CCSpriteBatchNode>(0)->getChildren()))
+    for (CCSprite* spr : m_picker->getChildByType<CCSpriteBatchNode>(0)->getChildrenExt<CCSprite*>())
         spr->setOpacity(enabled ? 255 : 100);
 }

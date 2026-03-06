@@ -8,7 +8,7 @@
 	},
 	"id": "zilko.icon_gradients",
 	"name": "Icon Gradients",
-	"version": "v1.3.7",
+	"version": "v1.3.8",
 	"developer": "Zilko",
 	"description": "Allows u to gradient ur icons.",
 	"links": {
@@ -23,6 +23,12 @@
 		"offline",
 		"utility"
 	],
+	"incompatibilities": {
+		"weebify.separate_dual_icons": {
+			"version": ">=1.4.1",
+			"breaking": true
+		}
+	},
 	"dependencies": {
 		"geode.node-ids": ">=1.23.1"
 	},

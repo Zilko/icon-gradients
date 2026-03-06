@@ -116,7 +116,7 @@ void ProPlayerObject::updateVisibility() {
             sprite->setOpacity(f->m_animSpriteParents.at(sprite)->getOpacity());
 }
 
-void ProPlayerObject::updateSprite(CCSprite* realSprite, CCSprite*& sprite, SpriteType type, ColorType color) {
+void ProPlayerObject::updateSprite(CCSprite* realSprite, Ref<CCSprite>& sprite, SpriteType type, ColorType color) {
     if (sprite) {
         Utils::hideSprite(realSprite);
         return sprite->setDisplayFrame(realSprite->displayFrame());
@@ -320,9 +320,9 @@ void ProPlayerObject::updateAnimSprite(IconType type, Gradient gradient, auto f)
 
     if (!sprite) return;
     if (!sprite->m_paSprite) return;
-    
-    Utils::patchBatchNode(type == IconType::Robot ? m_robotBatchNode : m_spiderBatchNode);
 
+    Utils::patchBatchNode(type == IconType::Robot ? m_robotBatchNode : m_spiderBatchNode);
+    
     int count = 1;
 
     for (CCSpritePart* spr : CCArrayExt<CCSpritePart*>(sprite->m_paSprite->m_spriteParts)) {
@@ -367,7 +367,7 @@ void ProPlayerObject::updateAnimSprite(IconType type, Gradient gradient, auto f)
 
     count = 1;
 
-    for (CCSprite* spr : CCArrayExt<CCSprite*>(sprite->m_glowSprite->getChildren())) {
+    for (CCSprite* spr : sprite->m_glowSprite->getChildrenExt<CCSprite*>()) {
         if (gradient.glow.isEmpty(ColorType::Glow, m_isSecondPlayer)) break;
 
         CCSprite* sprite = CCSprite::createWithSpriteFrame(spr->displayFrame());

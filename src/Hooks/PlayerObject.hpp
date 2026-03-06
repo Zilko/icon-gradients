@@ -21,20 +21,20 @@ class $modify(ProPlayerObject, PlayerObject) {
 	struct Fields {
 		IconType m_previousType = static_cast<IconType>(-9038);
 
-		CCSprite* m_iconSprite = nullptr;
-		CCSprite* m_iconSpriteSecondary = nullptr;
-		CCSprite* m_iconGlow = nullptr;
-		CCSprite* m_iconSpriteWhitener = nullptr;
-		CCSprite* m_iconSpriteLine = nullptr;
-		CCSprite* m_iconSpriteLineSecondary = nullptr;
-		CCSprite* m_iconSpriteLineWhitener = nullptr;
-		CCSprite* m_vehicleSprite = nullptr;
-		CCSprite* m_vehicleSpriteSecondary = nullptr;
-		CCSprite* m_vehicleGlow = nullptr;
-		CCSprite* m_vehicleSpriteWhitener = nullptr;
-		CCSprite* m_vehicleSpriteLine = nullptr;
-		CCSprite* m_vehicleSpriteLineSecondary = nullptr;
-		CCSprite* m_vehicleSpriteLineWhitener = nullptr;
+		Ref<CCSprite> m_iconSprite = nullptr;
+		Ref<CCSprite> m_iconSpriteSecondary = nullptr;
+		Ref<CCSprite> m_iconGlow = nullptr;
+		Ref<CCSprite> m_iconSpriteWhitener = nullptr;
+		Ref<CCSprite> m_iconSpriteLine = nullptr;
+		Ref<CCSprite> m_iconSpriteLineSecondary = nullptr;
+		Ref<CCSprite> m_iconSpriteLineWhitener = nullptr;
+		Ref<CCSprite> m_vehicleSprite = nullptr;
+		Ref<CCSprite> m_vehicleSpriteSecondary = nullptr;
+		Ref<CCSprite> m_vehicleGlow = nullptr;
+		Ref<CCSprite> m_vehicleSpriteWhitener = nullptr;
+		Ref<CCSprite> m_vehicleSpriteLine = nullptr;
+		Ref<CCSprite> m_vehicleSpriteLineSecondary = nullptr;
+		Ref<CCSprite> m_vehicleSpriteLineWhitener = nullptr;
 
 		std::vector<Ref<CCSprite>> m_animSprites;
 		std::unordered_map<CCSprite*, Ref<CCSprite>> m_animSpriteParents;
@@ -54,7 +54,7 @@ class $modify(ProPlayerObject, PlayerObject) {
 	
 	void updateVisibility();
 
-	void updateSprite(CCSprite*, CCSprite*&, SpriteType, ColorType);
+	void updateSprite(CCSprite*, Ref<CCSprite>&, SpriteType, ColorType);
 
 	void updateIconSprite(Gradient, auto);
 

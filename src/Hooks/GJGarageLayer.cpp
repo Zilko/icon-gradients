@@ -22,7 +22,7 @@ std::vector<SimplePlayer*> ProGJGarageLayer::getPageIcons() {
     if (!Loader::get()->isModLoaded("ninkaz.colorful-icons")) return ret;
     
     if (CCMenu* menu = static_cast<CCNode*>(m_iconSelection->m_pages->firstObject())->getChildByType<CCMenu>(0))
-			for (CCNode* node : CCArrayExt<CCNode*>(menu->getChildren()))
+			for (CCNode* node : menu->getChildrenExt())
 				if (GJItemIcon* item = node->getChildByType<GJItemIcon>(0))
 					if (SimplePlayer* icon = item->getChildByType<SimplePlayer>(0))
     					ret.push_back(icon);
@@ -210,7 +210,7 @@ void ProGJGarageLayer::setupPage(int p0, IconType p1) {
 	
 	Loader::get()->queueInMainThread([self = Ref(this)] {
     	if (CCMenu* menu = static_cast<CCNode*>(self->m_iconSelection->m_pages->firstObject())->getChildByType<CCMenu>(0))
-            for (CCNode* node : CCArrayExt<CCNode*>(menu->getChildren()))
+            for (CCNode* node : menu->getChildrenExt())
                	if (GJItemIcon* item = node->getChildByType<GJItemIcon>(0))
               		if (SimplePlayer* icon = item->getChildByType<SimplePlayer>(0)) {
                        	self->m_fields->m_pageIcon = icon;
