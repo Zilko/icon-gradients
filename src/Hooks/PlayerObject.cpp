@@ -315,7 +315,7 @@ void ProPlayerObject::updateVehicleSprite(Gradient gradient, auto f) {
 
 }
 
-void ProPlayerObject::updateAnimSprite(IconType type, Gradient gradient, auto f) {
+void ProPlayerObject::updateAnimSprite(IconType type, Gradient gradient, Fields* f) {
     GJRobotSprite* sprite = type == IconType::Robot ? m_robotSprite : m_spiderSprite;
 
     if (!sprite) return;
@@ -579,15 +579,13 @@ void ProPlayerObject::createRobot(int p0) {
 
     if (getTag() == 0xCb04) return;
 
-    Loader::get()->queueInMainThread([self = Ref(this)] {
-        if (self->shouldReturn(GJBaseGameLayer::get())) return;
+    if (shouldReturn(GJBaseGameLayer::get())) return;
 
-        self->updateAnimSprite(
-            IconType::Robot,
-            Utils::getGradient(IconType::Robot, self == self->m_gameLayer->m_player2),
-            self->m_fields.self()
-        );
-    });
+    updateAnimSprite(
+        IconType::Robot,
+        Utils::getGradient(IconType::Robot, this == m_gameLayer->m_player2),
+        m_fields.self()
+    );
 }
 
 void ProPlayerObject::createSpider(int p0) {
@@ -595,15 +593,13 @@ void ProPlayerObject::createSpider(int p0) {
 
     if (getTag() == 0xCb04) return;
 
-    Loader::get()->queueInMainThread([self = Ref(this)] {
-        if (self->shouldReturn(GJBaseGameLayer::get())) return;
+    if (shouldReturn(GJBaseGameLayer::get())) return;
 
-        self->updateAnimSprite(
-            IconType::Spider,
-            Utils::getGradient(IconType::Spider, self == self->m_gameLayer->m_player2),
-            self->m_fields.self()
-        );
-    });
+    updateAnimSprite(
+        IconType::Spider,
+        Utils::getGradient(IconType::Spider, this == m_gameLayer->m_player2),
+        m_fields.self()
+    );
 }
 
 bool ProPlayerObject::init(int p0, int p1, GJBaseGameLayer* p2, CCLayer* p3, bool p4) {
