@@ -114,6 +114,8 @@ void ProPlayerObject::updateVisibility() {
     for (CCSprite* sprite : f->m_animSprites)
         if (f->m_animSpriteParents.contains(sprite))
             sprite->setOpacity(f->m_animSpriteParents.at(sprite)->getOpacity());
+
+    m_fields->m_visualsInitialized = true;
 }
 
 void ProPlayerObject::updateSprite(CCSprite* realSprite, Ref<CCSprite>& sprite, SpriteType type, ColorType color) {
@@ -315,7 +317,7 @@ void ProPlayerObject::updateVehicleSprite(Gradient gradient, auto f) {
 
 }
 
-void ProPlayerObject::updateAnimSprite(IconType type, Gradient gradient, Fields* f) {
+void ProPlayerObject::updateAnimSprite(IconType type, Gradient gradient, auto f) {
     GJRobotSprite* sprite = type == IconType::Robot ? m_robotSprite : m_spiderSprite;
 
     if (!sprite) return;
@@ -577,29 +579,43 @@ void ProPlayerObject::updatePlayerJetpackFrame(int p0) {
 void ProPlayerObject::createRobot(int p0) {
     PlayerObject::createRobot(p0);
 
-    if (getTag() == 0xCb04) return;
+    auto updateFn = [this](){
+        if (getTag() == 0xCb04) return;
 
-    if (shouldReturn(GJBaseGameLayer::get())) return;
+        if (shouldReturn(GJBaseGameLayer::get())) return;
 
-    updateAnimSprite(
-        IconType::Robot,
-        Utils::getGradient(IconType::Robot, this == m_gameLayer->m_player2),
-        m_fields.self()
-    );
+        updateAnimSprite(
+            IconType::Robot,
+            Utils::getGradient(IconType::Robot, this == m_gameLayer->m_player2),
+            m_fields.self()
+        );
+    };
+
+    if (!m_fields->m_visualsInitialized)
+        Loader::get()->queueInMainThread(updateFn);
+    else
+        updateFn();
 }
 
 void ProPlayerObject::createSpider(int p0) {
     PlayerObject::createSpider(p0);
 
-    if (getTag() == 0xCb04) return;
+    auto updateFn = [this](){
+        if (getTag() == 0xCb04) return;
 
-    if (shouldReturn(GJBaseGameLayer::get())) return;
+        if (shouldReturn(GJBaseGameLayer::get())) return;
 
-    updateAnimSprite(
-        IconType::Spider,
-        Utils::getGradient(IconType::Spider, this == m_gameLayer->m_player2),
-        m_fields.self()
-    );
+        updateAnimSprite(
+            IconType::Spider,
+            Utils::getGradient(IconType::Spider, this == m_gameLayer->m_player2),
+            m_fields.self()
+        );
+    };
+
+    if (!m_fields->m_visualsInitialized)
+        Loader::get()->queueInMainThread(updateFn);
+    else
+        updateFn();
 }
 
 bool ProPlayerObject::init(int p0, int p1, GJBaseGameLayer* p2, CCLayer* p3, bool p4) {
