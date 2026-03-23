@@ -114,8 +114,6 @@ void ProPlayerObject::updateVisibility() {
     for (CCSprite* sprite : f->m_animSprites)
         if (f->m_animSpriteParents.contains(sprite))
             sprite->setOpacity(f->m_animSpriteParents.at(sprite)->getOpacity());
-
-    m_fields->m_visualsInitialized = true;
 }
 
 void ProPlayerObject::updateSprite(CCSprite* realSprite, Ref<CCSprite>& sprite, SpriteType type, ColorType color) {
@@ -591,8 +589,11 @@ void ProPlayerObject::createRobot(int p0) {
         );
     };
 
-    if (!m_fields->m_visualsInitialized)
-        Loader::get()->queueInMainThread(updateFn);
+    if (!m_fields->m_animSpritesInitialized)
+        Loader::get()->queueInMainThread([updateFn, this](){
+            updateFn();
+            m_fields->m_animSpritesInitialized = true;
+        });
     else
         updateFn();
 }
@@ -612,8 +613,11 @@ void ProPlayerObject::createSpider(int p0) {
         );
     };
 
-    if (!m_fields->m_visualsInitialized)
-        Loader::get()->queueInMainThread(updateFn);
+    if (!m_fields->m_animSpritesInitialized)
+        Loader::get()->queueInMainThread([updateFn, this](){
+            updateFn();
+            m_fields->m_animSpritesInitialized = true;
+        });
     else
         updateFn();
 }

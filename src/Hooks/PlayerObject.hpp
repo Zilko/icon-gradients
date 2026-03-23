@@ -43,7 +43,7 @@ class $modify(ProPlayerObject, PlayerObject) {
 		bool m_separateDualIconsIsLoaded = false;
 		bool m_swingFlipLoaded = false;
 
-		bool m_visualsInitialized = false;
+		bool m_animSpritesInitialized = false;
 	};
 	
 	bool shouldReturn(GJBaseGameLayer*, bool = false);
