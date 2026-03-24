@@ -541,7 +541,9 @@ void ProPlayerObject::togglePlayerScale(bool p0, bool p1) {
 
 void ProPlayerObject::updatePlayerFrame(int p0) {
     PlayerObject::updatePlayerFrame(p0);
-    updateGradient();
+
+    if (getIconType() == IconType::Cube)
+        updateGradient();
 }
 
 void ProPlayerObject::updatePlayerShipFrame(int p0) {
