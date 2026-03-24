@@ -74,9 +74,13 @@ ccColor3B Utils::getPlayerColor(ColorType colorType, bool secondPlayer) {
         
         return gm->colorForIdx(color);
     }
-    
-    if (secondPlayer && Utils::isSettingEnabled(P2_FLIP) && colorType != ColorType::Glow)
-        colorType = colorType == ColorType::Main ? ColorType::Secondary : ColorType::Main;
+
+    if (secondPlayer) {
+        if (colorType == ColorType::Main)
+            colorType = ColorType::Secondary;
+        else if (colorType == ColorType::Secondary)
+            colorType = ColorType::Main;
+    }
     
     switch (colorType) {
         case ColorType::Glow:
