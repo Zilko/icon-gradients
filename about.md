@@ -2,9 +2,9 @@
 
 Lets you add fully customizable gradients to your icons with a nice UI..
 
-Thanks to <co>EstebanGD</c> for the mod idea...
+Thanks to <cg>Kevadroz</c> for contributing to the mod very epicly.
 
-Thanks to <cg>Kevadroz</c> for contributing to the mod.
+Thanks to <co>EstebanGD</c> for the mod idea...
 
 # Keybinds
 

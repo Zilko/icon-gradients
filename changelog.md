@@ -1,3 +1,7 @@
+# 1.3.9
+
+* Kevadroz remove separtee dual icons incompat thanks kevadroz
+
 # 1.3.8
 
 * Add separtee dual icons incompat
