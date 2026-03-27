@@ -541,7 +541,9 @@ void ProPlayerObject::togglePlayerScale(bool p0, bool p1) {
 
 void ProPlayerObject::updatePlayerFrame(int p0) {
     PlayerObject::updatePlayerFrame(p0);
-    updateGradient();
+
+    if (getIconType() == IconType::Cube)
+        updateGradient();
 }
 
 void ProPlayerObject::updatePlayerShipFrame(int p0) {
@@ -577,33 +579,49 @@ void ProPlayerObject::updatePlayerJetpackFrame(int p0) {
 void ProPlayerObject::createRobot(int p0) {
     PlayerObject::createRobot(p0);
 
-    if (getTag() == 0xCb04) return;
+    auto updateFn = [this](){
+        if (getTag() == 0xCb04) return;
 
-    Loader::get()->queueInMainThread([self = Ref(this)] {
-        if (self->shouldReturn(GJBaseGameLayer::get())) return;
+        if (shouldReturn(GJBaseGameLayer::get())) return;
 
-        self->updateAnimSprite(
+        updateAnimSprite(
             IconType::Robot,
-            Utils::getGradient(IconType::Robot, self == self->m_gameLayer->m_player2),
-            self->m_fields.self()
+            Utils::getGradient(IconType::Robot, this == m_gameLayer->m_player2),
+            m_fields.self()
         );
-    });
+    };
+
+    if (!m_fields->m_animSpritesInitialized)
+        Loader::get()->queueInMainThread([updateFn, this](){
+            updateFn();
+            m_fields->m_animSpritesInitialized = true;
+        });
+    else
+        updateFn();
 }
 
 void ProPlayerObject::createSpider(int p0) {
     PlayerObject::createSpider(p0);
 
-    if (getTag() == 0xCb04) return;
+    auto updateFn = [this](){
+        if (getTag() == 0xCb04) return;
 
-    Loader::get()->queueInMainThread([self = Ref(this)] {
-        if (self->shouldReturn(GJBaseGameLayer::get())) return;
+        if (shouldReturn(GJBaseGameLayer::get())) return;
 
-        self->updateAnimSprite(
+        updateAnimSprite(
             IconType::Spider,
-            Utils::getGradient(IconType::Spider, self == self->m_gameLayer->m_player2),
-            self->m_fields.self()
+            Utils::getGradient(IconType::Spider, this == m_gameLayer->m_player2),
+            m_fields.self()
         );
-    });
+    };
+
+    if (!m_fields->m_animSpritesInitialized)
+        Loader::get()->queueInMainThread([updateFn, this](){
+            updateFn();
+            m_fields->m_animSpritesInitialized = true;
+        });
+    else
+        updateFn();
 }
 
 bool ProPlayerObject::init(int p0, int p1, GJBaseGameLayer* p2, CCLayer* p3, bool p4) {
