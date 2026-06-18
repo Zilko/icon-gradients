@@ -4,7 +4,7 @@
 #include "Utils/Utils.hpp"
 
 void ProGJBaseGameLayer::playExitDualEffect(PlayerObject* p0) {
-    if (!p0->isVanillaPlayer()) {
+    if (!p0->isVanillaPlayer() || Utils::isSettingEnabled(MOD_DISABLED)) {
         GJBaseGameLayer::playExitDualEffect(p0);
         return;
     }
