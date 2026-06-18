@@ -1,5 +1,5 @@
-#include "../Utils/Utils.hpp"
-#include "../Utils/Cache.hpp"
+#include "Utils/Utils.hpp"
+#include "Utils/Cache.hpp"
 
 #include "ProfilePage.hpp"
 

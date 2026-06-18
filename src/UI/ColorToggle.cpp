@@ -1,4 +1,4 @@
-#include "../Utils/Utils.hpp"
+#include "Utils/Utils.hpp"
 
 #include "ColorToggle.hpp"
 #include "GradientLayer.hpp"

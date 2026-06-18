@@ -1,7 +1,7 @@
 #include "MenuGameLayer.hpp"
 #include "PlayerObject.hpp"
 
-#include "../Utils/Utils.hpp"
+#include "Utils/Utils.hpp"
 
 bool ProMenuGameLayer::init() {
     if (!MenuGameLayer::init()) return false;

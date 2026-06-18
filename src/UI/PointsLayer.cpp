@@ -1,4 +1,4 @@
-#include "../Utils/Utils.hpp"
+#include "Utils/Utils.hpp"
 
 #include "PointsLayer.hpp"
 #include "GradientLayer.hpp"

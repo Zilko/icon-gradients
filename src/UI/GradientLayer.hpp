@@ -1,6 +1,6 @@
-#include "../Includes.hpp"
+#include "Includes.hpp"
 
-#include "../Hooks/GJGarageLayer.hpp"
+#include "Hooks/GJGarageLayer.hpp"
 
 #include "PointsLayer.hpp"
 #include "ColorPicker.hpp"

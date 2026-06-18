@@ -2,8 +2,8 @@
 #include "GradientLayer.hpp"
 #include "LoadLayer.hpp"
 
-#include "../Utils/Utils.hpp"
-#include "../Utils/Cache.hpp"
+#include "Utils/Utils.hpp"
+#include "Utils/Cache.hpp"
 
 #include <Geode/ui/GeodeUI.hpp>
 #include <Geode/loader/Dispatch.hpp>

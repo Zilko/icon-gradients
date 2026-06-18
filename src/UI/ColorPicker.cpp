@@ -1,6 +1,6 @@
 #include "ColorPicker.hpp"
 
-#include "../Utils/Utils.hpp"
+#include "Utils/Utils.hpp"
 
 ColorPicker* ColorPicker::create() {
     ColorPicker* ret = new ColorPicker();

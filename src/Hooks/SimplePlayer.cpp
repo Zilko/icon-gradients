@@ -1,14 +1,25 @@
-#include "../Utils/Utils.hpp"
+#include "Utils/Utils.hpp"
 
 #include "SimplePlayer.hpp"
+#include "GJBaseGameLayer.hpp"
 
 void ProSimplePlayer::updatePlayerFrame(int p0, IconType type) {
 	SimplePlayer::updatePlayerFrame(p0, type);
 
 	m_fields->m_type = type;
 
+	auto bgl = GJBaseGameLayer::get();
+
+	if (bgl) {
+		auto f = static_cast<ProGJBaseGameLayer*>(bgl)->m_fields.self();
+
+		if (f->isExitingDual) {
+			f->dualSimplePlayer = this;
+		}
+	}
+
 	if (
-		GJBaseGameLayer::get()
+		bgl
 		|| Utils::isSettingEnabled(MOD_DISABLED)
 	    || !Loader::get()->isModLoaded("ninkaz.colorful-icons")
 	) {

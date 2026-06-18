@@ -1,7 +1,7 @@
 #include "Utils.hpp"
 #include "Cache.hpp"
 
-#include "../Hooks/SimplePlayer.hpp"
+#include "Hooks/SimplePlayer.hpp"
 
 bool GradientConfig::isEmpty(ColorType colorType, bool secondPlayer) {
     if (points.empty()) return true;
