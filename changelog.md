@@ -1,3 +1,7 @@
+# 1.3.11
+
+* fixed bug on the little fake icon that appears when u exit a dual portal
+
 # 1.3.10
 
 * added gradient on the little fake icon that appears when u exit a dual portal!
