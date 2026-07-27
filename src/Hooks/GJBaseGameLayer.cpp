@@ -18,7 +18,7 @@ void ProGJBaseGameLayer::playExitDualEffect(PlayerObject* p0) {
     if (auto icon = static_cast<ProSimplePlayer*>(f->dualSimplePlayer)) {
         Utils::applyGradient(
             icon,
-            Utils::getGradient(icon->m_fields->m_type, p0 == m_player2);,
+            Utils::getGradient(icon->m_fields->m_type, p0 == m_player2),
             true,
             p0 == m_player2,
             1000
