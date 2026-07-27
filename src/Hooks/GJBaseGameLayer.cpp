@@ -19,7 +19,7 @@ void ProGJBaseGameLayer::playExitDualEffect(PlayerObject* p0) {
         Utils::applyGradient(
             icon,
             Utils::getGradient(icon->m_fields->m_type, p0 == m_player2),
-            true,
+            false,
             p0 == m_player2,
             1000
         );

@@ -656,7 +656,7 @@ void Utils::applyGradient(CCSprite* sprite, GradientConfig config, IconType icon
     if (!program) return;
     
     sprite->setShaderProgram(program);
-    sprite->setColor({255, 255, 255}); // will this break everything? lets find out
+    // sprite->setColor({255, 255, 255}); // will this break everything? lets find out // it broke everything
 
     program->use();
     program->setUniformsForBuiltins();
