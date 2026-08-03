@@ -4,6 +4,8 @@
 
 #include <Geode/modify/CharacterColorPage.hpp>
 
+class ProGJGarageLayer;
+
 class $modify(ProCharacterColorPage, CharacterColorPage) {
 
 	static void onModify(auto& self) {
@@ -12,6 +14,10 @@ class $modify(ProCharacterColorPage, CharacterColorPage) {
 
 	struct Fields {
 		bool m_isShip = true;
+		ProGJGarageLayer* m_garage = nullptr;
+		
+		~Fields();
+
 	};
 
 	void updateGradient();
@@ -22,8 +28,5 @@ class $modify(ProCharacterColorPage, CharacterColorPage) {
 
 	void onPlayerColor(CCObject*);
 
-	void onClose(CCObject*);
-
-	void keyBackClicked();
 
 };

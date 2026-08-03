@@ -4,6 +4,12 @@
 #include "CharacterColorPage.hpp"
 #include "GJGarageLayer.hpp"
 
+ProCharacterColorPage::Fields::~Fields() {
+    if (m_garage) {
+        m_garage->updateGradient();
+    }
+}
+
 void ProCharacterColorPage::updateGradient() {
     if (Utils::isSettingEnabled(MOD_DISABLED)) return;
 
@@ -31,6 +37,10 @@ bool ProCharacterColorPage::init() {
     if (!CharacterColorPage::init()) return false;
 
     updateGradient();
+
+    queueInMainThread([self = Ref(this)] {
+        self->m_fields->m_garage = static_cast<ProGJGarageLayer*>(self->getParent());
+    });
     
     return true;
 }
@@ -47,20 +57,4 @@ void ProCharacterColorPage::onPlayerColor(CCObject* sender) {
     CharacterColorPage::onPlayerColor(sender);
 
     updateGradient();
-}
-
-void ProCharacterColorPage::onClose(CCObject* sender) {
-    ProGJGarageLayer* garage = static_cast<ProGJGarageLayer*>(getParent());
-
-    CharacterColorPage::onClose(sender);
-
-    garage->updateGradient();
-}
-
-void ProCharacterColorPage::keyBackClicked() {
-    ProGJGarageLayer* garage = static_cast<ProGJGarageLayer*>(getParent());
-
-    CharacterColorPage::keyBackClicked();
-
-    garage->updateGradient();
 }
